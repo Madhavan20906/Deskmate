@@ -1,0 +1,60 @@
+<style>
+  .task-card {
+    flex-direction: column;
+    gap: 8px;
+    width: 300px;
+    border-radius: 18px;
+    border-width: 1px;
+    border-color: #52647e;
+    background-color: #19212d;
+  }
+
+  .content {
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 14px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .eyebrow {
+    color: #a9baff;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .title {
+    color: #f3f6f7;
+    font-size: 19px;
+    font-weight: 700;
+  }
+
+  .detail {
+    color: #b6c7ce;
+    font-size: 14px;
+  }
+
+  .state {
+    color: #a9baff;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .select-button {
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-bottom: 14px;
+  }
+</style>
+<Panel class="task-card">
+  <div class="content">
+    <span class="eyebrow">COLLABORATE / 1 HOUR</span>
+    <span class="title">Review design brief</span>
+    <span class="detail">13:00 - 14:00  /  Team review</span>
+    <span id="task-state" class="state">READY</span>
+  </div>
+  <Button id="select-task" class="select-button">
+    <ButtonLabel>Select task</ButtonLabel>
+  </Button>
+</Panel>

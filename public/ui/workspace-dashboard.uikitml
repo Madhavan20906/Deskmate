@@ -1,0 +1,325 @@
+<style>
+  .dashboard {
+    flex-direction: column;
+    width: 900px;
+    border-radius: 24px;
+    border-width: 1px;
+    border-color: #3b5664;
+    background-color: #111a22;
+  }
+
+  .content {
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .topline {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    color: #f3f6f7;
+    font-size: 30px;
+    font-weight: 700;
+  }
+
+  .date {
+    color: #9eb4bf;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .day-chip {
+    align-items: center;
+    justify-content: center;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 16px;
+    background-color: #183942;
+  }
+
+  .day-chip-text {
+    color: #8ce2d2;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .workload {
+    flex-direction: column;
+    gap: 9px;
+    padding-top: 13px;
+    padding-bottom: 13px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 14px;
+    background-color: #18242d;
+  }
+
+  .workload-heading {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .workload-title {
+    color: #dce7eb;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .workload-value {
+    color: #8ce2d2;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .load-track {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .load-segment {
+    width: 96px;
+    height: 9px;
+    border-radius: 5px;
+    background-color: #34434c;
+  }
+
+  .load-filled {
+    background-color: #53cbb5;
+  }
+
+  .timeline-heading {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .timeline-title {
+    color: #f3f6f7;
+    font-size: 19px;
+    font-weight: 700;
+  }
+
+  .timeline-note {
+    color: #9eb4bf;
+    font-size: 14px;
+  }
+
+  .time-markers {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .time-marker {
+    color: #9eb4bf;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .timeline {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .time-slot {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 7px;
+    width: 158px;
+    height: 104px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    padding-left: 9px;
+    padding-right: 9px;
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: #2b414c;
+    background-color: #15212a;
+  }
+
+  .slot-time {
+    color: #8ce2d2;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .slot-content {
+    color: #e8eef0;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .smart-status-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .schedule-status {
+    color: #dce7eb;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .smart-status {
+    color: #8ce2d2;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .schedule-suggestion {
+    color: #f2bf7b;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .schedule-controls {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .schedule-button {
+    flex-grow: 1;
+  }
+
+  .selection-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 10px;
+    background-color: #203039;
+  }
+
+  .selection-label {
+    color: #9eb4bf;
+    font-size: 14px;
+  }
+
+  .selection-value {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .task-actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .task-summary {
+    color: #9eb4bf;
+    font-size: 14px;
+  }
+
+  .create-button {
+    margin-top: 2px;
+  }
+</style>
+<Panel class="dashboard">
+  <div class="content">
+    <div class="topline">
+      <div>
+        <div class="brand">DESKMATE</div>
+        <div id="day-date" class="date">TODAY</div>
+      </div>
+      <div class="day-chip"><span class="day-chip-text">YOUR DAY</span></div>
+    </div>
+    <div class="workload">
+      <div class="workload-heading">
+        <span class="workload-title">DAILY WORKLOAD</span>
+        <span id="workload-value" class="workload-value">0h planned / 8h capacity</span>
+      </div>
+      <div class="load-track">
+        <div id="load-segment-1" class="load-segment"></div>
+        <div id="load-segment-2" class="load-segment"></div>
+        <div id="load-segment-3" class="load-segment"></div>
+        <div id="load-segment-4" class="load-segment"></div>
+        <div id="load-segment-5" class="load-segment"></div>
+        <div id="load-segment-6" class="load-segment"></div>
+        <div id="load-segment-7" class="load-segment"></div>
+        <div id="load-segment-8" class="load-segment"></div>
+      </div>
+    </div>
+    <div class="timeline-heading">
+      <span class="timeline-title">TODAY'S TIMELINE</span>
+      <span class="timeline-note">WORKING HOURS / 08:00 - 18:00</span>
+    </div>
+    <div class="time-markers">
+      <span class="time-marker">08:00</span>
+      <span class="time-marker">10:00</span>
+      <span class="time-marker">12:00</span>
+      <span class="time-marker">14:00</span>
+      <span class="time-marker">16:00</span>
+      <span class="time-marker">18:00</span>
+    </div>
+    <div class="timeline">
+      <Button id="timeline-slot-480" class="time-slot">
+        <ButtonLabel id="timeline-slot-label-480" class="slot-time">08:00 - 10:00</ButtonLabel>
+        <span id="timeline-slot-content-480" class="slot-content">No tasks scheduled</span>
+      </Button>
+      <Button id="timeline-slot-600" class="time-slot">
+        <ButtonLabel id="timeline-slot-label-600" class="slot-time">10:00 - 12:00</ButtonLabel>
+        <span id="timeline-slot-content-600" class="slot-content">No tasks scheduled</span>
+      </Button>
+      <Button id="timeline-slot-720" class="time-slot">
+        <ButtonLabel id="timeline-slot-label-720" class="slot-time">12:00 - 14:00</ButtonLabel>
+        <span id="timeline-slot-content-720" class="slot-content">No tasks scheduled</span>
+      </Button>
+      <Button id="timeline-slot-840" class="time-slot">
+        <ButtonLabel id="timeline-slot-label-840" class="slot-time">14:00 - 16:00</ButtonLabel>
+        <span id="timeline-slot-content-840" class="slot-content">No tasks scheduled</span>
+      </Button>
+      <Button id="timeline-slot-960" class="time-slot">
+        <ButtonLabel id="timeline-slot-label-960" class="slot-time">16:00 - 18:00</ButtonLabel>
+        <span id="timeline-slot-content-960" class="slot-content">No tasks scheduled</span>
+      </Button>
+    </div>
+    <span id="schedule-status" class="schedule-status">Select a task, then pick a timeline block.</span>
+    <div class="smart-status-row">
+      <span id="smart-status" class="smart-status">Checking today's plan...</span>
+      <span id="schedule-suggestion" class="schedule-suggestion">Select a task for a slot suggestion</span>
+    </div>
+    <div class="schedule-controls">
+      <Button id="schedule-earlier" class="schedule-button">
+        <ButtonLabel>Earlier 30m</ButtonLabel>
+      </Button>
+      <Button id="schedule-later" class="schedule-button">
+        <ButtonLabel>Later 30m</ButtonLabel>
+      </Button>
+      <Button id="schedule-apply-suggestion" class="schedule-button">
+        <ButtonLabel>Apply suggestion</ButtonLabel>
+      </Button>
+      <Button id="schedule-clear" class="schedule-button">
+        <ButtonLabel>Clear time</ButtonLabel>
+      </Button>
+    </div>
+    <div class="selection-row">
+      <span class="selection-label">SELECTED TASK</span>
+      <span id="selected-task" class="selection-value">Choose a task card</span>
+    </div>
+    <div class="task-actions">
+      <span id="task-summary" class="task-summary">3 / 6 tasks</span>
+      <Button id="task-create" class="create-button">
+        <ButtonLabel>Create task</ButtonLabel>
+      </Button>
+    </div>
+  </div>
+</Panel>

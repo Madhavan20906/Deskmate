@@ -1,0 +1,60 @@
+<style>
+  .task-card {
+    flex-direction: column;
+    gap: 8px;
+    width: 300px;
+    border-radius: 18px;
+    border-width: 1px;
+    border-color: #755f47;
+    background-color: #27231f;
+  }
+
+  .content {
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 14px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .eyebrow {
+    color: #f2bf7b;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .title {
+    color: #f3f6f7;
+    font-size: 19px;
+    font-weight: 700;
+  }
+
+  .detail {
+    color: #c9c0b5;
+    font-size: 14px;
+  }
+
+  .state {
+    color: #f2bf7b;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .select-button {
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-bottom: 14px;
+  }
+</style>
+<Panel class="task-card">
+  <div class="content">
+    <span class="eyebrow">ADMIN / 1 HOUR</span>
+    <span class="title">Inbox reset</span>
+    <span class="detail">15:00 - 16:00  /  Clear the queue</span>
+    <span id="task-state" class="state">READY</span>
+  </div>
+  <Button id="select-task" class="select-button">
+    <ButtonLabel>Select task</ButtonLabel>
+  </Button>
+</Panel>
