@@ -1,0 +1,76 @@
+<style>
+  .task-root {
+    flex-direction: column;
+    gap: 8px;
+    width: 300px;
+    border-radius: 18px;
+    border-width: 2px;
+    border-color: #3b6470;
+    background-color: #15232b;
+  }
+
+  .content {
+    flex-direction: column;
+    gap: 5px;
+    padding-top: 12px;
+    padding-bottom: 4px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .eyebrow {
+    color: #77dec9;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .title {
+    color: #f3f6f7;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .description {
+    color: #b6c7ce;
+    font-size: 13px;
+  }
+
+  .status-button {
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+
+  .secondary-actions {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+    margin-left: 14px;
+    margin-right: 14px;
+    margin-bottom: 12px;
+  }
+
+  .small-button {
+    flex-grow: 1;
+  }
+</style>
+<Panel id="task-root" class="task-root">
+  <div class="content">
+    <span id="task-priority" class="eyebrow">MEDIUM PRIORITY / 30 MIN</span>
+    <span id="task-title" class="title">New task</span>
+    <span id="task-description" class="description">Add a short description.</span>
+  </div>
+  <Button id="task-status" class="status-button">
+    <ButtonLabel id="task-status-label">Start task</ButtonLabel>
+  </Button>
+  <div class="secondary-actions">
+    <Button id="task-select" class="small-button">
+      <ButtonLabel>Select</ButtonLabel>
+    </Button>
+    <Button id="task-edit" class="small-button">
+      <ButtonLabel>Edit</ButtonLabel>
+    </Button>
+    <Button id="task-delete" class="small-button">
+      <ButtonLabel>Delete</ButtonLabel>
+    </Button>
+  </div>
+</Panel>

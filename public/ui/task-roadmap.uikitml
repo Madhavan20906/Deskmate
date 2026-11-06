@@ -1,0 +1,60 @@
+<style>
+  .task-card {
+    flex-direction: column;
+    gap: 8px;
+    width: 300px;
+    border-radius: 18px;
+    border-width: 1px;
+    border-color: #3b6470;
+    background-color: #15232b;
+  }
+
+  .content {
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 14px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .eyebrow {
+    color: #77dec9;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .title {
+    color: #f3f6f7;
+    font-size: 19px;
+    font-weight: 700;
+  }
+
+  .detail {
+    color: #b6c7ce;
+    font-size: 14px;
+  }
+
+  .state {
+    color: #77dec9;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .select-button {
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-bottom: 14px;
+  }
+</style>
+<Panel class="task-card">
+  <div class="content">
+    <span class="eyebrow">FOCUS / 2 HOURS</span>
+    <span class="title">Plan Q4 roadmap</span>
+    <span class="detail">09:30 - 11:30  /  Deep work</span>
+    <span id="task-state" class="state">READY</span>
+  </div>
+  <Button id="select-task" class="select-button">
+    <ButtonLabel>Select task</ButtonLabel>
+  </Button>
+</Panel>
