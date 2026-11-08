@@ -25,11 +25,12 @@
         "asset": "workspace-dashboard"
       },
       "transform": {
-        "position": [0, 1.62, -1.45],
+        "position": [0, 1.82, -1.45],
         "scale": 0.1
       },
       "components": {
-        "RayInteractable": {}
+        "RayInteractable": {},
+        "PokeInteractable": {}
       }
     },
     {
@@ -45,6 +46,7 @@
       },
       "components": {
         "RayInteractable": {},
+        "PokeInteractable": {},
         "OneHandGrabbable": {},
         "TaskData": {
           "slot": 0,
@@ -71,6 +73,7 @@
       },
       "components": {
         "RayInteractable": {},
+        "PokeInteractable": {},
         "OneHandGrabbable": {},
         "TaskData": {
           "slot": 1,
@@ -97,6 +100,7 @@
       },
       "components": {
         "RayInteractable": {},
+        "PokeInteractable": {},
         "OneHandGrabbable": {},
         "TaskData": {
           "slot": 2,
@@ -123,6 +127,7 @@
       },
       "components": {
         "RayInteractable": {},
+        "PokeInteractable": {},
         "OneHandGrabbable": {},
         "TaskData": { "slot": 3, "active": false }
       }
@@ -140,6 +145,7 @@
       },
       "components": {
         "RayInteractable": {},
+        "PokeInteractable": {},
         "OneHandGrabbable": {},
         "TaskData": { "slot": 4, "active": false }
       }
@@ -157,6 +163,7 @@
       },
       "components": {
         "RayInteractable": {},
+        "PokeInteractable": {},
         "OneHandGrabbable": {},
         "TaskData": { "slot": 5, "active": false }
       }
@@ -174,7 +181,8 @@
         "scale": 0.11
       },
       "components": {
-        "RayInteractable": {}
+        "RayInteractable": {},
+        "PokeInteractable": {}
       }
     },
     {
