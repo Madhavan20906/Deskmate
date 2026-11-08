@@ -14,9 +14,12 @@ export const TaskData = createComponent('TaskData', {
 	title: { type: Types.String, default: 'New task' },
 	description: { type: Types.String, default: '' },
 	priority: { type: Types.String, default: 'medium' },
+	category: { type: Types.String, default: '' },
 	estimatedMinutes: { type: Types.Float32, default: 30 },
 	scheduledStartMinute: { type: Types.Float32, default: -1 },
 	status: { type: Types.String, default: 'todo' },
+	createdAt: { type: Types.Float64, default: 0 },
+	completedAt: { type: Types.Float64, default: 0 },
 });
 
 export default defineComponents([TaskData]);
