@@ -23,6 +23,143 @@
     justify-content: space-between;
   }
 
+  .header-actions {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pip-toggle {
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .pip-launcher-orb {
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background-color: #53cbb5;
+  }
+
+  .pip-panel {
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 14px;
+    border-width: 1px;
+    border-color: #6faeaa;
+    background-color: #e8f4f4;
+  }
+
+  .pip-panel:dark {
+    background-color: #182b33;
+    border-color: #3b6970;
+  }
+
+  .pip-heading {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .pip-orb {
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    background-color: #53cbb5;
+  }
+
+  .pip-face {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .pip-eye {
+    width: 4px;
+    height: 7px;
+    border-radius: 3px;
+    background-color: #143139;
+  }
+
+  .pip-heading-copy {
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 2px;
+  }
+
+  .pip-name {
+    color: #173740;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .pip-name:dark {
+    color: #f3f6f7;
+  }
+
+  .pip-state {
+    color: #285d5d;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .pip-state:dark {
+    color: #8ce2d2;
+  }
+
+  .pip-response {
+    color: #173740;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .pip-response:dark {
+    color: #e8eef0;
+  }
+
+  .pip-transcript {
+    color: #31555d;
+    font-size: 12px;
+  }
+
+  .pip-transcript:dark {
+    color: #b6c7ce;
+  }
+
+  .pip-disclosure {
+    color: #465e65;
+    font-size: 11px;
+  }
+
+  .pip-disclosure:dark {
+    color: #9eb4bf;
+  }
+
+  .pip-controls {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .pip-control-button {
+    flex-grow: 1;
+  }
+
+  .pip-confirmation-row {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .pip-confirm-button {
+    flex-grow: 1;
+  }
+
   .brand {
     color: #f3f6f7;
     font-size: 30px;
@@ -79,6 +216,34 @@
     color: #8ce2d2;
     font-size: 16px;
     font-weight: 700;
+  }
+
+  .workload-state {
+    align-items: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 9px;
+    padding-right: 9px;
+    border-radius: 10px;
+    background-color: #e4f0f3;
+    color: #1c252a;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .workload-state:dark {
+    background-color: #183942;
+    color: #8ce2d2;
+  }
+
+  .workload-detail {
+    color: #3a4b53;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .workload-detail:dark {
+    color: #b6c7ce;
   }
 
   .load-track {
@@ -217,6 +382,218 @@
     font-weight: 700;
   }
 
+  .focus-duration-controls {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .focus-duration-value {
+    color: #174b4b;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .focus-duration-value:dark {
+    color: #8ce2d2;
+  }
+
+  .focus-duration-button {
+    width: 42px;
+  }
+
+  .focus-stats {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .focus-statistics {
+    color: #35525a;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .focus-statistics:dark {
+    color: #b6c7ce;
+  }
+
+  .focus-history {
+    color: #9eb4bf;
+    font-size: 10px;
+  }
+
+  .focus-progress {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .focus-progress-segment {
+    width: 100px;
+    height: 6px;
+    border-radius: 3px;
+    background-color: #34434c;
+  }
+
+  .insights-row {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .insight-card {
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 8px;
+    padding-top: 11px;
+    padding-bottom: 11px;
+    padding-left: 13px;
+    padding-right: 13px;
+    border-radius: 12px;
+    background-color: #18242d;
+  }
+
+  .insight-heading {
+    color: #dce7eb;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .garden-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .garden-plant {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    width: 52px;
+    height: 62px;
+    border-radius: 12px;
+    background-color: #203039;
+  }
+
+  .garden-leaves {
+    flex-direction: row;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .garden-crown {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .garden-leaf {
+    width: 12px;
+    height: 8px;
+    border-radius: 6px;
+    background-color: #53cbb5;
+  }
+
+  .garden-flower {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: #f2bf7b;
+  }
+
+  .garden-stem {
+    width: 4px;
+    height: 18px;
+    border-radius: 2px;
+    background-color: #53cbb5;
+  }
+
+  .garden-soil {
+    width: 24px;
+    height: 4px;
+    border-radius: 2px;
+    background-color: #9a7652;
+  }
+
+  .garden-copy {
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 3px;
+  }
+
+  .garden-details {
+    color: #b6c7ce;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .garden-achievements {
+    color: #b6c7ce;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .analytics-summary {
+    color: #b6c7ce;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .garden-stage {
+    color: #8ce2d2;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .garden-progress {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .analytics-bars {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .garden-progress-segment {
+    flex-grow: 1;
+    height: 6px;
+    border-radius: 3px;
+    background-color: #34434c;
+  }
+
+  .analytics-bars {
+    justify-content: space-between;
+    gap: 7px;
+  }
+
+  .analytics-day {
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .analytics-bar {
+    width: 26px;
+    height: 30px;
+    border-radius: 6px;
+    background-color: #34434c;
+  }
+
+  .analytics-day-label {
+    color: #9eb4bf;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  .analytics-day-count {
+    color: #9eb4bf;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
   .task-actions {
     flex-direction: row;
     align-items: center;
@@ -240,7 +617,52 @@
         <div class="brand">DESKMATE</div>
         <div id="day-date" class="date">TODAY</div>
       </div>
-      <div class="day-chip"><span class="day-chip-text">YOUR DAY</span></div>
+      <div class="header-actions">
+        <div class="day-chip"><span class="day-chip-text">YOUR DAY</span></div>
+        <Button id="pip-toggle" class="pip-toggle">
+          <span id="pip-launcher-orb" class="pip-launcher-orb"></span>
+          <ButtonLabel>PIP</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="pip-panel" class="pip-panel" style="display: none">
+      <div class="pip-heading">
+        <div id="pip-orb" class="pip-orb">
+          <div class="pip-face">
+            <span class="pip-eye"></span>
+            <span class="pip-eye"></span>
+          </div>
+        </div>
+        <div class="pip-heading-copy">
+          <span class="pip-name">PIP / LOCAL COMMAND MODE</span>
+          <span id="pip-state" class="pip-state">READY / LOCAL MODE</span>
+        </div>
+        <Button id="pip-dismiss">
+          <ButtonLabel>Hide</ButtonLabel>
+        </Button>
+      </div>
+      <span id="pip-response" class="pip-response">Ask Pip to add a task, review today's plan, or create a schedule suggestion.</span>
+      <span id="pip-transcript" class="pip-transcript">No request yet.</span>
+      <span class="pip-disclosure">No AI provider is connected. Tap Listen only when ready; your browser may use its speech service to transcribe audio. Pip parses requests locally and sends no task data to an AI service.</span>
+      <div class="pip-controls">
+        <Button id="pip-listen" class="pip-control-button">
+          <ButtonLabel id="pip-listen-label">Listen</ButtonLabel>
+        </Button>
+        <Button id="pip-text" class="pip-control-button">
+          <ButtonLabel>Type request</ButtonLabel>
+        </Button>
+        <Button id="pip-recap" class="pip-control-button">
+          <ButtonLabel>Daily recap</ButtonLabel>
+        </Button>
+      </div>
+      <div id="pip-confirmation-row" class="pip-confirmation-row" style="display: none">
+        <Button id="pip-confirm-schedule" class="pip-confirm-button">
+          <ButtonLabel>Confirm schedule</ButtonLabel>
+        </Button>
+        <Button id="pip-cancel-schedule" class="pip-confirm-button">
+          <ButtonLabel>Cancel</ButtonLabel>
+        </Button>
+      </div>
     </div>
     <div class="workload">
       <div class="workload-heading">
@@ -256,6 +678,10 @@
         <div id="load-segment-6" class="load-segment"></div>
         <div id="load-segment-7" class="load-segment"></div>
         <div id="load-segment-8" class="load-segment"></div>
+      </div>
+      <div class="smart-status-row">
+        <span id="workload-state" class="workload-state">UNDERLOADED</span>
+        <span id="workload-detail" class="workload-detail">8h free / 0m complete / 0m pending</span>
       </div>
     </div>
     <div class="timeline-heading">
@@ -307,6 +733,9 @@
       <Button id="schedule-apply-suggestion" class="schedule-button">
         <ButtonLabel>Apply suggestion</ButtonLabel>
       </Button>
+      <Button id="schedule-dismiss-suggestion" class="schedule-button">
+        <ButtonLabel>Dismiss</ButtonLabel>
+      </Button>
       <Button id="schedule-clear" class="schedule-button">
         <ButtonLabel>Clear time</ButtonLabel>
       </Button>
@@ -315,8 +744,73 @@
       <span class="selection-label">SELECTED TASK</span>
       <span id="selected-task" class="selection-value">Choose a task card</span>
     </div>
+    <div class="focus-stats">
+      <span id="focus-statistics" class="focus-statistics">FOCUS TODAY 0m / 120m GOAL / 0 SESSIONS / TOTAL 0m</span>
+      <span id="focus-history" class="focus-history">NO FOCUS HISTORY YET</span>
+      <div class="focus-progress">
+        <div id="focus-progress-1" class="focus-progress-segment"></div>
+        <div id="focus-progress-2" class="focus-progress-segment"></div>
+        <div id="focus-progress-3" class="focus-progress-segment"></div>
+        <div id="focus-progress-4" class="focus-progress-segment"></div>
+        <div id="focus-progress-5" class="focus-progress-segment"></div>
+        <div id="focus-progress-6" class="focus-progress-segment"></div>
+        <div id="focus-progress-7" class="focus-progress-segment"></div>
+        <div id="focus-progress-8" class="focus-progress-segment"></div>
+      </div>
+    </div>
+    <div class="insights-row">
+      <div class="insight-card">
+        <span class="insight-heading">PRODUCTIVITY GARDEN</span>
+        <div class="garden-row">
+          <div class="garden-plant">
+            <div class="garden-crown">
+              <span id="garden-flower" class="garden-flower" style="display: none"></span>
+              <div id="garden-leaves-1" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
+              <div id="garden-leaves-2" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
+              <div id="garden-leaves-3" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
+              <div id="garden-leaves-4" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
+            </div>
+            <div id="garden-stem" class="garden-stem"></div>
+            <div class="garden-soil"></div>
+          </div>
+          <div class="garden-copy">
+            <span id="garden-stage" class="garden-stage">SEED GARDEN</span>
+            <span id="garden-details" class="garden-details">0 growth points / 0-day streak</span>
+            <span id="garden-achievements" class="garden-achievements">Next: Sprout at 20 points</span>
+          </div>
+        </div>
+        <div class="garden-progress">
+          <div id="garden-progress-1" class="garden-progress-segment"></div>
+          <div id="garden-progress-2" class="garden-progress-segment"></div>
+          <div id="garden-progress-3" class="garden-progress-segment"></div>
+          <div id="garden-progress-4" class="garden-progress-segment"></div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <span class="insight-heading">7-DAY MOMENTUM</span>
+        <div class="analytics-bars">
+          <div class="analytics-day"><span id="analytics-day-label-1" class="analytics-day-label">MON</span><span id="analytics-bar-1" class="analytics-bar"></span><span id="analytics-day-count-1" class="analytics-day-count">0</span></div>
+          <div class="analytics-day"><span id="analytics-day-label-2" class="analytics-day-label">TUE</span><span id="analytics-bar-2" class="analytics-bar"></span><span id="analytics-day-count-2" class="analytics-day-count">0</span></div>
+          <div class="analytics-day"><span id="analytics-day-label-3" class="analytics-day-label">WED</span><span id="analytics-bar-3" class="analytics-bar"></span><span id="analytics-day-count-3" class="analytics-day-count">0</span></div>
+          <div class="analytics-day"><span id="analytics-day-label-4" class="analytics-day-label">THU</span><span id="analytics-bar-4" class="analytics-bar"></span><span id="analytics-day-count-4" class="analytics-day-count">0</span></div>
+          <div class="analytics-day"><span id="analytics-day-label-5" class="analytics-day-label">FRI</span><span id="analytics-bar-5" class="analytics-bar"></span><span id="analytics-day-count-5" class="analytics-day-count">0</span></div>
+          <div class="analytics-day"><span id="analytics-day-label-6" class="analytics-day-label">SAT</span><span id="analytics-bar-6" class="analytics-bar"></span><span id="analytics-day-count-6" class="analytics-day-count">0</span></div>
+          <div class="analytics-day"><span id="analytics-day-label-7" class="analytics-day-label">SUN</span><span id="analytics-bar-7" class="analytics-bar"></span><span id="analytics-day-count-7" class="analytics-day-count">0</span></div>
+        </div>
+        <span id="analytics-summary" class="analytics-summary">0 tasks / 0m focus / 0% complete</span>
+      </div>
+    </div>
     <div class="task-actions">
       <span id="task-summary" class="task-summary">3 / 6 tasks</span>
+      <div class="focus-duration-controls">
+        <Button id="focus-duration-down" class="focus-duration-button">
+          <ButtonLabel>-5</ButtonLabel>
+        </Button>
+        <span id="focus-duration-value" class="focus-duration-value">25 MIN</span>
+        <Button id="focus-duration-up" class="focus-duration-button">
+          <ButtonLabel>+5</ButtonLabel>
+        </Button>
+      </div>
       <Button id="task-create" class="create-button">
         <ButtonLabel>Create task</ButtonLabel>
       </Button>

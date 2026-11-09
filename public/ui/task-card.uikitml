@@ -40,6 +40,57 @@
     margin-right: 14px;
   }
 
+  .focus-start-button {
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+
+  .focus-panel {
+    flex-direction: column;
+    gap: 6px;
+    margin-left: 14px;
+    margin-right: 14px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
+    background-color: #e8f4f4;
+  }
+
+  .focus-panel:dark {
+    background-color: #183942;
+  }
+
+  .focus-session-state {
+    color: #174b4b;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .focus-session-state:dark {
+    color: #8ce2d2;
+  }
+
+  .focus-session-timer {
+    color: #102b32;
+    font-size: 34px;
+    font-weight: 700;
+  }
+
+  .focus-session-timer:dark {
+    color: #f3f6f7;
+  }
+
+  .focus-session-controls {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .focus-session-button {
+    flex-grow: 1;
+  }
+
   .secondary-actions {
     flex-direction: row;
     justify-content: space-between;
@@ -47,6 +98,10 @@
     margin-left: 14px;
     margin-right: 14px;
     margin-bottom: 12px;
+  }
+
+  .duplicate-button {
+    flex-grow: 1;
   }
 
   .small-button {
@@ -62,6 +117,35 @@
   <Button id="task-status" class="status-button">
     <ButtonLabel id="task-status-label">Start task</ButtonLabel>
   </Button>
+  <Button id="task-focus-start" class="focus-start-button">
+    <ButtonLabel>Start focus</ButtonLabel>
+  </Button>
+  <div id="task-focus-panel" class="focus-panel" style="display: none">
+    <span id="task-focus-state" class="focus-session-state">FOCUS SESSION</span>
+    <span id="task-focus-timer" class="focus-session-timer">25:00</span>
+    <div class="focus-session-controls">
+      <Button id="task-focus-pause" class="focus-session-button">
+        <ButtonLabel>Pause</ButtonLabel>
+      </Button>
+      <Button id="task-focus-resume" class="focus-session-button" style="display: none">
+        <ButtonLabel>Resume</ButtonLabel>
+      </Button>
+      <Button id="task-focus-stop" class="focus-session-button">
+        <ButtonLabel>Stop</ButtonLabel>
+      </Button>
+    </div>
+    <div class="focus-session-controls">
+      <Button id="task-focus-complete" class="focus-session-button" style="display: none">
+        <ButtonLabel>Mark done</ButtonLabel>
+      </Button>
+      <Button id="task-focus-continue" class="focus-session-button" style="display: none">
+        <ButtonLabel>Continue</ButtonLabel>
+      </Button>
+      <Button id="task-focus-again" class="focus-session-button" style="display: none">
+        <ButtonLabel>Again</ButtonLabel>
+      </Button>
+    </div>
+  </div>
   <div class="secondary-actions">
     <Button id="task-select" class="small-button">
       <ButtonLabel>Select</ButtonLabel>
@@ -71,6 +155,9 @@
     </Button>
     <Button id="task-delete" class="small-button">
       <ButtonLabel>Delete</ButtonLabel>
+    </Button>
+    <Button id="task-duplicate" class="duplicate-button">
+      <ButtonLabel>Copy</ButtonLabel>
     </Button>
   </div>
 </Panel>
