@@ -8,6 +8,7 @@
 import {
   createSystem,
   Entity,
+  Object3D,
   UIKitMLAsset,
   VisibilityState,
 } from '@iwsdk/core';
@@ -392,7 +393,7 @@ function readTasks(): TaskLoadResult {
       tasks,
       readOnly: invalidCount > 0,
       warning: invalidCount > 0
-        ? `Some saved tasks could not be loaded or exceed the six-card board. Original data is preserved; changes are session-only.`
+        ? `Task board capacity limit is ${MAX_TASKS} cards. ${invalidCount} task(s) exceed board capacity or could not be loaded.`
         : '',
     };
   } catch {
@@ -593,6 +594,18 @@ export class PanelSystem extends createSystem({
   private taskCards!: Array<TaskCardElements | null>;
   private tasks!: Array<TaskRecord | null>;
   private selectedTask: string | null = null;
+  private pendingDeleteSlot: number | null = null;
+  private deleteTimeout: number | null = null;
+  private pipCompanion?: Object3D;
+  private ghostDeskmate?: Object3D;
+  private eveningJar?: Object3D;
+  private deskSurface?: Object3D;
+  private deskHeightOffset = 0;
+  private pipInitialY = 1.05;
+  private ghostInitialY = 1.05;
+  private animationTime = 0;
+  private reduceMotion = false;
+  private highContrast = false;
   private dashboardSummary!: NonNullable<
     ReturnType<UIKitMLAsset['getElementById']>
   >;
@@ -723,6 +736,31 @@ export class PanelSystem extends createSystem({
     ReturnType<UIKitMLAsset['getElementById']>
   >;
   private pipProcessingTimeout: number | null = null;
+  private pipQuickCommands: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private pipQuickCommandsVisible = false;
+
+  private activeFocusBanner: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private activeFocusText: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+
+  private dashboardContent: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private taskModalRoot: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private modalHeading: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private modalInputTitle: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private modalInputDesc: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private modalPrioLowLabel: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private modalPrioMedLabel: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private modalPrioHighLabel: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private modalDurDisplay: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private modalSchedLabels = new Map<string, NonNullable<ReturnType<UIKitMLAsset['getElementById']>>>();
+  private modalErrorMessage: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+
+  private isTaskModalOpen = false;
+  private editingTaskSlot: number | null = null;
+  private modalTitleValue = '';
+  private modalDescValue = '';
+  private modalPriorityValue: TaskPriority = 'medium';
+  private modalDurationValue = 30;
+  private modalScheduledStartValue: number | null = null;
 
   init(): void {
     const panel = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
@@ -750,6 +788,67 @@ export class PanelSystem extends createSystem({
     }
 
     const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
+    this.pipCompanion = this.world.getSceneObject('pip-companion');
+    if (this.pipCompanion !== undefined) {
+      this.pipInitialY = this.pipCompanion.position.y;
+      const onPipClick = () => this.setPipPanelVisible(!this.pipPanelVisible);
+      this.pipCompanion.addEventListener('click', onPipClick);
+      this.cleanupFuncs.push(() => this.pipCompanion?.removeEventListener('click', onPipClick));
+    }
+
+    this.ghostDeskmate = this.world.getSceneObject('ghost-deskmate');
+    if (this.ghostDeskmate !== undefined) {
+      this.ghostInitialY = this.ghostDeskmate.position.y;
+    }
+
+    this.eveningJar = this.world.getSceneObject('evening-jar');
+    this.deskSurface = this.world.getSceneObject('desk-surface');
+    const deskDown = dashboard?.getElementById('desk-down');
+    const deskUp = dashboard?.getElementById('desk-up');
+    const deskHeightText = dashboard?.getElementById('desk-height-text');
+
+    const updateDeskHeightUI = () => {
+      const cm = Math.round(this.deskHeightOffset * 100);
+      deskHeightText?.setProperties({ text: `DESK: ${cm >= 0 ? `+${cm}` : cm}cm` });
+      if (this.deskSurface !== undefined) {
+        this.deskSurface.position.y = this.deskHeightOffset;
+      }
+      if (this.eveningJar !== undefined) {
+        this.eveningJar.position.y = 0.76 + this.deskHeightOffset;
+      }
+    };
+
+    const adjustDesk = (delta: number) => {
+      this.deskHeightOffset = Math.max(-0.25, Math.min(0.25, this.deskHeightOffset + delta));
+      try {
+        window.localStorage.setItem('deskmate_desk_offset', String(this.deskHeightOffset));
+      } catch {
+        // storage fallback
+      }
+      updateDeskHeightUI();
+    };
+
+    if (deskDown != null && deskUp != null) {
+      const down = () => adjustDesk(-0.05);
+      const up = () => adjustDesk(0.05);
+      deskDown.addEventListener('click', down);
+      deskUp.addEventListener('click', up);
+      this.cleanupFuncs.push(
+        () => deskDown.removeEventListener('click', down),
+        () => deskUp.removeEventListener('click', up),
+      );
+    }
+
+    try {
+      const savedOffset = Number(window.localStorage.getItem('deskmate_desk_offset'));
+      if (Number.isFinite(savedOffset)) {
+        this.deskHeightOffset = Math.max(-0.25, Math.min(0.25, savedOffset));
+      }
+    } catch {
+      // fallback
+    }
+    updateDeskHeightUI();
+
     const createButton = dashboard?.getElementById('task-create');
     const summary = dashboard?.getElementById('task-summary');
     const selectedLabel = dashboard?.getElementById('selected-task');
@@ -961,6 +1060,183 @@ export class PanelSystem extends createSystem({
       },
     );
     this.renderPip();
+
+    this.dashboardContent = dashboard?.getElementById('dashboard-content') ?? null;
+    this.taskModalRoot = dashboard?.getElementById('task-modal') ?? null;
+    this.modalHeading = dashboard?.getElementById('modal-heading') ?? null;
+    this.modalInputTitle = dashboard?.getElementById('modal-input-title') ?? null;
+    this.modalInputDesc = dashboard?.getElementById('modal-input-desc') ?? null;
+    this.modalPrioLowLabel = dashboard?.getElementById('modal-prio-low-label') ?? null;
+    this.modalPrioMedLabel = dashboard?.getElementById('modal-prio-med-label') ?? null;
+    this.modalPrioHighLabel = dashboard?.getElementById('modal-prio-high-label') ?? null;
+    this.modalDurDisplay = dashboard?.getElementById('modal-dur-display') ?? null;
+    this.modalErrorMessage = dashboard?.getElementById('modal-error-message') ?? null;
+    this.activeFocusBanner = dashboard?.getElementById('active-focus-banner') ?? null;
+    this.activeFocusText = dashboard?.getElementById('active-focus-text') ?? null;
+    this.pipQuickCommands = dashboard?.getElementById('pip-quick-commands') ?? null;
+
+    const modalCloseBtn = dashboard?.getElementById('modal-close-btn');
+    const modalSaveBtn = dashboard?.getElementById('modal-save-btn');
+    const modalCancelBtn = dashboard?.getElementById('modal-cancel-btn');
+    const modalPrioLow = dashboard?.getElementById('modal-prio-low');
+    const modalPrioMed = dashboard?.getElementById('modal-prio-med');
+    const modalPrioHigh = dashboard?.getElementById('modal-prio-high');
+    const modalDurDown = dashboard?.getElementById('modal-dur-down');
+    const modalDurUp = dashboard?.getElementById('modal-dur-up');
+
+    const titlePresets = [
+      { id: 'preset-title-1', title: 'Plan Q4 roadmap' },
+      { id: 'preset-title-2', title: 'Review design brief' },
+      { id: 'preset-title-3', title: 'Code sprint & tests' },
+      { id: 'preset-title-4', title: 'Bug triage & fixes' },
+      { id: 'preset-title-5', title: 'Team sync notes' },
+      { id: 'preset-title-6', title: 'Documentation update' },
+    ];
+    for (const p of titlePresets) {
+      const btn = dashboard?.getElementById(p.id);
+      if (btn != null) {
+        const apply = () => {
+          this.modalTitleValue = p.title;
+          this.renderTaskModal();
+        };
+        btn.addEventListener('click', apply);
+        this.cleanupFuncs.push(() => btn.removeEventListener('click', apply));
+      }
+    }
+
+    const descPresets = [
+      { id: 'preset-desc-1', desc: 'Deep work & milestones' },
+      { id: 'preset-desc-2', desc: 'Review feedback' },
+      { id: 'preset-desc-3', desc: 'Inbox zero' },
+      { id: 'preset-desc-4', desc: 'Summary notes' },
+    ];
+    for (const p of descPresets) {
+      const btn = dashboard?.getElementById(p.id);
+      if (btn != null) {
+        const apply = () => {
+          this.modalDescValue = p.desc;
+          this.renderTaskModal();
+        };
+        btn.addEventListener('click', apply);
+        this.cleanupFuncs.push(() => btn.removeEventListener('click', apply));
+      }
+    }
+
+    if (modalPrioLow != null) {
+      const setLow = () => { this.modalPriorityValue = 'low'; this.renderTaskModal(); };
+      modalPrioLow.addEventListener('click', setLow);
+      this.cleanupFuncs.push(() => modalPrioLow.removeEventListener('click', setLow));
+    }
+    if (modalPrioMed != null) {
+      const setMed = () => { this.modalPriorityValue = 'medium'; this.renderTaskModal(); };
+      modalPrioMed.addEventListener('click', setMed);
+      this.cleanupFuncs.push(() => modalPrioMed.removeEventListener('click', setMed));
+    }
+    if (modalPrioHigh != null) {
+      const setHigh = () => { this.modalPriorityValue = 'high'; this.renderTaskModal(); };
+      modalPrioHigh.addEventListener('click', setHigh);
+      this.cleanupFuncs.push(() => modalPrioHigh.removeEventListener('click', setHigh));
+    }
+
+    if (modalDurDown != null) {
+      const down = () => {
+        this.modalDurationValue = Math.max(15, this.modalDurationValue - 15);
+        this.renderTaskModal();
+      };
+      modalDurDown.addEventListener('click', down);
+      this.cleanupFuncs.push(() => modalDurDown.removeEventListener('click', down));
+    }
+    if (modalDurUp != null) {
+      const up = () => {
+        this.modalDurationValue = Math.min(240, this.modalDurationValue + 15);
+        this.renderTaskModal();
+      };
+      modalDurUp.addEventListener('click', up);
+      this.cleanupFuncs.push(() => modalDurUp.removeEventListener('click', up));
+    }
+
+    const schedSlots = [
+      { id: 'modal-sched-none', labelId: 'modal-sched-none-label', minute: null },
+      { id: 'modal-sched-08', labelId: 'modal-sched-08-label', minute: 8 * 60 },
+      { id: 'modal-sched-10', labelId: 'modal-sched-10-label', minute: 10 * 60 },
+      { id: 'modal-sched-12', labelId: 'modal-sched-12-label', minute: 12 * 60 },
+      { id: 'modal-sched-14', labelId: 'modal-sched-14-label', minute: 14 * 60 },
+      { id: 'modal-sched-16', labelId: 'modal-sched-16-label', minute: 16 * 60 },
+    ];
+    for (const s of schedSlots) {
+      const btn = dashboard?.getElementById(s.id);
+      const lbl = dashboard?.getElementById(s.labelId);
+      if (lbl != null) {
+        this.modalSchedLabels.set(s.id, lbl);
+      }
+      if (btn != null) {
+        const setSched = () => {
+          this.modalScheduledStartValue = s.minute;
+          this.renderTaskModal();
+        };
+        btn.addEventListener('click', setSched);
+        this.cleanupFuncs.push(() => btn.removeEventListener('click', setSched));
+      }
+    }
+
+    if (modalCloseBtn != null) {
+      const close = () => this.closeTaskModal();
+      modalCloseBtn.addEventListener('click', close);
+      this.cleanupFuncs.push(() => modalCloseBtn.removeEventListener('click', close));
+    }
+    if (modalCancelBtn != null) {
+      const cancel = () => this.closeTaskModal();
+      modalCancelBtn.addEventListener('click', cancel);
+      this.cleanupFuncs.push(() => modalCancelBtn.removeEventListener('click', cancel));
+    }
+    if (modalSaveBtn != null) {
+      const save = () => this.saveTaskModal();
+      modalSaveBtn.addEventListener('click', save);
+      this.cleanupFuncs.push(() => modalSaveBtn.removeEventListener('click', save));
+    }
+
+    const pipQuickCmds = [
+      { id: 'pip-cmd-add', query: 'Add a task to review project for 30 minutes' },
+      { id: 'pip-cmd-schedule', query: 'Schedule studying for two hours today' },
+      { id: 'pip-cmd-focus', query: 'Start focus' },
+      { id: 'pip-cmd-pending', query: 'What pending tasks do I have?' },
+      { id: 'pip-cmd-recap', query: 'Daily recap' },
+    ];
+    for (const cmd of pipQuickCmds) {
+      const btn = dashboard?.getElementById(cmd.id);
+      if (btn != null) {
+        const exec = () => {
+          this.pipTranscript.setProperties({ text: `Quick: ${cmd.query}` });
+          this.processPipInput(cmd.query);
+        };
+        btn.addEventListener('click', exec);
+        this.cleanupFuncs.push(() => btn.removeEventListener('click', exec));
+      }
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!this.isTaskModalOpen) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.closeTaskModal();
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        this.saveTaskModal();
+      } else if (event.key === 'Backspace') {
+        event.preventDefault();
+        if (this.modalTitleValue.length > 0) {
+          this.modalTitleValue = this.modalTitleValue.slice(0, -1);
+          this.renderTaskModal();
+        }
+      } else if (event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        if (this.modalTitleValue.length < 80) {
+          this.modalTitleValue += event.key;
+          this.renderTaskModal();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    this.cleanupFuncs.push(() => window.removeEventListener('keydown', onKeyDown));
 
     const onDocumentVisibilityChange = () => this.updateFocusClock(true);
     document.addEventListener('visibilitychange', onDocumentVisibilityChange);
@@ -1213,6 +1489,7 @@ export class PanelSystem extends createSystem({
         this.stopFocusTicker();
         this.lastTimerSecond = -1;
         shouldRender = true;
+        this.playChime();
       } else {
         const timerSecond = Math.ceil(remainingMs / 1000);
         if (timerSecond !== this.lastTimerSecond) {
@@ -1261,6 +1538,22 @@ export class PanelSystem extends createSystem({
     const completedTotal = recordedCompletedTotal + (
       active?.status === 'awaiting-completion' ? 1 : 0
     );
+    if (active !== null) {
+      this.activeFocusBanner?.setProperties({ display: 'flex' });
+      const statusLabel = active.status === 'running'
+        ? 'FOCUSING'
+        : active.status === 'paused'
+          ? 'PAUSED'
+          : 'COMPLETED';
+      const activeClockMs = active.status === 'running'
+        ? Math.max(0, (active.deadlineAt ?? now) - now)
+        : active.remainingMs;
+      this.activeFocusText?.setProperties({
+        text: `${statusLabel}: ${active.taskTitle} (${formatFocusClock(activeClockMs)})`,
+      });
+    } else {
+      this.activeFocusBanner?.setProperties({ display: 'none' });
+    }
     this.focusDurationValue.setProperties({
       text: `${this.focusStorage.durationMinutes} MIN`,
     });
@@ -1348,8 +1641,13 @@ export class PanelSystem extends createSystem({
 
       if (active !== null) {
         card.root.setProperties({
-          borderColor: isFocusedTask ? '#53cbb5' : '#34434c',
-          backgroundColor: isFocusedTask ? '#183942' : '#10191f',
+          borderColor: isFocusedTask ? '#53cbb5' : '#22323d',
+          backgroundColor: isFocusedTask ? '#183942' : '#0d151a',
+        });
+      } else {
+        card.root.setProperties({
+          borderColor: this.selectedTask === task.id ? '#8ce2d2' : '#3b6470',
+          backgroundColor: this.selectedTask === task.id ? '#1b2d37' : '#15232b',
         });
       }
     }
@@ -1553,6 +1851,7 @@ export class PanelSystem extends createSystem({
     task.completedAt = Date.now();
     this.persistTasks();
     this.finishFocusSession('completed', true);
+    this.playChime();
   }
 
   private continueAfterFocus(): void {
@@ -1735,19 +2034,15 @@ export class PanelSystem extends createSystem({
 
   private requestPipText(): void {
     this.setPipPanelVisible(true);
-    let request: string | null;
-    try {
-      request = window.prompt(
-        'Type a request for Pip. Task commands are processed locally; Pip does not send task data to an AI service.',
-        '',
-      );
-    } catch {
-      this.setPipMessage('This browser does not allow text prompts here. Use Listen if available, or open Deskmate in its normal browser window.');
-      return;
-    }
-    if (request === null || request.trim().length === 0) return;
-    this.pipTranscript.setProperties({ text: `Typed: ${request.trim()}` });
-    this.processPipInput(request.trim());
+    this.pipQuickCommandsVisible = !this.pipQuickCommandsVisible;
+    this.pipQuickCommands?.setProperties({
+      display: this.pipQuickCommandsVisible ? 'flex' : 'none',
+    });
+    this.setPipMessage(
+      this.pipQuickCommandsVisible
+        ? 'Choose a quick command below, or use Listen to speak your request.'
+        : 'Ask Pip to add a task, review today\'s plan, or create a schedule suggestion.',
+    );
   }
 
   private processPipInput(input: string): void {
@@ -1770,6 +2065,9 @@ export class PanelSystem extends createSystem({
       return;
     }
     switch (command.intent) {
+      case 'create-multiple-tasks':
+        this.createMultipleTasksFromPip(command.tasks);
+        return;
       case 'create-task':
         this.createTaskFromPip(command);
         return;
@@ -1797,6 +2095,39 @@ export class PanelSystem extends createSystem({
       case 'unknown':
         this.setPipMessage('I did not recognize that request. Try adding, scheduling, completing, or listing a task. Nothing was changed.');
     }
+  }
+
+  private createMultipleTasksFromPip(tasksToCreate: Array<{ title: string; estimatedMinutes: number }>): void {
+    const createdTitles: string[] = [];
+    for (const item of tasksToCreate) {
+      const emptySlot = this.tasks.findIndex((task) => task === null);
+      if (emptySlot < 0) break;
+      const title = item.title.trim().slice(0, 80);
+      if (title.length === 0) continue;
+      this.tasks[emptySlot] = {
+        id: createTaskId(),
+        title,
+        description: '',
+        category: '',
+        priority: item.estimatedMinutes >= 60 ? 'high' : item.estimatedMinutes >= 30 ? 'medium' : 'low',
+        estimatedMinutes: item.estimatedMinutes,
+        scheduledStartMinute: null,
+        status: 'todo',
+        createdAt: Date.now(),
+        completedAt: null,
+      };
+      createdTitles.push(title);
+    }
+    if (createdTitles.length === 0) {
+      this.setPipMessage(`The task board is full (${MAX_TASKS} tasks). No tasks could be added.`);
+      return;
+    }
+    this.persistTasks();
+    this.renderTasks();
+    this.setPipMessage(
+      `Created ${createdTitles.length} tasks from your speech: "${createdTitles.join('", "')}".`,
+      'idle',
+    );
   }
 
   private createTaskFromPip(command: Extract<PipCommand, { intent: 'create-task' }>): void {
@@ -2152,7 +2483,18 @@ export class PanelSystem extends createSystem({
     );
   }
 
-  private createTask(): void {
+  private playChime(): void {
+    try {
+      const audioUrl = `${import.meta.env.BASE_URL}audio/chime.mp3`.replace('//', '/');
+      const audio = new Audio(audioUrl);
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
+    } catch {
+      // Audio playback might be restricted without user interaction
+    }
+  }
+
+  private openCreateTaskModal(): void {
     const emptySlot = this.tasks.findIndex((task) => task === null);
     if (emptySlot < 0) {
       this.dashboardSummary.setProperties({
@@ -2160,49 +2502,159 @@ export class PanelSystem extends createSystem({
       });
       return;
     }
-
-    const task = this.promptTask();
-    if (task === null) return;
-    this.tasks[emptySlot] = {
-      ...task,
-      id: createTaskId(),
-      status: 'todo',
-      createdAt: Date.now(),
-      completedAt: null,
-    };
-    this.persistTasks();
+    this.editingTaskSlot = null;
+    this.modalTitleValue = 'Deep Focus Sprint';
+    this.modalDescValue = 'Deep work block and deliverables';
+    this.modalPriorityValue = 'medium';
+    this.modalDurationValue = 30;
+    this.modalScheduledStartValue = null;
+    this.isTaskModalOpen = true;
+    this.renderTaskModal();
   }
 
-  private editTask(slot: number): void {
-    const currentTask = this.tasks[slot];
-    if (currentTask === null) return;
-    if (this.focusStorage.active?.taskId === currentTask.id) {
+  private openEditTaskModal(slot: number): void {
+    const task = this.tasks[slot];
+    if (task === null) return;
+    if (this.focusStorage.active?.taskId === task.id) {
       this.schedulerMessage = 'Stop or finish the focus session before editing this task.';
       this.renderTasks();
       return;
     }
-    const updatedTask = this.promptTask(currentTask);
-    if (updatedTask === null) return;
-    if (
-      updatedTask.scheduledStartMinute !== null &&
-      !isValidSchedule(
-        updatedTask.scheduledStartMinute,
-        updatedTask.estimatedMinutes,
-      )
-    ) {
-      this.dashboardSummary.setProperties({
-        text: 'Duration would end after 18:00. Schedule was not changed.',
+    this.editingTaskSlot = slot;
+    this.modalTitleValue = task.title;
+    this.modalDescValue = task.description;
+    this.modalPriorityValue = task.priority;
+    this.modalDurationValue = task.estimatedMinutes;
+    this.modalScheduledStartValue = task.scheduledStartMinute;
+    this.isTaskModalOpen = true;
+    this.renderTaskModal();
+  }
+
+  private closeTaskModal(): void {
+    this.isTaskModalOpen = false;
+    this.editingTaskSlot = null;
+    this.taskModalRoot?.setProperties({ display: 'none' });
+    this.dashboardContent?.setProperties({ display: 'flex' });
+  }
+
+  private renderTaskModal(): void {
+    if (!this.isTaskModalOpen) return;
+    this.dashboardContent?.setProperties({ display: 'none' });
+    this.taskModalRoot?.setProperties({ display: 'flex' });
+    this.modalHeading?.setProperties({
+      text: this.editingTaskSlot === null ? 'Create New Task' : 'Edit Task',
+    });
+    this.modalInputTitle?.setProperties({
+      text: this.modalTitleValue.length > 0 ? this.modalTitleValue : '(Type title on keyboard or click preset)',
+    });
+    this.modalInputDesc?.setProperties({
+      text: this.modalDescValue.length > 0 ? this.modalDescValue : '(Optional description - click preset)',
+    });
+    this.modalPrioLowLabel?.setProperties({
+      text: this.modalPriorityValue === 'low' ? 'Low (Active)' : 'Low',
+    });
+    this.modalPrioMedLabel?.setProperties({
+      text: this.modalPriorityValue === 'medium' ? 'Medium (Active)' : 'Medium',
+    });
+    this.modalPrioHighLabel?.setProperties({
+      text: this.modalPriorityValue === 'high' ? 'High (Active)' : 'High',
+    });
+    this.modalDurDisplay?.setProperties({
+      text: `${this.modalDurationValue} MIN`,
+    });
+    const schedSlots: Array<{ key: string; minute: number | null }> = [
+      { key: 'modal-sched-none', minute: null },
+      { key: 'modal-sched-08', minute: 8 * 60 },
+      { key: 'modal-sched-10', minute: 10 * 60 },
+      { key: 'modal-sched-12', minute: 12 * 60 },
+      { key: 'modal-sched-14', minute: 14 * 60 },
+      { key: 'modal-sched-16', minute: 16 * 60 },
+    ];
+    for (const slot of schedSlots) {
+      const label = this.modalSchedLabels.get(slot.key);
+      if (label) {
+        const isSelected = this.modalScheduledStartValue === slot.minute;
+        const text = slot.minute === null
+          ? (isSelected ? 'Unscheduled (Active)' : 'Unscheduled')
+          : (isSelected ? `${formatTime(slot.minute)} (Active)` : formatTime(slot.minute));
+        label.setProperties({ text });
+      }
+    }
+    this.modalErrorMessage?.setProperties({ display: 'none' });
+  }
+
+  private saveTaskModal(): void {
+    const trimmedTitle = this.modalTitleValue.trim();
+    if (trimmedTitle.length === 0) {
+      this.modalErrorMessage?.setProperties({
+        display: 'flex',
+        text: 'Task title cannot be empty.',
       });
       return;
     }
-    this.tasks[slot] = {
-      ...updatedTask,
-      id: currentTask.id,
-      status: currentTask.status,
-      createdAt: currentTask.createdAt,
-      completedAt: currentTask.completedAt,
-    };
+    if (this.modalDurationValue < 5 || this.modalDurationValue > 480) {
+      this.modalErrorMessage?.setProperties({
+        display: 'flex',
+        text: 'Duration must be between 5 and 480 minutes.',
+      });
+      return;
+    }
+    if (
+      this.modalScheduledStartValue !== null &&
+      !isValidSchedule(this.modalScheduledStartValue, this.modalDurationValue)
+    ) {
+      this.modalErrorMessage?.setProperties({
+        display: 'flex',
+        text: 'Scheduled duration would end after 18:00. Choose a shorter duration or earlier slot.',
+      });
+      return;
+    }
+
+    if (this.editingTaskSlot !== null) {
+      const current = this.tasks[this.editingTaskSlot];
+      if (current !== null) {
+        this.tasks[this.editingTaskSlot] = {
+          ...current,
+          title: trimmedTitle.slice(0, 80),
+          description: this.modalDescValue.trim().slice(0, 220),
+          priority: this.modalPriorityValue,
+          estimatedMinutes: this.modalDurationValue,
+          scheduledStartMinute: this.modalScheduledStartValue,
+        };
+      }
+    } else {
+      const emptySlot = this.tasks.findIndex((task) => task === null);
+      if (emptySlot < 0) {
+        this.modalErrorMessage?.setProperties({
+          display: 'flex',
+          text: `Task board is full (${MAX_TASKS} tasks).`,
+        });
+        return;
+      }
+      this.tasks[emptySlot] = {
+        id: createTaskId(),
+        title: trimmedTitle.slice(0, 80),
+        description: this.modalDescValue.trim().slice(0, 220),
+        category: '',
+        priority: this.modalPriorityValue,
+        estimatedMinutes: this.modalDurationValue,
+        scheduledStartMinute: this.modalScheduledStartValue,
+        status: 'todo',
+        createdAt: Date.now(),
+        completedAt: null,
+      };
+      this.selectedTask = this.tasks[emptySlot]?.id ?? null;
+    }
     this.persistTasks();
+    this.closeTaskModal();
+  }
+
+  private createTask(): void {
+    this.openCreateTaskModal();
+  }
+
+  private editTask(slot: number): void {
+    this.openEditTaskModal(slot);
   }
 
   private duplicateTask(slot: number): void {
@@ -2228,78 +2680,6 @@ export class PanelSystem extends createSystem({
     };
     this.selectedTask = this.tasks[emptySlot]?.id ?? null;
     this.persistTasks();
-  }
-
-  private promptTask(
-    current?: TaskRecord,
-  ): Omit<TaskRecord, 'id' | 'status' | 'createdAt' | 'completedAt'> | null {
-    const title = window.prompt('Task title (required, up to 80 characters)', current?.title ?? '');
-    if (title === null) return null;
-    const trimmedTitle = title.trim();
-    if (trimmedTitle.length === 0) {
-      this.dashboardSummary.setProperties({ text: 'Task title cannot be empty.' });
-      return null;
-    }
-
-    const description = window.prompt(
-      'Description (optional, up to 220 characters)',
-      current?.description ?? '',
-    );
-    if (description === null) return null;
-
-    const category = window.prompt(
-      'Category (optional, up to 32 characters)',
-      current?.category ?? '',
-    );
-    if (category === null) return null;
-
-    const priorityText = window.prompt(
-      'Priority: low, medium, or high',
-      current?.priority ?? 'medium',
-    );
-    if (priorityText === null) return null;
-    const priority = priorityText.trim().toLowerCase();
-    if (!isPriority(priority)) {
-      this.dashboardSummary.setProperties({ text: 'Priority must be low, medium, or high.' });
-      return null;
-    }
-
-    const durationText = window.prompt(
-      'Estimated duration in minutes (5 to 480)',
-      String(current?.estimatedMinutes ?? 30),
-    );
-    if (durationText === null) return null;
-    const estimatedMinutes = Number(durationText);
-    if (
-      !Number.isFinite(estimatedMinutes) ||
-      estimatedMinutes < 5 ||
-      estimatedMinutes > 480
-    ) {
-      this.dashboardSummary.setProperties({ text: 'Duration must be between 5 and 480 minutes.' });
-      return null;
-    }
-
-    const roundedDuration = Math.round(estimatedMinutes);
-    const scheduledStartMinute = current?.scheduledStartMinute ?? null;
-    if (
-      scheduledStartMinute !== null &&
-      !isValidSchedule(scheduledStartMinute, roundedDuration)
-    ) {
-      this.dashboardSummary.setProperties({
-        text: 'That duration would end after 18:00. Choose a shorter duration or reschedule first.',
-      });
-      return null;
-    }
-
-    return {
-      title: trimmedTitle.slice(0, 80),
-      description: description.trim().slice(0, 220),
-      category: category.trim().slice(0, 32),
-      priority,
-      estimatedMinutes: roundedDuration,
-      scheduledStartMinute,
-      scheduleNeedsReview: false,
-    };
   }
 
   private getSelectedTask(): TaskRecord | null {
@@ -2396,9 +2776,30 @@ export class PanelSystem extends createSystem({
       this.renderTasks();
       return;
     }
-    if (task === null || !window.confirm(`Delete "${task.title}"?`)) return;
+    if (task === null) return;
+    if (this.pendingDeleteSlot !== slot) {
+      if (this.deleteTimeout !== null) {
+        window.clearTimeout(this.deleteTimeout);
+      }
+      this.pendingDeleteSlot = slot;
+      this.schedulerMessage = `Tap Delete again to confirm deleting "${task.title}".`;
+      this.deleteTimeout = window.setTimeout(() => {
+        this.pendingDeleteSlot = null;
+        this.deleteTimeout = null;
+        this.schedulerMessage = '';
+        this.renderTasks();
+      }, 5000);
+      this.renderTasks();
+      return;
+    }
+    if (this.deleteTimeout !== null) {
+      window.clearTimeout(this.deleteTimeout);
+      this.deleteTimeout = null;
+    }
+    this.pendingDeleteSlot = null;
     if (this.selectedTask === task.id) this.selectedTask = null;
     this.tasks[slot] = null;
+    this.schedulerMessage = `Deleted "${task.title}".`;
     this.persistTasks();
   }
 
@@ -2535,6 +2936,9 @@ export class PanelSystem extends createSystem({
       card.selectButton.name = `Select ${task.title}`;
       card.editButton.name = `Edit ${task.title}`;
       card.deleteButton.name = `Delete ${task.title}`;
+      card.deleteButton.setProperties({
+        text: this.pendingDeleteSlot === slot ? 'Confirm?' : 'Delete',
+      });
       card.duplicateButton.name = `Duplicate ${task.title}`;
     }
 
@@ -2688,5 +3092,23 @@ export class PanelSystem extends createSystem({
     this.scheduleSuggestionButton.name = hasSuggestions
       ? `Apply suggested time ${formatTime(suggestedStarts[0])} for ${selected.title}`
       : 'No suggested time available';
+  }
+
+  update(delta: number): void {
+    if (this.reduceMotion) return;
+    this.animationTime += delta;
+    if (this.pipCompanion !== undefined) {
+      const isFocused = this.focusStorage.active?.status === 'running';
+      const bobFreq = isFocused ? 3.5 : 1.8;
+      const bobAmp = isFocused ? 0.008 : 0.012;
+      this.pipCompanion.position.y = this.pipInitialY + this.deskHeightOffset + Math.sin(this.animationTime * bobFreq) * bobAmp;
+      this.pipCompanion.rotation.y = Math.sin(this.animationTime * 0.8) * 0.08;
+    }
+    if (this.ghostDeskmate !== undefined) {
+      const isFocused = this.focusStorage.active?.status === 'running';
+      const pulseFreq = isFocused ? 2.5 : 1.2;
+      this.ghostDeskmate.position.y = this.ghostInitialY + this.deskHeightOffset + Math.cos(this.animationTime * pulseFreq) * 0.008;
+      this.ghostDeskmate.rotation.y = this.animationTime * 0.15;
+    }
   }
 }

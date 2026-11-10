@@ -1,5 +1,6 @@
 export type PipCommand =
   | { intent: 'create-task'; title: string; estimatedMinutes: number }
+  | { intent: 'create-multiple-tasks'; tasks: Array<{ title: string; estimatedMinutes: number }> }
   | {
       intent: 'schedule-task';
       taskQuery: string;
@@ -71,11 +72,13 @@ function cleanTaskQuery(value: string): string {
     .trim()
     .replace(/^(?:the|a|an|my|of)\s+/iu, '')
     .replace(/\s+(?:today|tomorrow)$/iu, '')
+    .replace(/\s+(?:to|at|for|on)$/iu, '')
     .trim();
 }
 
 function isIntent(value: unknown): value is PipIntent {
   return value === 'create-task' ||
+    value === 'create-multiple-tasks' ||
     value === 'schedule-task' ||
     value === 'complete-task' ||
     value === 'list-tasks' ||
@@ -86,11 +89,57 @@ function isIntent(value: unknown): value is PipIntent {
     value === 'unknown';
 }
 
+function guessEffortMinutes(text: string): number {
+  const parsed = parseDurationMinutes(text);
+  if (parsed !== undefined) return parsed;
+  const lower = text.toLowerCase();
+  if (/\b(?:quick|short|small|call|text|email|ping|message|check|sync|brief)\b/.test(lower)) {
+    return 15;
+  }
+  if (/\b(?:large|deep|deepwork|heavy|report|architecture|roadmap|study|write|code|refactor|design)\b/.test(lower)) {
+    return 60;
+  }
+  return 30;
+}
+
+function parseMultipleTasks(text: string): Array<{ title: string; estimatedMinutes: number }> | null {
+  const match = text.match(/^(?:please\s+)?(?:i\s+need\s+to|i\s+have\s+to|add|create|make)\s+(.+)$/i);
+  if (match === null) return null;
+  const body = match[1].replace(/^(?:tasks?|to-dos?)(?:\s*:|\s+to|\s+for)?/i, '').trim();
+  if (!/\s+and\s+|,\s*/i.test(body)) return null;
+
+  const rawClauses = body
+    .split(/\s+and\s+|,\s*(?:and\s+)?/i)
+    .map((clause) => cleanTaskQuery(clause))
+    .filter((clause) => clause.length >= 3 && clause.length <= 80);
+
+  if (rawClauses.length < 2) return null;
+
+  return rawClauses.slice(0, 4).map((title) => ({
+    title,
+    estimatedMinutes: guessEffortMinutes(title),
+  }));
+}
+
 export function validatePipCommand(value: unknown): PipCommand | null {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null;
   const record = value as Record<string, unknown>;
   if (!isIntent(record.intent)) return null;
   switch (record.intent) {
+    case 'create-multiple-tasks': {
+      if (!Array.isArray(record.tasks) || record.tasks.length === 0) return null;
+      const validTasks = record.tasks.filter((t): t is { title: string; estimatedMinutes: number } =>
+        typeof t === 'object' && t !== null &&
+        typeof (t as { title?: unknown }).title === 'string' &&
+        (t as { title: string }).title.trim().length > 0 &&
+        (t as { title: string }).title.trim().length <= 80 &&
+        typeof (t as { estimatedMinutes?: unknown }).estimatedMinutes === 'number' &&
+        Number.isSafeInteger((t as { estimatedMinutes: number }).estimatedMinutes) &&
+        (t as { estimatedMinutes: number }).estimatedMinutes >= 5 &&
+        (t as { estimatedMinutes: number }).estimatedMinutes <= 480,
+      );
+      return validTasks.length >= 2 ? { intent: 'create-multiple-tasks', tasks: validTasks } : null;
+    }
     case 'create-task':
       return typeof record.title === 'string' &&
         record.title.trim().length > 0 && record.title.trim().length <= 80 &&
@@ -167,11 +216,14 @@ export function parsePipCommand(input: string): PipCommand {
   if (text.length === 0 || text.length > 240) return { intent: 'unknown' };
   const lower = text.toLowerCase();
 
+  const multiTasks = parseMultipleTasks(text);
   let candidate: unknown;
-  if (/\b(?:show|list|what)\b.*\b(?:pending|incomplete|unfinished)\b/.test(lower)) {
+  if (multiTasks !== null) {
+    candidate = { intent: 'create-multiple-tasks', tasks: multiTasks };
+  } else if (/\b(?:show|list|what)\b.*\b(?:pending|incomplete|unfinished)\b/.test(lower)) {
     candidate = { intent: 'list-tasks', filter: 'pending' };
-  } else if (/\b(?:start|begin)\b.*\bfocus\b/.test(lower)) {
-    const focusTask = text.match(/\bfocus\s+(?:on|for)\s+(?:my\s+)?(.+)$/i)?.[1];
+  } else if (/\b(?:start|begin|let'?s?)\s+focus\b/i.test(lower) || /^focus\s+on\s+/i.test(lower)) {
+    const focusTask = text.match(/(?:focus\s+(?:on|for)|let'?s?\s+focus\s+on)\s+(?:my\s+)?(.+)$/i)?.[1];
     candidate = {
       intent: 'start-focus',
       ...(focusTask === undefined || /^(?:current|selected)\s+task$/i.test(focusTask)
@@ -182,7 +234,7 @@ export function parsePipCommand(input: string): PipCommand {
     candidate = { intent: 'list-tasks', filter: 'all' };
   } else if (
     /\b(?:recap|summary|workload|overload(?:ed)?|underloaded|available capacity|priorit(?:y|ies|ize|ise))\b/.test(lower) ||
-    /\bwhat should i focus on\b/.test(lower)
+    /\b(?:what should i focus on|give me an update|how am i doing|daily update)\b/.test(lower)
   ) {
     candidate = { intent: 'recap' };
   } else {
@@ -210,7 +262,7 @@ export function parsePipCommand(input: string): PipCommand {
       }
     } else {
       const createMatch = text.match(
-        /^(?:please\s+)?(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?task\s+(?:to|for|called|named)\s+(.+)$/i,
+        /^(?:please\s+)?(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?task\s*(?:to|for|called|named)?\s+(.+)$/i,
       );
       const simpleCreateMatch = createMatch === null
         ? text.match(/^(?:please\s+)?(?:add|create|make)\s+(.+?)\s+to\s+(?:my\s+)?tasks?$/i)
@@ -233,13 +285,15 @@ export function parsePipCommand(input: string): PipCommand {
           /^(?:please\s+)?(?:mark|set)\s+(?:the\s+|my\s+)?(.+?)\s+(?:as\s+)?(?:completed|complete|done)$/i,
         ) ?? text.match(
           /^(?:please\s+)?(?:complete|finish)\s+(?:the\s+|my\s+)?(.+)$/i,
+        ) ?? text.match(
+          /^(?:i\s+)?(?:finished|completed|done\s+with)\s+(?:the\s+|my\s+)?(.+)$/i,
         );
         if (completeMatch !== null) {
           candidate = {
             intent: 'complete-task',
             taskQuery: cleanTaskQuery(completeMatch[1]),
           };
-        } else if (/^(?:help|what can you do|how can you help)\b/i.test(text)) {
+        } else if (/^(?:help|what can you do|how can you help|who are you|introduce yourself)\b/i.test(text)) {
           candidate = { intent: 'help' };
         } else {
           candidate = { intent: 'unknown' };

@@ -20,7 +20,7 @@
 
   .eyebrow {
     color: #a9baff;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -37,7 +37,7 @@
 
   .state {
     color: #a9baff;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 

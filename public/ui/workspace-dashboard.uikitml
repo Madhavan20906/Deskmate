@@ -106,7 +106,7 @@
 
   .pip-state {
     color: #285d5d;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -116,7 +116,7 @@
 
   .pip-response {
     color: #173740;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
   }
 
@@ -126,7 +126,7 @@
 
   .pip-transcript {
     color: #31555d;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .pip-transcript:dark {
@@ -135,7 +135,7 @@
 
   .pip-disclosure {
     color: #465e65;
-    font-size: 11px;
+    font-size: 14px;
   }
 
   .pip-disclosure:dark {
@@ -227,7 +227,7 @@
     border-radius: 10px;
     background-color: #e4f0f3;
     color: #1c252a;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -238,7 +238,7 @@
 
   .workload-detail {
     color: #3a4b53;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
   }
 
@@ -286,7 +286,7 @@
 
   .time-marker {
     color: #9eb4bf;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -314,13 +314,13 @@
 
   .slot-time {
     color: #8ce2d2;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
   .slot-content {
     color: #e8eef0;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
   }
 
@@ -333,19 +333,19 @@
 
   .schedule-status {
     color: #dce7eb;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .smart-status {
     color: #8ce2d2;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
   .schedule-suggestion {
     color: #f2bf7b;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -390,7 +390,7 @@
 
   .focus-duration-value {
     color: #174b4b;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -409,7 +409,7 @@
 
   .focus-statistics {
     color: #35525a;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -419,7 +419,7 @@
 
   .focus-history {
     color: #9eb4bf;
-    font-size: 10px;
+    font-size: 14px;
   }
 
   .focus-progress {
@@ -454,7 +454,7 @@
 
   .insight-heading {
     color: #dce7eb;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -523,25 +523,25 @@
 
   .garden-details {
     color: #b6c7ce;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .garden-achievements {
     color: #b6c7ce;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .analytics-summary {
     color: #b6c7ce;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .garden-stage {
     color: #8ce2d2;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -584,13 +584,13 @@
 
   .analytics-day-label {
     color: #9eb4bf;
-    font-size: 9px;
+    font-size: 14px;
     font-weight: 700;
   }
 
   .analytics-day-count {
     color: #9eb4bf;
-    font-size: 9px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -609,15 +609,251 @@
   .create-button {
     margin-top: 2px;
   }
+
+  .active-focus-banner {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 14px;
+    background-color: #1a4240;
+    border-width: 1px;
+    border-color: #53cbb5;
+  }
+
+  .active-focus-pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: #53cbb5;
+  }
+
+  .active-focus-text {
+    color: #7ce7d4;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .pip-quick-commands {
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 10px;
+    background-color: #1b323c;
+    border-width: 1px;
+    border-color: #3b6470;
+  }
+
+  .pip-quick-label {
+    color: #8ce2d2;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .pip-chips {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .pip-chip-btn {
+    flex-grow: 1;
+  }
+
+  .task-modal {
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 22px;
+    padding-bottom: 22px;
+    padding-left: 26px;
+    padding-right: 26px;
+  }
+
+  .modal-top {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-title-group {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .modal-eyebrow {
+    color: #53cbb5;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+  }
+
+  .modal-heading {
+    color: #f3f6f7;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .modal-close-btn {
+    width: 110px;
+  }
+
+  .modal-section {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .modal-section-label {
+    color: #9eb4bf;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+  }
+
+  .field-container {
+    flex-direction: row;
+    align-items: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: #3b5664;
+    background-color: #18242d;
+  }
+
+  .modal-input-text {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .preset-chips {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .chip-btn {
+    flex-grow: 1;
+  }
+
+  .modal-row-split {
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .modal-column {
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 6px;
+  }
+
+  .modal-button-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .prio-btn {
+    flex-grow: 1;
+  }
+
+  .stepper-btn {
+    width: 60px;
+  }
+
+  .duration-badge {
+    align-items: center;
+    justify-content: center;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 10px;
+    background-color: #183942;
+    color: #8ce2d2;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .sched-btn {
+    flex-grow: 1;
+  }
+
+  .modal-error-text {
+    color: #ff7e7e;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .modal-actions {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-top: 6px;
+  }
+
+  .modal-save-btn {
+    flex-grow: 2;
+  }
+
+  .modal-cancel-btn {
+    flex-grow: 1;
+  }
+  .ghost-desc {
+    color: #7ea8f8;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .desk-height-controls {
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    padding-left: 6px;
+    padding-right: 6px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-radius: 8px;
+    background-color: #17242c;
+    border-width: 1px;
+    border-color: #2e434f;
+  }
+
+  .desk-ctrl-btn {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .desk-height-text {
+    color: #8ce2d2;
+    font-size: 14px;
+    font-weight: 700;
+  }
 </style>
 <Panel class="dashboard">
-  <div class="content">
+  <div id="dashboard-content" class="content">
     <div class="topline">
       <div>
         <div class="brand">DESKMATE</div>
         <div id="day-date" class="date">TODAY</div>
+        <span class="ghost-desc">GHOST DESKMATE: Quiet co-working presence</span>
+      </div>
+      <div id="active-focus-banner" class="active-focus-banner" style="display: none">
+        <span class="active-focus-pulse"></span>
+        <span id="active-focus-text" class="active-focus-text">FOCUSING: 25:00</span>
       </div>
       <div class="header-actions">
+        <div class="desk-height-controls">
+          <Button id="desk-down" class="desk-ctrl-btn"><ButtonLabel>- 5cm</ButtonLabel></Button>
+          <span id="desk-height-text" class="desk-height-text">DESK: 0cm</span>
+          <Button id="desk-up" class="desk-ctrl-btn"><ButtonLabel>+ 5cm</ButtonLabel></Button>
+        </div>
         <div class="day-chip"><span class="day-chip-text">YOUR DAY</span></div>
         <Button id="pip-toggle" class="pip-toggle">
           <span id="pip-launcher-orb" class="pip-launcher-orb"></span>
@@ -649,11 +885,21 @@
           <ButtonLabel id="pip-listen-label">Listen</ButtonLabel>
         </Button>
         <Button id="pip-text" class="pip-control-button">
-          <ButtonLabel>Type request</ButtonLabel>
+          <ButtonLabel>Quick commands</ButtonLabel>
         </Button>
         <Button id="pip-recap" class="pip-control-button">
           <ButtonLabel>Daily recap</ButtonLabel>
         </Button>
+      </div>
+      <div id="pip-quick-commands" class="pip-quick-commands" style="display: none">
+        <span class="pip-quick-label">QUICK LOCAL COMMANDS (TAP TO EXECUTE)</span>
+        <div class="pip-chips">
+          <Button id="pip-cmd-add" class="pip-chip-btn"><ButtonLabel>+ Add 30m Task</ButtonLabel></Button>
+          <Button id="pip-cmd-schedule" class="pip-chip-btn"><ButtonLabel>Suggest Schedule</ButtonLabel></Button>
+          <Button id="pip-cmd-focus" class="pip-chip-btn"><ButtonLabel>Start Focus</ButtonLabel></Button>
+          <Button id="pip-cmd-pending" class="pip-chip-btn"><ButtonLabel>Pending Tasks</ButtonLabel></Button>
+          <Button id="pip-cmd-recap" class="pip-chip-btn"><ButtonLabel>Daily Recap</ButtonLabel></Button>
+        </div>
       </div>
       <div id="pip-confirmation-row" class="pip-confirmation-row" style="display: none">
         <Button id="pip-confirm-schedule" class="pip-confirm-button">
@@ -813,6 +1059,87 @@
       </div>
       <Button id="task-create" class="create-button">
         <ButtonLabel>Create task</ButtonLabel>
+      </Button>
+    </div>
+  </div>
+  <div id="task-modal" class="task-modal" style="display: none">
+    <div class="modal-top">
+      <div class="modal-title-group">
+        <span class="modal-eyebrow">SPATIAL TASK BUILDER</span>
+        <span id="modal-heading" class="modal-heading">Create New Task</span>
+      </div>
+      <Button id="modal-close-btn" class="modal-close-btn">
+        <ButtonLabel>Cancel</ButtonLabel>
+      </Button>
+    </div>
+
+    <div class="modal-section">
+      <span class="modal-section-label">TASK TITLE (CHOOSE PRESET OR TYPE ON DESKTOP)</span>
+      <div class="field-container">
+        <span id="modal-input-title" class="modal-input-text">Deep Focus Sprint</span>
+      </div>
+      <div class="preset-chips">
+        <Button id="preset-title-1" class="chip-btn"><ButtonLabel>Q4 Roadmap</ButtonLabel></Button>
+        <Button id="preset-title-2" class="chip-btn"><ButtonLabel>Design Review</ButtonLabel></Button>
+        <Button id="preset-title-3" class="chip-btn"><ButtonLabel>Code Sprint</ButtonLabel></Button>
+        <Button id="preset-title-4" class="chip-btn"><ButtonLabel>Bug Triage</ButtonLabel></Button>
+        <Button id="preset-title-5" class="chip-btn"><ButtonLabel>Team Sync</ButtonLabel></Button>
+        <Button id="preset-title-6" class="chip-btn"><ButtonLabel>Documentation</ButtonLabel></Button>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <span class="modal-section-label">DESCRIPTION</span>
+      <div class="field-container">
+        <span id="modal-input-desc" class="modal-input-text">Deep work block and deliverables</span>
+      </div>
+      <div class="preset-chips">
+        <Button id="preset-desc-1" class="chip-btn"><ButtonLabel>Deep work & milestones</ButtonLabel></Button>
+        <Button id="preset-desc-2" class="chip-btn"><ButtonLabel>Review feedback</ButtonLabel></Button>
+        <Button id="preset-desc-3" class="chip-btn"><ButtonLabel>Inbox zero</ButtonLabel></Button>
+        <Button id="preset-desc-4" class="chip-btn"><ButtonLabel>Summary notes</ButtonLabel></Button>
+      </div>
+    </div>
+
+    <div class="modal-row-split">
+      <div class="modal-column">
+        <span class="modal-section-label">PRIORITY</span>
+        <div class="modal-button-row">
+          <Button id="modal-prio-low" class="prio-btn"><ButtonLabel id="modal-prio-low-label">Low</ButtonLabel></Button>
+          <Button id="modal-prio-med" class="prio-btn"><ButtonLabel id="modal-prio-med-label">Medium (Active)</ButtonLabel></Button>
+          <Button id="modal-prio-high" class="prio-btn"><ButtonLabel id="modal-prio-high-label">High</ButtonLabel></Button>
+        </div>
+      </div>
+      <div class="modal-column">
+        <span class="modal-section-label">ESTIMATED DURATION</span>
+        <div class="modal-button-row">
+          <Button id="modal-dur-down" class="stepper-btn"><ButtonLabel>-15</ButtonLabel></Button>
+          <span id="modal-dur-display" class="duration-badge">30 MIN</span>
+          <Button id="modal-dur-up" class="stepper-btn"><ButtonLabel>+15</ButtonLabel></Button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <span class="modal-section-label">SCHEDULE TIMELINE (WORKING HOURS 08:00 - 18:00)</span>
+      <div class="modal-button-row">
+        <Button id="modal-sched-none" class="sched-btn"><ButtonLabel id="modal-sched-none-label">Unscheduled (Active)</ButtonLabel></Button>
+        <Button id="modal-sched-08" class="sched-btn"><ButtonLabel id="modal-sched-08-label">08:00</ButtonLabel></Button>
+        <Button id="modal-sched-10" class="sched-btn"><ButtonLabel id="modal-sched-10-label">10:00</ButtonLabel></Button>
+        <Button id="modal-sched-12" class="sched-btn"><ButtonLabel id="modal-sched-12-label">12:00</ButtonLabel></Button>
+        <Button id="modal-sched-14" class="sched-btn"><ButtonLabel id="modal-sched-14-label">14:00</ButtonLabel></Button>
+        <Button id="modal-sched-16" class="sched-btn"><ButtonLabel id="modal-sched-16-label">16:00</ButtonLabel></Button>
+      </div>
+    </div>
+
+    <span id="modal-error-message" class="modal-error-text" style="display: none">Error message</span>
+
+    <div class="modal-actions">
+      <Button id="modal-save-btn" class="modal-save-btn">
+        <ButtonLabel>Save Task</ButtonLabel>
+      </Button>
+      <Button id="modal-cancel-btn" class="modal-cancel-btn">
+        <ButtonLabel>Cancel</ButtonLabel>
       </Button>
     </div>
   </div>

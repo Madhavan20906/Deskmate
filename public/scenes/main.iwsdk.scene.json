@@ -1,227 +1,425 @@
 {
-  "version": "iwsdk.scene.v1",
-  "units": "meters",
-  "components": {
-    "com.iwsdk.components.IBLGradient": {
-      "sky": [0.12, 0.19, 0.25, 1],
-      "equator": [0.2, 0.29, 0.34, 1],
-      "ground": [0.08, 0.11, 0.14, 1],
-      "intensity": 0.55
-    }
-  },
-  "environment": {
-    "toneMapping": "aces",
-    "exposure": 1,
-    "shadows": false,
-    "shadowMapType": "pcf"
-  },
-  "resources": {},
-  "nodes": [
-    {
-      "id": "workspace-dashboard",
-      "name": "Daily Workspace Dashboard",
-      "content": {
-        "type": "asset",
-        "asset": "workspace-dashboard"
-      },
-      "transform": {
-        "position": [0, 1.82, -1.45],
-        "scale": 0.1
-      },
-      "components": {
-        "RayInteractable": {},
-        "PokeInteractable": {}
-      }
-    },
-    {
-      "id": "task-card-roadmap",
-      "name": "Roadmap Task Card",
-      "content": {
-        "type": "asset",
-        "asset": "task-roadmap"
-      },
-      "transform": {
-        "position": [-0.295, 1.12, -1.35],
-        "scale": 0.1
-      },
-      "components": {
-        "RayInteractable": {},
-        "PokeInteractable": {},
-        "OneHandGrabbable": {},
-        "TaskData": {
-          "slot": 0,
-          "active": true,
-          "id": "seed-roadmap",
-          "title": "Plan Q4 roadmap",
-          "description": "Deep work and milestones",
-          "priority": "high",
-          "estimatedMinutes": 120,
-          "status": "todo"
-        }
-      }
-    },
-    {
-      "id": "task-card-design-review",
-      "name": "Design Review Task Card",
-      "content": {
-        "type": "asset",
-        "asset": "task-design-review"
-      },
-      "transform": {
-        "position": [0, 1.12, -1.35],
-        "scale": 0.1
-      },
-      "components": {
-        "RayInteractable": {},
-        "PokeInteractable": {},
-        "OneHandGrabbable": {},
-        "TaskData": {
-          "slot": 1,
-          "active": true,
-          "id": "seed-design-review",
-          "title": "Review design brief",
-          "description": "Share feedback with the team",
-          "priority": "medium",
-          "estimatedMinutes": 60,
-          "status": "todo"
-        }
-      }
-    },
-    {
-      "id": "task-card-inbox",
-      "name": "Inbox Task Card",
-      "content": {
-        "type": "asset",
-        "asset": "task-inbox"
-      },
-      "transform": {
-        "position": [0.295, 1.12, -1.35],
-        "scale": 0.1
-      },
-      "components": {
-        "RayInteractable": {},
-        "PokeInteractable": {},
-        "OneHandGrabbable": {},
-        "TaskData": {
-          "slot": 2,
-          "active": true,
-          "id": "seed-inbox",
-          "title": "Inbox reset",
-          "description": "Clear the queue and flag follow-ups",
-          "priority": "low",
-          "estimatedMinutes": 60,
-          "status": "todo"
-        }
-      }
-    },
-    {
-      "id": "task-card-slot-4",
-      "name": "Task Card 4",
-      "content": {
-        "type": "asset",
-        "asset": "task-slot-4"
-      },
-      "transform": {
-        "position": [-0.295, 0.72, -1.35],
-        "scale": 0.1
-      },
-      "components": {
-        "RayInteractable": {},
-        "PokeInteractable": {},
-        "OneHandGrabbable": {},
-        "TaskData": { "slot": 3, "active": false }
-      }
-    },
-    {
-      "id": "task-card-slot-5",
-      "name": "Task Card 5",
-      "content": {
-        "type": "asset",
-        "asset": "task-slot-5"
-      },
-      "transform": {
-        "position": [0, 0.72, -1.35],
-        "scale": 0.1
-      },
-      "components": {
-        "RayInteractable": {},
-        "PokeInteractable": {},
-        "OneHandGrabbable": {},
-        "TaskData": { "slot": 4, "active": false }
-      }
-    },
-    {
-      "id": "task-card-slot-6",
-      "name": "Task Card 6",
-      "content": {
-        "type": "asset",
-        "asset": "task-slot-6"
-      },
-      "transform": {
-        "position": [0.295, 0.72, -1.35],
-        "scale": 0.1
-      },
-      "components": {
-        "RayInteractable": {},
-        "PokeInteractable": {},
-        "OneHandGrabbable": {},
-        "TaskData": { "slot": 5, "active": false }
-      }
-    },
-    {
-      "id": "welcome-panel",
-      "name": "Welcome Panel",
-      "content": {
-        "type": "asset",
-        "asset": "welcome-panel"
-      },
-      "transform": {
-        "position": [0, 1.98, -1.5],
-        "rotationDeg": [-3, 0, 0],
-        "scale": 0.11
-      },
-      "components": {
-        "RayInteractable": {},
-        "PokeInteractable": {}
-      }
-    },
-    {
-      "id": "key-light",
-      "name": "Workspace Key Light",
-      "transform": {
-        "position": [-2, 3, 1],
-        "rotationDeg": [-48, -12, 0]
-      },
-      "components": {
-        "DirectionalLight": {
-          "color": [0.8, 0.91, 1, 1],
-          "intensity": 1.2,
-          "castShadow": false
-        }
-      }
-    },
-    {
-      "id": "fill-light",
-      "name": "Workspace Fill Light",
-      "components": {
-        "HemisphereLight": {
-          "skyColor": [0.54, 0.73, 0.82, 1],
-          "groundColor": [0.12, 0.15, 0.19, 1],
-          "intensity": 0.75
-        }
-      }
-    }
-  ],
   "authoring": {
     "views": [
       {
+        "fov": 56,
         "id": "hero",
-        "role": "hero",
+        "position": [
+          0,
+          1.58,
+          0.9
+        ],
         "projection": "perspective",
-        "position": [0, 1.58, 0.9],
-        "target": [0, 1.42, -1.4],
-        "fov": 56
+        "role": "hero",
+        "target": [
+          0,
+          1.42,
+          -1.4
+        ]
       }
     ]
-  }
+  },
+  "components": {
+    "com.iwsdk.components.IBLGradient": {
+      "equator": [
+        0.2,
+        0.29,
+        0.34,
+        1
+      ],
+      "ground": [
+        0.08,
+        0.11,
+        0.14,
+        1
+      ],
+      "intensity": 0.55,
+      "sky": [
+        0.12,
+        0.19,
+        0.25,
+        1
+      ]
+    }
+  },
+  "environment": {
+    "exposure": 1,
+    "shadowMapType": "pcf",
+    "shadows": false,
+    "toneMapping": "aces"
+  },
+  "nodes": [
+    {
+      "components": {
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "workspace-dashboard",
+        "type": "asset"
+      },
+      "id": "workspace-dashboard",
+      "name": "Daily Workspace Dashboard",
+      "transform": {
+        "position": [
+          0,
+          1.48,
+          -1.25
+        ],
+        "scale": 0.1
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {},
+        "TaskData": {
+          "active": true,
+          "description": "Deep work and milestones",
+          "estimatedMinutes": 120,
+          "id": "seed-roadmap",
+          "priority": "high",
+          "slot": 0,
+          "status": "todo",
+          "title": "Plan Q4 roadmap"
+        }
+      },
+      "content": {
+        "asset": "task-roadmap",
+        "type": "asset"
+      },
+      "id": "task-card-roadmap",
+      "name": "Roadmap Task Card",
+      "transform": {
+        "position": [
+          -0.32,
+          0.98,
+          -1.1
+        ],
+        "rotationDeg": [
+          8,
+          0,
+          0
+        ],
+        "scale": 0.1
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {},
+        "TaskData": {
+          "active": true,
+          "description": "Share feedback with the team",
+          "estimatedMinutes": 60,
+          "id": "seed-design-review",
+          "priority": "medium",
+          "slot": 1,
+          "status": "todo",
+          "title": "Review design brief"
+        }
+      },
+      "content": {
+        "asset": "task-design-review",
+        "type": "asset"
+      },
+      "id": "task-card-design-review",
+      "name": "Design Review Task Card",
+      "transform": {
+        "position": [
+          0,
+          0.98,
+          -1.1
+        ],
+        "rotationDeg": [
+          8,
+          0,
+          0
+        ],
+        "scale": 0.1
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {},
+        "TaskData": {
+          "active": true,
+          "description": "Clear the queue and flag follow-ups",
+          "estimatedMinutes": 60,
+          "id": "seed-inbox",
+          "priority": "low",
+          "slot": 2,
+          "status": "todo",
+          "title": "Inbox reset"
+        }
+      },
+      "content": {
+        "asset": "task-inbox",
+        "type": "asset"
+      },
+      "id": "task-card-inbox",
+      "name": "Inbox Task Card",
+      "transform": {
+        "position": [
+          0.32,
+          0.98,
+          -1.1
+        ],
+        "rotationDeg": [
+          8,
+          0,
+          0
+        ],
+        "scale": 0.1
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {},
+        "TaskData": {
+          "active": false,
+          "slot": 3
+        }
+      },
+      "content": {
+        "asset": "task-slot-4",
+        "type": "asset"
+      },
+      "id": "task-card-slot-4",
+      "name": "Task Card 4",
+      "transform": {
+        "position": [
+          0.7275,
+          0.226,
+          -0.9604
+        ],
+        "rotationDeg": [
+          10,
+          0,
+          0
+        ],
+        "scale": 0.1
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {},
+        "TaskData": {
+          "active": false,
+          "slot": 4
+        }
+      },
+      "content": {
+        "asset": "task-slot-5",
+        "type": "asset"
+      },
+      "id": "task-card-slot-5",
+      "name": "Task Card 5",
+      "transform": {
+        "position": [
+          0,
+          0.72,
+          -1.1
+        ],
+        "rotationDeg": [
+          10,
+          0,
+          0
+        ],
+        "scale": 0.1
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {},
+        "TaskData": {
+          "active": false,
+          "slot": 5
+        }
+      },
+      "content": {
+        "asset": "task-slot-6",
+        "type": "asset"
+      },
+      "id": "task-card-slot-6",
+      "name": "Task Card 6",
+      "transform": {
+        "position": [
+          0.32,
+          0.72,
+          -1.1
+        ],
+        "rotationDeg": [
+          10,
+          0,
+          0
+        ],
+        "scale": 0.1
+      }
+    },
+    {
+      "components": {
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "welcome-panel",
+        "type": "asset"
+      },
+      "id": "welcome-panel",
+      "name": "Welcome Panel",
+      "transform": {
+        "position": [
+          0,
+          2.05,
+          -1.28
+        ],
+        "rotationDeg": [
+          -8,
+          0,
+          0
+        ],
+        "scale": 0.1
+      }
+    },
+    {
+      "components": {
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "pip-companion",
+        "type": "asset"
+      },
+      "id": "pip-companion",
+      "name": "Pip Companion",
+      "transform": {
+        "position": [
+          0.56,
+          1.05,
+          -1.05
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "ghost-deskmate",
+        "type": "asset"
+      },
+      "id": "ghost-deskmate",
+      "name": "Ghost Deskmate",
+      "transform": {
+        "position": [
+          -0.56,
+          1.05,
+          -1.05
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "evening-jar",
+        "type": "asset"
+      },
+      "id": "evening-jar",
+      "name": "Evening Reward Jar",
+      "transform": {
+        "position": [
+          0.54,
+          0.76,
+          -1.02
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "content": {
+        "asset": "desk-surface",
+        "type": "asset"
+      },
+      "id": "desk-surface",
+      "name": "Desk Surface",
+      "transform": {
+        "position": [
+          0,
+          0,
+          -1.05
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
+        "DirectionalLight": {
+          "castShadow": false,
+          "color": [
+            0.8,
+            0.91,
+            1,
+            1
+          ],
+          "intensity": 1.2
+        }
+      },
+      "id": "key-light",
+      "name": "Workspace Key Light",
+      "transform": {
+        "position": [
+          -2,
+          3,
+          1
+        ],
+        "rotationDeg": [
+          -48,
+          -12,
+          0
+        ]
+      }
+    },
+    {
+      "components": {
+        "HemisphereLight": {
+          "groundColor": [
+            0.12,
+            0.15,
+            0.19,
+            1
+          ],
+          "intensity": 0.75,
+          "skyColor": [
+            0.54,
+            0.73,
+            0.82,
+            1
+          ]
+        }
+      },
+      "id": "fill-light",
+      "name": "Workspace Fill Light"
+    }
+  ],
+  "resources": {},
+  "units": "meters",
+  "version": "iwsdk.scene.v1"
 }

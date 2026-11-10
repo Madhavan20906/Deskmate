@@ -20,7 +20,7 @@
 
   .eyebrow {
     color: #77dec9;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -32,7 +32,7 @@
 
   .description {
     color: #b6c7ce;
-    font-size: 13px;
+    font-size: 15px;
   }
 
   .status-button {
@@ -64,7 +64,7 @@
 
   .focus-session-state {
     color: #174b4b;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 

@@ -6,6 +6,10 @@
  */
 
 import { AssetType, defineAssets } from '@iwsdk/core';
+import { createPipCompanionModel } from './scene-assets/pip-companion.scene-asset.js';
+import { createGhostDeskmateModel } from './scene-assets/ghost-deskmate.scene-asset.js';
+import { createEveningJarModel } from './scene-assets/evening-jar.scene-asset.js';
+import { createDeskSurfaceModel } from './scene-assets/desk-surface.scene-asset.js';
 
 const publicAssetUrl = (filePath: string): string =>
   `${import.meta.env.BASE_URL}${filePath.replace(/^\/+/u, '')}`;
@@ -25,4 +29,8 @@ export default defineAssets({
   'task-slot-5': uikitml('task-card.uikitml', 'Task Card'),
   'task-slot-6': uikitml('task-card.uikitml', 'Task Card'),
   'welcome-panel': uikitml('welcome.uikitml', 'Welcome Panel'),
+  'pip-companion': createPipCompanionModel(),
+  'ghost-deskmate': createGhostDeskmateModel(),
+  'evening-jar': createEveningJarModel(),
+  'desk-surface': createDeskSurfaceModel(),
 });
