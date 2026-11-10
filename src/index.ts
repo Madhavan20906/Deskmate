@@ -12,6 +12,10 @@ import { PanelSystem } from './panel.js';
 World.create(
   document.getElementById('scene-container') as HTMLDivElement,
   projectOptions,
-).then((world) => {
-  world.registerSystem(PanelSystem);
-});
+)
+  .then((world) => {
+    world.registerSystem(PanelSystem);
+  })
+  .catch((err) => {
+    console.error('[Deskmate] Failed to initialize world:', err);
+  });

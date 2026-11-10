@@ -78,8 +78,7 @@
         "DomeFade": {
           "end": 7.5,
           "start": 3.0
-        },
-        "LocomotionEnvironment": {}
+        }
       },
       "content": {
         "asset": "studio-floor",
@@ -445,7 +444,6 @@
     {
       "components": {
         "DirectionalLight": {
-          "bias": -0.0004,
           "castShadow": true,
           "color": [
             1.0,
@@ -454,6 +452,7 @@
             1
           ],
           "intensity": 2.2,
+          "shadowBias": -0.0004,
           "shadowCameraFar": 10,
           "shadowCameraNear": 0.5,
           "shadowCameraSize": 4,
