@@ -2,53 +2,134 @@
   "authoring": {
     "views": [
       {
-        "fov": 56,
+        "fov": 58,
         "id": "hero",
         "position": [
           0,
-          1.58,
-          0.9
+          1.28,
+          -0.05
         ],
         "projection": "perspective",
         "role": "hero",
         "target": [
           0,
-          1.42,
-          -1.4
+          1.10,
+          -0.92
         ]
       }
     ]
   },
   "components": {
+    "com.iwsdk.components.DomeGradient": {
+      "azimuthDeg": -25,
+      "dither": true,
+      "elevationDeg": 18,
+      "equator": [
+        0.10,
+        0.15,
+        0.22,
+        1
+      ],
+      "ground": [
+        0.03,
+        0.04,
+        0.06,
+        1
+      ],
+      "intensity": 1,
+      "sky": [
+        0.05,
+        0.08,
+        0.14,
+        1
+      ]
+    },
     "com.iwsdk.components.IBLGradient": {
       "equator": [
-        0.2,
-        0.29,
-        0.34,
+        0.20,
+        0.26,
+        0.35,
         1
       ],
       "ground": [
         0.08,
-        0.11,
+        0.10,
         0.14,
         1
       ],
-      "intensity": 0.55,
+      "intensity": 0.8,
       "sky": [
-        0.12,
-        0.19,
-        0.25,
+        0.35,
+        0.45,
+        0.60,
         1
       ]
     }
   },
   "environment": {
-    "exposure": 1,
+    "exposure": 1.15,
     "shadowMapType": "pcf",
-    "shadows": false,
+    "shadows": true,
     "toneMapping": "aces"
   },
   "nodes": [
+    {
+      "components": {
+        "DomeFade": {
+          "end": 7.5,
+          "start": 3.0
+        },
+        "LocomotionEnvironment": {}
+      },
+      "content": {
+        "asset": "studio-floor",
+        "receiveShadow": true,
+        "type": "asset"
+      },
+      "id": "studio-floor",
+      "name": "Studio Floor",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
+        "ContactShadow": {
+          "color": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "opacity": 0.45,
+          "size": [
+            1.5,
+            0.85
+          ]
+        }
+      },
+      "content": {
+        "asset": "desk-surface",
+        "castShadow": true,
+        "receiveShadow": true,
+        "type": "asset"
+      },
+      "id": "desk-surface",
+      "name": "Desk Surface",
+      "transform": {
+        "position": [
+          0,
+          0,
+          -0.85
+        ],
+        "scale": 1
+      }
+    },
     {
       "components": {
         "PokeInteractable": {},
@@ -63,10 +144,15 @@
       "transform": {
         "position": [
           0,
-          1.48,
-          -1.25
+          1.24,
+          -1.02
         ],
-        "scale": 0.1
+        "rotationDeg": [
+          -3,
+          0,
+          0
+        ],
+        "scale": 0.11
       }
     },
     {
@@ -93,16 +179,16 @@
       "name": "Roadmap Task Card",
       "transform": {
         "position": [
-          -0.32,
-          0.98,
-          -1.1
+          -0.38,
+          0.82,
+          -0.74
         ],
         "rotationDeg": [
-          8,
-          0,
-          0
+          14,
+          10,
+          -2
         ],
-        "scale": 0.1
+        "scale": 0.09
       }
     },
     {
@@ -130,15 +216,15 @@
       "transform": {
         "position": [
           0,
-          0.98,
-          -1.1
+          0.80,
+          -0.70
         ],
         "rotationDeg": [
-          8,
+          16,
           0,
           0
         ],
-        "scale": 0.1
+        "scale": 0.09
       }
     },
     {
@@ -165,16 +251,16 @@
       "name": "Inbox Task Card",
       "transform": {
         "position": [
-          0.32,
-          0.98,
-          -1.1
+          0.38,
+          0.82,
+          -0.74
         ],
         "rotationDeg": [
-          8,
-          0,
-          0
+          14,
+          -10,
+          2
         ],
-        "scale": 0.1
+        "scale": 0.09
       }
     },
     {
@@ -195,16 +281,16 @@
       "name": "Task Card 4",
       "transform": {
         "position": [
-          0.7275,
-          0.226,
-          -0.9604
+          0.72,
+          0.22,
+          -0.96
         ],
         "rotationDeg": [
           10,
           0,
           0
         ],
-        "scale": 0.1
+        "scale": 0.09
       }
     },
     {
@@ -226,7 +312,7 @@
       "transform": {
         "position": [
           0,
-          0.72,
+          0.22,
           -1.1
         ],
         "rotationDeg": [
@@ -234,7 +320,7 @@
           0,
           0
         ],
-        "scale": 0.1
+        "scale": 0.09
       }
     },
     {
@@ -256,7 +342,7 @@
       "transform": {
         "position": [
           0.32,
-          0.72,
+          0.22,
           -1.1
         ],
         "rotationDeg": [
@@ -264,7 +350,7 @@
           0,
           0
         ],
-        "scale": 0.1
+        "scale": 0.09
       }
     },
     {
@@ -281,15 +367,15 @@
       "transform": {
         "position": [
           0,
-          2.05,
-          -1.28
+          1.64,
+          -1.06
         ],
         "rotationDeg": [
           -8,
           0,
           0
         ],
-        "scale": 0.1
+        "scale": 0.08
       }
     },
     {
@@ -299,15 +385,16 @@
       },
       "content": {
         "asset": "pip-companion",
+        "castShadow": true,
         "type": "asset"
       },
       "id": "pip-companion",
       "name": "Pip Companion",
       "transform": {
         "position": [
-          0.56,
-          1.05,
-          -1.05
+          0.50,
+          0.72,
+          -0.72
         ],
         "scale": 1
       }
@@ -319,15 +406,16 @@
       },
       "content": {
         "asset": "ghost-deskmate",
+        "castShadow": true,
         "type": "asset"
       },
       "id": "ghost-deskmate",
       "name": "Ghost Deskmate",
       "transform": {
         "position": [
-          -0.56,
-          1.05,
-          -1.05
+          -0.50,
+          0.72,
+          -0.72
         ],
         "scale": 1
       }
@@ -340,31 +428,16 @@
       },
       "content": {
         "asset": "evening-jar",
+        "castShadow": true,
         "type": "asset"
       },
       "id": "evening-jar",
       "name": "Evening Reward Jar",
       "transform": {
         "position": [
-          0.54,
-          0.76,
-          -1.02
-        ],
-        "scale": 1
-      }
-    },
-    {
-      "content": {
-        "asset": "desk-surface",
-        "type": "asset"
-      },
-      "id": "desk-surface",
-      "name": "Desk Surface",
-      "transform": {
-        "position": [
-          0,
-          0,
-          -1.05
+          0.40,
+          0.72,
+          -0.58
         ],
         "scale": 1
       }
@@ -372,27 +445,34 @@
     {
       "components": {
         "DirectionalLight": {
-          "castShadow": false,
+          "bias": -0.0004,
+          "castShadow": true,
           "color": [
-            0.8,
-            0.91,
-            1,
+            1.0,
+            0.95,
+            0.88,
             1
           ],
-          "intensity": 1.2
+          "intensity": 2.2,
+          "shadowCameraFar": 10,
+          "shadowCameraNear": 0.5,
+          "shadowCameraSize": 4,
+          "shadowMapSize": "2048",
+          "shadowNormalBias": 0.02,
+          "shadowRadius": 4
         }
       },
       "id": "key-light",
       "name": "Workspace Key Light",
       "transform": {
         "position": [
-          -2,
-          3,
-          1
+          -1.8,
+          3.2,
+          0.8
         ],
         "rotationDeg": [
-          -48,
-          -12,
+          -55,
+          -25,
           0
         ]
       }
@@ -401,22 +481,50 @@
       "components": {
         "HemisphereLight": {
           "groundColor": [
-            0.12,
             0.15,
-            0.19,
+            0.18,
+            0.24,
             1
           ],
-          "intensity": 0.75,
+          "intensity": 0.95,
           "skyColor": [
-            0.54,
-            0.73,
-            0.82,
+            0.45,
+            0.62,
+            0.85,
             1
           ]
         }
       },
       "id": "fill-light",
       "name": "Workspace Fill Light"
+    },
+    {
+      "components": {
+        "DirectionalLight": {
+          "castShadow": false,
+          "color": [
+            0.4,
+            0.75,
+            1.0,
+            1
+          ],
+          "intensity": 1.2
+        }
+      },
+      "id": "rim-light",
+      "name": "Workspace Rim Light",
+      "transform": {
+        "position": [
+          1.5,
+          2.2,
+          -2.2
+        ],
+        "rotationDeg": [
+          35,
+          150,
+          0
+        ]
+      }
     }
   ],
   "resources": {},
