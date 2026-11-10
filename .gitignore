@@ -45,3 +45,4 @@ pids/
 .codex/config.toml
 
 .npm-cache/
+.vercel
