@@ -20,54 +20,30 @@
     ]
   },
   "components": {
-    "com.iwsdk.components.DomeGradient": {
-      "azimuthDeg": -25,
-      "dither": true,
-      "elevationDeg": 18,
-      "equator": [
-        0.10,
-        0.15,
-        0.22,
-        1
-      ],
-      "ground": [
-        0.03,
-        0.04,
-        0.06,
-        1
-      ],
-      "intensity": 1,
-      "sky": [
-        0.05,
-        0.08,
-        0.14,
-        1
-      ]
-    },
     "com.iwsdk.components.IBLGradient": {
       "equator": [
-        0.20,
-        0.26,
-        0.35,
+        0.80,
+        0.76,
+        0.70,
         1
       ],
       "ground": [
-        0.08,
-        0.10,
-        0.14,
+        0.46,
+        0.42,
+        0.38,
         1
       ],
-      "intensity": 0.8,
+      "intensity": 0.5,
       "sky": [
-        0.35,
-        0.45,
-        0.60,
+        0.96,
+        0.94,
+        0.90,
         1
       ]
     }
   },
   "environment": {
-    "exposure": 1.15,
+    "exposure": 1.1,
     "shadowMapType": "pcf",
     "shadows": true,
     "toneMapping": "aces"
@@ -75,23 +51,27 @@
   "nodes": [
     {
       "components": {
-        "DomeFade": {
-          "end": 7.5,
-          "start": 3.0
+        "ShadowCatcher": {
+          "color": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "opacity": 0.35,
+          "size": [
+            6,
+            6
+          ]
         }
       },
-      "content": {
-        "asset": "studio-floor",
-        "receiveShadow": true,
-        "type": "asset"
-      },
-      "id": "studio-floor",
-      "name": "Studio Floor",
+      "id": "shadow-catcher",
+      "name": "Ground Shadow Catcher",
       "transform": {
         "position": [
           0,
-          0,
-          0
+          0.001,
+          -0.85
         ],
         "scale": 1
       }
@@ -105,7 +85,7 @@
             0,
             1
           ],
-          "opacity": 0.45,
+          "opacity": 0.4,
           "size": [
             1.5,
             0.85
@@ -143,15 +123,15 @@
       "transform": {
         "position": [
           0,
-          1.24,
-          -1.02
+          1.25,
+          -1.05
         ],
         "rotationDeg": [
           -3,
           0,
           0
         ],
-        "scale": 0.11
+        "scale": 0.105
       }
     },
     {
@@ -366,15 +346,15 @@
       "transform": {
         "position": [
           0,
-          1.64,
-          -1.06
+          1.88,
+          -1.18
         ],
         "rotationDeg": [
-          -8,
+          -10,
           0,
           0
         ],
-        "scale": 0.08
+        "scale": 0.09
       }
     },
     {
@@ -447,7 +427,7 @@
           "castShadow": true,
           "color": [
             1.0,
-            0.95,
+            0.96,
             0.88,
             1
           ],
@@ -480,50 +460,22 @@
       "components": {
         "HemisphereLight": {
           "groundColor": [
-            0.15,
-            0.18,
-            0.24,
+            0.55,
+            0.52,
+            0.48,
             1
           ],
-          "intensity": 0.95,
+          "intensity": 1.0,
           "skyColor": [
-            0.45,
-            0.62,
             0.85,
+            0.90,
+            0.98,
             1
           ]
         }
       },
       "id": "fill-light",
       "name": "Workspace Fill Light"
-    },
-    {
-      "components": {
-        "DirectionalLight": {
-          "castShadow": false,
-          "color": [
-            0.4,
-            0.75,
-            1.0,
-            1
-          ],
-          "intensity": 1.2
-        }
-      },
-      "id": "rim-light",
-      "name": "Workspace Rim Light",
-      "transform": {
-        "position": [
-          1.5,
-          2.2,
-          -2.2
-        ],
-        "rotationDeg": [
-          35,
-          150,
-          0
-        ]
-      }
     }
   ],
   "resources": {},

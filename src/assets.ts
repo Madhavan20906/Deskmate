@@ -10,7 +10,6 @@ import { createPipCompanionModel } from './scene-assets/pip-companion.scene-asse
 import { createGhostDeskmateModel } from './scene-assets/ghost-deskmate.scene-asset.js';
 import { createEveningJarModel } from './scene-assets/evening-jar.scene-asset.js';
 import { createDeskSurfaceModel } from './scene-assets/desk-surface.scene-asset.js';
-import { createStudioFloorModel } from './scene-assets/studio-floor.scene-asset.js';
 
 const publicAssetUrl = (filePath: string): string =>
   `${import.meta.env.BASE_URL}${filePath.replace(/^\/+/u, '')}`;
@@ -34,5 +33,4 @@ export default defineAssets({
   'ghost-deskmate': createGhostDeskmateModel(),
   'evening-jar': createEveningJarModel(),
   'desk-surface': createDeskSurfaceModel(),
-  'studio-floor': createStudioFloorModel(),
 });
