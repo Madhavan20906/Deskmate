@@ -20,6 +20,30 @@
     ]
   },
   "components": {
+    "com.iwsdk.components.DomeGradient": {
+      "azimuthDeg": -25,
+      "dither": true,
+      "elevationDeg": 18,
+      "equator": [
+        0.28,
+        0.34,
+        0.44,
+        1
+      ],
+      "ground": [
+        0.10,
+        0.13,
+        0.18,
+        1
+      ],
+      "intensity": 1,
+      "sky": [
+        0.46,
+        0.56,
+        0.70,
+        1
+      ]
+    },
     "com.iwsdk.components.IBLGradient": {
       "equator": [
         0.80,
