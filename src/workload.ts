@@ -3,6 +3,8 @@ export type WorkloadTask = {
   estimatedMinutes: number;
   scheduledStartMinute: number | null;
   status: string;
+  effortSize?: 'small' | 'medium' | 'large';
+  assignedSlot?: 'morning' | 'afternoon' | 'evening' | null;
 };
 
 export type WorkloadOverlap = {
@@ -25,10 +27,181 @@ export type WorkloadAnalysis = {
   overloadReasons: string[];
 };
 
+export type TimeRulerSlotName = 'morning' | 'afternoon' | 'evening';
+
+export interface TimeRulerSlotAnalysis {
+  name: TimeRulerSlotName;
+  label: string;
+  timeWindow: string;
+  taskCount: number;
+  totalMinutes: number;
+  maxTasks: number;
+  maxMinutes: number;
+  isOverloaded: boolean;
+  overloadReasons: string[];
+  wobbleAngleDeg: number;
+  tasks: WorkloadTask[];
+}
+
+export interface TimeRulerAnalysis {
+  slots: Record<TimeRulerSlotName, TimeRulerSlotAnalysis>;
+  totalPlannedMinutes: number;
+  isAnySlotOverloaded: boolean;
+  overloadedSlots: TimeRulerSlotName[];
+  rebalanceSuggestions: Array<{
+    taskId: string;
+    fromSlot: TimeRulerSlotName;
+    toSlot: TimeRulerSlotName;
+    reason: string;
+  }>;
+}
+
 function formatMinuteOfDay(minute: number): string {
   const hours = Math.floor(minute / 60);
   const minutes = minute % 60;
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+export function getEffortMinutes(effortSize: 'small' | 'medium' | 'large'): number {
+  switch (effortSize) {
+    case 'small':
+      return 30;
+    case 'medium':
+      return 60;
+    case 'large':
+      return 120;
+  }
+}
+
+export function getEffortSize(minutes: number): 'small' | 'medium' | 'large' {
+  if (minutes <= 30) return 'small';
+  if (minutes <= 60) return 'medium';
+  return 'large';
+}
+
+/**
+ * Maps a minute of day (0-1440) to a Time Ruler slot
+ * Morning: 08:00 - 12:00 (480 - 720)
+ * Afternoon: 12:00 - 16:00 (720 - 960)
+ * Evening: 16:00 - 20:00 (960 - 1200)
+ */
+export function getSlotForMinute(startMinute: number): TimeRulerSlotName {
+  if (startMinute < 720) return 'morning';
+  if (startMinute < 960) return 'afternoon';
+  return 'evening';
+}
+
+/**
+ * 3-Slot Time Ruler analysis with overload detection and wobble angles
+ */
+export function analyzeTimeRuler(
+  tasks: WorkloadTask[],
+  maxTasksPerSlot = 3,
+  maxMinutesPerSlot = 240,
+): TimeRulerAnalysis {
+  const slotConfigs: Record<
+    TimeRulerSlotName,
+    { label: string; timeWindow: string; tasks: WorkloadTask[] }
+  > = {
+    morning: { label: 'Morning', timeWindow: '08:00 - 12:00', tasks: [] },
+    afternoon: { label: 'Afternoon', timeWindow: '12:00 - 16:00', tasks: [] },
+    evening: { label: 'Evening', timeWindow: '16:00 - 20:00', tasks: [] },
+  };
+
+  tasks.forEach((task) => {
+    if (task.status === 'completed') return;
+    let slot: TimeRulerSlotName | null = task.assignedSlot ?? null;
+    if (!slot && typeof task.scheduledStartMinute === 'number') {
+      slot = getSlotForMinute(task.scheduledStartMinute);
+    }
+    if (slot && slotConfigs[slot]) {
+      slotConfigs[slot].tasks.push(task);
+    }
+  });
+
+  const slots = {} as Record<TimeRulerSlotName, TimeRulerSlotAnalysis>;
+  const overloadedSlots: TimeRulerSlotName[] = [];
+  let totalPlannedMinutes = 0;
+
+  for (const key of ['morning', 'afternoon', 'evening'] as const) {
+    const config = slotConfigs[key];
+    const slotTasks = config.tasks;
+    const taskCount = slotTasks.length;
+    const totalMinutes = slotTasks.reduce(
+      (sum, t) => sum + (t.estimatedMinutes || getEffortMinutes(t.effortSize ?? 'medium')),
+      0,
+    );
+    totalPlannedMinutes += totalMinutes;
+
+    const reasons: string[] = [];
+    if (taskCount > maxTasksPerSlot) {
+      reasons.push(`${taskCount} tasks exceed slot capacity of ${maxTasksPerSlot}`);
+    }
+    if (totalMinutes > maxMinutesPerSlot) {
+      reasons.push(`${totalMinutes}m exceeds slot capacity of ${maxMinutesPerSlot}m (4h)`);
+    }
+
+    const isOverloaded = reasons.length > 0;
+    if (isOverloaded) {
+      overloadedSlots.push(key);
+    }
+
+    // Physical wobble angle calculation: 0 deg when balanced, up to 14 deg tilt when overloaded
+    const overloadFactor = Math.max(
+      taskCount / maxTasksPerSlot,
+      totalMinutes / maxMinutesPerSlot,
+    );
+    const wobbleAngleDeg = isOverloaded
+      ? Math.min(14, Math.round((overloadFactor - 1) * 12 + 6))
+      : 0;
+
+    slots[key] = {
+      name: key,
+      label: config.label,
+      timeWindow: config.timeWindow,
+      taskCount,
+      totalMinutes,
+      maxTasks: maxTasksPerSlot,
+      maxMinutes: maxMinutesPerSlot,
+      isOverloaded,
+      overloadReasons: reasons,
+      wobbleAngleDeg,
+      tasks: slotTasks,
+    };
+  }
+
+  // Generate rebalance suggestions if any slot is overloaded
+  const rebalanceSuggestions: Array<{
+    taskId: string;
+    fromSlot: TimeRulerSlotName;
+    toSlot: TimeRulerSlotName;
+    reason: string;
+  }> = [];
+
+  for (const overSlot of overloadedSlots) {
+    const candidateTasks = slots[overSlot].tasks;
+    const underloadedSlot = (['morning', 'afternoon', 'evening'] as const).find(
+      (s) => !slots[s].isOverloaded && slots[s].taskCount < maxTasksPerSlot,
+    );
+
+    if (underloadedSlot && candidateTasks.length > 0) {
+      const moveable = candidateTasks[candidateTasks.length - 1];
+      rebalanceSuggestions.push({
+        taskId: moveable.id,
+        fromSlot: overSlot,
+        toSlot: underloadedSlot,
+        reason: `Move to ${slots[underloadedSlot].label} to ease ${slots[overSlot].label} overload`,
+      });
+    }
+  }
+
+  return {
+    slots,
+    totalPlannedMinutes,
+    isAnySlotOverloaded: overloadedSlots.length > 0,
+    overloadedSlots,
+    rebalanceSuggestions,
+  };
 }
 
 export function analyzeWorkload(

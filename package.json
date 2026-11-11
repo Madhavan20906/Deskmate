@@ -11,7 +11,7 @@
     "reference:status": "iwsdk reference status",
     "reference:warmup": "iwsdk reference warmup",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --experimental-strip-types test/pip.test.mjs",
+    "test": "node --test --experimental-strip-types test/pip.test.mjs test/deskmate.test.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },

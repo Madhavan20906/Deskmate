@@ -15,7 +15,17 @@ import {
 import { TaskData } from './components.js';
 import { parsePipCommand, validatePipCommand, type PipCommand } from './pip.js';
 import { calculateProductivityInsights } from './productivity.js';
-import { analyzeWorkload } from './workload.js';
+import {
+  analyzeWorkload,
+  analyzeTimeRuler,
+  type TimeRulerAnalysis,
+  type TimeRulerSlotName,
+  getSlotForMinute,
+  getEffortSize,
+} from './workload.js';
+import { soundManager } from './audio.js';
+import { storageService } from './storage.js';
+import { socialPresence, type PresenceState } from './social.js';
 
 type TaskStatus = 'todo' | 'in-progress' | 'completed';
 type TaskPriority = 'low' | 'medium' | 'high';
@@ -26,8 +36,10 @@ interface TaskRecord {
   description: string;
   category: string;
   priority: TaskPriority;
+  effortSize?: 'small' | 'medium' | 'large';
   estimatedMinutes: number;
   scheduledStartMinute: number | null;
+  assignedSlot?: TimeRulerSlotName | null;
   status: TaskStatus;
   createdAt: number;
   completedAt: number | null;
@@ -334,15 +346,25 @@ function parseTask(value: unknown): TaskRecord | null {
     (typeof candidateStart === 'number' &&
       isValidSchedule(candidateStart, estimatedMinutes));
 
+  const candidateSlot = (value as { assignedSlot?: unknown }).assignedSlot;
+  const assignedSlot: TimeRulerSlotName | null =
+    candidateSlot === 'morning' || candidateSlot === 'afternoon' || candidateSlot === 'evening'
+      ? candidateSlot
+      : validSchedule && typeof candidateStart === 'number'
+        ? getSlotForMinute(candidateStart)
+        : null;
+
   return {
     id: id.slice(0, 80),
     title: title.trim().slice(0, 80),
     description: description.trim().slice(0, 220),
     category: typeof category === 'string' ? category.trim().slice(0, 32) : '',
     priority,
+    effortSize: getEffortSize(Math.round(estimatedMinutes)),
     estimatedMinutes: Math.round(estimatedMinutes),
     scheduledStartMinute:
       validSchedule && typeof candidateStart === 'number' ? candidateStart : null,
+    assignedSlot,
     status,
     createdAt: typeof createdAt === 'number' ? createdAt : 0,
     completedAt: status === 'completed' && typeof completedAt === 'number'
@@ -353,11 +375,25 @@ function parseTask(value: unknown): TaskRecord | null {
 }
 
 function readTasks(): TaskLoadResult {
-  const defaults = (): TaskLoadResult => ({
-    tasks: DEFAULT_TASKS.map((task) => ({ ...task })),
-    readOnly: false,
-    warning: '',
-  });
+  const defaults = (): TaskLoadResult => {
+    const persisted = storageService.getState().tasks;
+    if (persisted && persisted.length > 0) {
+      return {
+        tasks: persisted.map((t) => ({
+          ...t,
+          effortSize: getEffortSize(t.estimatedMinutes),
+          assignedSlot: t.assignedSlot ?? (t.scheduledStartMinute !== null ? getSlotForMinute(t.scheduledStartMinute) : null),
+        } as TaskRecord)),
+        readOnly: false,
+        warning: '',
+      };
+    }
+    return {
+      tasks: DEFAULT_TASKS.map((task) => ({ ...task })),
+      readOnly: false,
+      warning: '',
+    };
+  };
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored === null) return defaults();
@@ -505,11 +541,17 @@ function parseActiveFocusSession(value: unknown): ActiveFocusSession | null {
 }
 
 function readFocusStorage(): FocusStorageLoadResult {
-  const empty = (): FocusStorage => ({
-    history: [],
-    active: null,
-    durationMinutes: DEFAULT_FOCUS_MINUTES,
-  });
+  const empty = (): FocusStorage => {
+    const persisted = storageService.getState().focusHistory;
+    return {
+      history: (persisted || []).map((s) => ({
+        ...s,
+        taskTitle: s.taskTitle || '',
+      })),
+      active: null,
+      durationMinutes: storageService.getState().settings?.focusDurationMinutes || DEFAULT_FOCUS_MINUTES,
+    };
+  };
   try {
     const stored = window.localStorage.getItem(FOCUS_STORAGE_KEY);
     if (stored === null) return { storage: empty(), readOnly: false };
@@ -606,6 +648,9 @@ export class PanelSystem extends createSystem({
   private animationTime = 0;
   private reduceMotion = false;
   private highContrast = false;
+  private currentRulerAnalysis: TimeRulerAnalysis | null = null;
+  private presenceState: PresenceState = socialPresence.getState();
+  private defaultCardTransforms = new Map<string, { position: [number, number, number]; scale: number }>();
   private dashboardSummary!: NonNullable<
     ReturnType<UIKitMLAsset['getElementById']>
   >;
@@ -803,6 +848,31 @@ export class PanelSystem extends createSystem({
 
     this.eveningJar = this.world.getSceneObject('evening-jar');
     this.deskSurface = this.world.getSceneObject('desk-surface');
+
+    for (const nodeId of TASK_NODE_IDS) {
+      const cardObj = this.world.getSceneObject(nodeId);
+      if (cardObj) {
+        this.defaultCardTransforms.set(nodeId, {
+          position: [cardObj.position.x, cardObj.position.y, cardObj.position.z],
+          scale: cardObj.scale.x,
+        });
+      }
+    }
+
+    const companionText = dashboard?.getElementById('companion-text');
+    this.cleanupFuncs.push(
+      socialPresence.subscribe((state) => {
+        this.presenceState = state;
+        if (companionText) {
+          const modeTag = state.mode === 'ghost' ? 'GHOST' : 'FRIEND';
+          const statusTag = state.partnerIsFocusing ? 'FOCUSING' : 'ON BREAK';
+          companionText.setProperties({
+            text: `${modeTag}: ${statusTag}`,
+          });
+        }
+      }),
+    );
+
     const deskDown = dashboard?.getElementById('desk-down');
     const deskUp = dashboard?.getElementById('desk-up');
     const deskHeightText = dashboard?.getElementById('desk-height-text');
@@ -816,6 +886,7 @@ export class PanelSystem extends createSystem({
       if (this.eveningJar !== undefined) {
         this.eveningJar.position.y = 0.76 + this.deskHeightOffset;
       }
+      storageService.saveState({ deskHeightOffset: this.deskHeightOffset });
     };
 
     const adjustDesk = (delta: number) => {
@@ -1199,6 +1270,7 @@ export class PanelSystem extends createSystem({
       { id: 'pip-cmd-add', query: 'Add a task to review project for 30 minutes' },
       { id: 'pip-cmd-schedule', query: 'Schedule studying for two hours today' },
       { id: 'pip-cmd-focus', query: 'Start focus' },
+      { id: 'pip-cmd-rebalance', query: 'Rebalance overloaded slots' },
       { id: 'pip-cmd-pending', query: 'What pending tasks do I have?' },
       { id: 'pip-cmd-recap', query: 'Daily recap' },
     ];
@@ -1376,6 +1448,12 @@ export class PanelSystem extends createSystem({
         }
         task.status = nextStatus(task.status);
         task.completedAt = task.status === 'completed' ? Date.now() : null;
+        if (task.status === 'completed') {
+          soundManager.playJarDrop();
+          soundManager.playBloom();
+        } else {
+          soundManager.playCardDrop();
+        }
         this.persistTasks();
       };
       const editTask = () => this.editTask(slot);
@@ -1453,6 +1531,7 @@ export class PanelSystem extends createSystem({
         FOCUS_STORAGE_KEY,
         JSON.stringify({ schemaVersion: 2, ...this.focusStorage }),
       );
+      storageService.saveState({ focusHistory: this.focusStorage.history });
       this.focusStorageAvailable = true;
     } catch {
       this.focusStorageAvailable = false;
@@ -1764,6 +1843,8 @@ export class PanelSystem extends createSystem({
     this.selectedTask = task.id;
     this.schedulerMessage = '';
     this.lastTimerSecond = -1;
+    this.playChime();
+    socialPresence.broadcastMyState(false, 0);
     this.persistFocusStorage();
     this.startFocusTicker();
     this.renderTasks();
@@ -1800,6 +1881,8 @@ export class PanelSystem extends createSystem({
     active.status = 'running';
     active.deadlineAt = Date.now() + active.remainingMs;
     this.lastTimerSecond = -1;
+    this.playChime();
+    socialPresence.broadcastMyState(true, Math.round(active.remainingMs / 1000));
     this.persistFocusStorage();
     this.startFocusTicker();
     this.updateFocusClock(true);
@@ -1836,6 +1919,8 @@ export class PanelSystem extends createSystem({
     this.focusStorage.active = null;
     this.stopFocusTicker();
     this.lastTimerSecond = -1;
+    this.playChime();
+    socialPresence.broadcastMyState(false, 0);
     this.persistFocusStorage();
     this.renderTasks();
   }
@@ -1849,9 +1934,11 @@ export class PanelSystem extends createSystem({
     ) return;
     task.status = 'completed';
     task.completedAt = Date.now();
+    soundManager.playJarDrop();
+    soundManager.playBloom();
+    socialPresence.broadcastMyState(false, 0);
     this.persistTasks();
     this.finishFocusSession('completed', true);
-    this.playChime();
   }
 
   private continueAfterFocus(): void {
@@ -2085,6 +2172,9 @@ export class PanelSystem extends createSystem({
         return;
       case 'recap':
         this.respondToPipRecap();
+        return;
+      case 'rebalance':
+        this.applyPipRebalance();
         return;
       case 'help':
         this.setPipMessage('Try: "Add a task to finish my project", "Schedule studying for two hours today", "Mark my assignment as completed", or "What tasks do I have today?".');
@@ -2484,17 +2574,11 @@ export class PanelSystem extends createSystem({
   }
 
   private playChime(): void {
-    try {
-      const audioUrl = `${import.meta.env.BASE_URL}audio/chime.mp3`.replace('//', '/');
-      const audio = new Audio(audioUrl);
-      audio.volume = 0.6;
-      audio.play().catch(() => {});
-    } catch {
-      // Audio playback might be restricted without user interaction
-    }
+    soundManager.playChime();
   }
 
   private openCreateTaskModal(): void {
+    soundManager.playCardPickup();
     const emptySlot = this.tasks.findIndex((task) => task === null);
     if (emptySlot < 0) {
       this.dashboardSummary.setProperties({
@@ -2515,6 +2599,7 @@ export class PanelSystem extends createSystem({
   private openEditTaskModal(slot: number): void {
     const task = this.tasks[slot];
     if (task === null) return;
+    soundManager.playCardPickup();
     if (this.focusStorage.active?.taskId === task.id) {
       this.schedulerMessage = 'Stop or finish the focus session before editing this task.';
       this.renderTasks();
@@ -2645,6 +2730,7 @@ export class PanelSystem extends createSystem({
       };
       this.selectedTask = this.tasks[emptySlot]?.id ?? null;
     }
+    soundManager.playCardDrop();
     this.persistTasks();
     this.closeTaskModal();
   }
@@ -2679,6 +2765,7 @@ export class PanelSystem extends createSystem({
       scheduleNeedsReview: false,
     };
     this.selectedTask = this.tasks[emptySlot]?.id ?? null;
+    soundManager.playCardDrop();
     this.persistTasks();
   }
 
@@ -2819,6 +2906,13 @@ export class PanelSystem extends createSystem({
           STORAGE_KEY,
           JSON.stringify({ schemaVersion: 2, tasks: activeTasks }),
         );
+        storageService.saveState({
+          tasks: activeTasks.map((t) => ({
+            ...t,
+            effortSize: t.effortSize ?? getEffortSize(t.estimatedMinutes),
+          })),
+          deskHeightOffset: this.deskHeightOffset,
+        });
       } catch {
         message = `${message} / storage unavailable`;
         saved = false;
@@ -2958,6 +3052,9 @@ export class PanelSystem extends createSystem({
     const scheduledTasks = this.tasks.filter(
       (task): task is TaskRecord => task !== null && task.scheduledStartMinute !== null,
     );
+    this.currentRulerAnalysis = analyzeTimeRuler(
+      this.tasks.filter((task): task is TaskRecord => task !== null),
+    );
     const workload = analyzeWorkload(
       this.tasks.filter((task): task is TaskRecord => task !== null),
       WORKLOAD_CAPACITY_MINUTES,
@@ -3094,21 +3191,77 @@ export class PanelSystem extends createSystem({
       : 'No suggested time available';
   }
 
+  private applyPipRebalance(): void {
+    if (!this.currentRulerAnalysis || !this.currentRulerAnalysis.isAnySlotOverloaded) {
+      this.setPipMessage('Your schedule is already well-balanced! All slots are within capacity.');
+      return;
+    }
+    if (this.currentRulerAnalysis.rebalanceSuggestions.length === 0) {
+      this.setPipMessage('No open slots available for rebalancing. Consider completing or carrying over a task.');
+      return;
+    }
+
+    const suggestion = this.currentRulerAnalysis.rebalanceSuggestions[0];
+    const taskToMove = this.tasks.find((t) => t?.id === suggestion.taskId);
+    if (taskToMove) {
+      taskToMove.assignedSlot = suggestion.toSlot;
+      if (suggestion.toSlot === 'morning') taskToMove.scheduledStartMinute = 9 * 60;
+      else if (suggestion.toSlot === 'afternoon') taskToMove.scheduledStartMinute = 13 * 60;
+      else taskToMove.scheduledStartMinute = 17 * 60;
+
+      soundManager.playCardDrop();
+      this.persistTasks();
+      this.renderTasks();
+      this.setPipMessage(`Pip rebalanced: moved "${taskToMove.title}" to ${suggestion.toSlot} slot to ease schedule overload!`);
+    }
+  }
+
   update(delta: number): void {
     if (this.reduceMotion) return;
     this.animationTime += delta;
+
+    // 1. Pip spatial companion animation
     if (this.pipCompanion !== undefined) {
       const isFocused = this.focusStorage.active?.status === 'running';
-      const bobFreq = isFocused ? 3.5 : 1.8;
-      const bobAmp = isFocused ? 0.008 : 0.012;
-      this.pipCompanion.position.y = this.pipInitialY + this.deskHeightOffset + Math.sin(this.animationTime * bobFreq) * bobAmp;
-      this.pipCompanion.rotation.y = Math.sin(this.animationTime * 0.8) * 0.08;
+      const isOverloaded = this.currentRulerAnalysis?.isAnySlotOverloaded ?? false;
+
+      if (isOverloaded) {
+        // Concerned head-tilt and alert bobbing on schedule overload
+        this.pipCompanion.rotation.z = Math.sin(this.animationTime * 2.5) * 0.12;
+        this.pipCompanion.position.y = this.pipInitialY + this.deskHeightOffset + Math.sin(this.animationTime * 1.5) * 0.006;
+      } else {
+        this.pipCompanion.rotation.z = 0;
+        const bobFreq = isFocused ? 3.5 : 1.8;
+        const bobAmp = isFocused ? 0.008 : 0.012;
+        this.pipCompanion.position.y = this.pipInitialY + this.deskHeightOffset + Math.sin(this.animationTime * bobFreq) * bobAmp;
+        this.pipCompanion.rotation.y = Math.sin(this.animationTime * 0.8) * 0.08;
+      }
     }
+
+    // 2. Ghost deskmate companion animation
     if (this.ghostDeskmate !== undefined) {
-      const isFocused = this.focusStorage.active?.status === 'running';
-      const pulseFreq = isFocused ? 2.5 : 1.2;
+      const isPartnerFocusing = this.presenceState.partnerIsFocusing;
+      const pulseFreq = isPartnerFocusing ? 2.8 : 1.2;
       this.ghostDeskmate.position.y = this.ghostInitialY + this.deskHeightOffset + Math.cos(this.animationTime * pulseFreq) * 0.008;
       this.ghostDeskmate.rotation.y = this.animationTime * 0.15;
+    }
+
+    // 3. Physical card wobble on overloaded slots
+    if (this.currentRulerAnalysis?.isAnySlotOverloaded) {
+      for (let slot = 0; slot < MAX_TASKS; slot += 1) {
+        const task = this.tasks[slot];
+        if (!task || slot >= TASK_NODE_IDS.length) continue;
+        const assignedSlot = task.assignedSlot ?? (task.scheduledStartMinute !== null ? getSlotForMinute(task.scheduledStartMinute) : null);
+        const cardObj = this.world.getSceneObject(TASK_NODE_IDS[slot]);
+        if (cardObj) {
+          if (assignedSlot && this.currentRulerAnalysis.slots[assignedSlot]?.isOverloaded) {
+            const wobbleDeg = this.currentRulerAnalysis.slots[assignedSlot].wobbleAngleDeg;
+            cardObj.rotation.z = Math.sin(this.animationTime * 4.8 + slot * 0.8) * (wobbleDeg * Math.PI / 180);
+          } else if (Math.abs(cardObj.rotation.z) > 0.001) {
+            cardObj.rotation.z *= 0.85;
+          }
+        }
+      }
     }
   }
 }

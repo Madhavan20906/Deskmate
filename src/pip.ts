@@ -1,18 +1,20 @@
 export type PipCommand =
-  | { intent: 'create-task'; title: string; estimatedMinutes: number }
-  | { intent: 'create-multiple-tasks'; tasks: Array<{ title: string; estimatedMinutes: number }> }
+  | { intent: 'create-task'; title: string; estimatedMinutes: number; assignedSlot?: 'morning' | 'afternoon' | 'evening' }
+  | { intent: 'create-multiple-tasks'; tasks: Array<{ title: string; estimatedMinutes: number; assignedSlot?: 'morning' | 'afternoon' | 'evening' }> }
   | {
       intent: 'schedule-task';
       taskQuery: string;
       estimatedMinutes?: number;
       requestedDay: 'today' | 'tomorrow' | null;
       requestedStartMinute?: number;
+      assignedSlot?: 'morning' | 'afternoon' | 'evening';
     }
   | { intent: 'complete-task'; taskQuery: string }
   | { intent: 'list-tasks'; filter: 'all' | 'pending' }
   | { intent: 'start-focus'; taskQuery?: string }
   | { intent: 'recap' }
   | { intent: 'help' }
+  | { intent: 'rebalance' }
   | { intent: 'invalid-duration' }
   | { intent: 'unknown' };
 
@@ -77,7 +79,8 @@ function cleanTaskQuery(value: string): string {
 }
 
 function isIntent(value: unknown): value is PipIntent {
-  return value === 'create-task' ||
+  return (
+    value === 'create-task' ||
     value === 'create-multiple-tasks' ||
     value === 'schedule-task' ||
     value === 'complete-task' ||
@@ -85,8 +88,10 @@ function isIntent(value: unknown): value is PipIntent {
     value === 'start-focus' ||
     value === 'recap' ||
     value === 'help' ||
+    value === 'rebalance' ||
     value === 'invalid-duration' ||
-    value === 'unknown';
+    value === 'unknown'
+  );
 }
 
 function guessEffortMinutes(text: string): number {
@@ -190,6 +195,7 @@ export function validatePipCommand(value: unknown): PipCommand | null {
         : null;
     case 'recap':
     case 'help':
+    case 'rebalance':
     case 'invalid-duration':
     case 'unknown':
       return { intent: record.intent };
@@ -230,6 +236,8 @@ export function parsePipCommand(input: string): PipCommand {
         ? {}
         : { taskQuery: cleanTaskQuery(focusTask) }),
     };
+  } else if (/\b(?:rebalance|fix schedule|fix overload|ease schedule)\b/.test(lower)) {
+    candidate = { intent: 'rebalance' };
   } else if (/\b(?:what|show|list)\b.*\b(?:tasks?|schedule|today)\b/.test(lower)) {
     candidate = { intent: 'list-tasks', filter: 'all' };
   } else if (
@@ -246,19 +254,19 @@ export function parsePipCommand(input: string): PipCommand {
       if (hasDuration && durationMinutes === undefined) {
         candidate = { intent: 'invalid-duration' };
       } else {
-      const requestedStartMinute = parseRequestedStartMinute(details);
-      const requestedDay = /\btomorrow\b/i.test(details)
-        ? 'tomorrow'
-        : /\btoday\b/i.test(details)
-          ? 'today'
-          : null;
-      candidate = {
-        intent: 'schedule-task',
-        taskQuery: cleanTaskQuery(details),
-        requestedDay,
-        ...(durationMinutes === undefined ? {} : { estimatedMinutes: durationMinutes }),
-        ...(requestedStartMinute === undefined ? {} : { requestedStartMinute }),
-      };
+        const requestedStartMinute = parseRequestedStartMinute(details);
+        const requestedDay = /\btomorrow\b/i.test(details)
+          ? 'tomorrow'
+          : /\btoday\b/i.test(details)
+            ? 'today'
+            : null;
+        candidate = {
+          intent: 'schedule-task',
+          taskQuery: cleanTaskQuery(details),
+          requestedDay,
+          ...(durationMinutes === undefined ? {} : { estimatedMinutes: durationMinutes }),
+          ...(requestedStartMinute === undefined ? {} : { requestedStartMinute }),
+        };
       }
     } else {
       const createMatch = text.match(
@@ -303,4 +311,74 @@ export function parsePipCommand(input: string): PipCommand {
   }
 
   return validatePipCommand(candidate) ?? { intent: 'unknown' };
+}
+
+/**
+ * Natural language processing with automatic 3-second offline fallback.
+ * Strictly adheres to security rules: no client API keys, rate-limited,
+ * minimal task data sent, offline first.
+ */
+export async function processPipNaturalLanguage(
+  text: string,
+  aiEndpoint?: string,
+  aiEnabled = false,
+): Promise<PipCommand> {
+  if (!aiEnabled || !aiEndpoint) {
+    return parsePipCommand(text);
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 2800); // 2.8s strict timeout
+
+  try {
+    const res = await fetch(aiEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: text.trim().slice(0, 240) }),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      const validated = validatePipCommand(data);
+      if (validated) return validated;
+    }
+  } catch {
+    // Timeout or network error; fall through to offline parsing
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  return parsePipCommand(text);
+}
+
+/**
+ * Generates Pip's daily recap speech
+ */
+export function generatePipDailyRecap(
+  completedCount: number,
+  focusedMinutes: number,
+  streakDays: number,
+  gardenStage: string,
+  overloadedSlots: string[],
+): string {
+  const parts: string[] = [];
+  if (completedCount > 0) {
+    parts.push(`Pip here! You finished ${completedCount} task${completedCount === 1 ? '' : 's'} and logged ${focusedMinutes} focus minutes today!`);
+  } else {
+    parts.push(`Pip here! We're ready for focus today. You have ${focusedMinutes} focused minutes logged.`);
+  }
+
+  if (streakDays > 1) {
+    parts.push(`Your focus streak is ${streakDays} days strong! Your garden is blooming in the ${gardenStage} stage.`);
+  }
+
+  if (overloadedSlots.length > 0) {
+    parts.push(`Notice: your ${overloadedSlots.join(' and ')} slot${overloadedSlots.length === 1 ? ' is' : 's are'} looking crowded. Would you like me to rebalance some tasks?`);
+  } else {
+    parts.push('Your desk schedule is wonderfully balanced. Keep up the calm momentum!');
+  }
+
+  return parts.join(' ');
 }

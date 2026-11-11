@@ -6,18 +6,18 @@
 <style>
   .panel-root {
     flex-direction: column;
-    width: 420px;
+    width: 480px;
   }
 
   .panel-content {
     flex-direction: column;
-    gap: 7px;
-    padding: 22px;
+    gap: 8px;
+    padding: 24px;
   }
 
   .eyebrow {
     color: #6b5a00;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: 1.4px;
   }
@@ -28,9 +28,9 @@
 
   .heading {
     color: #1c1d20;
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 700;
-    line-height: 36px;
+    line-height: 34px;
   }
 
   .heading:dark {
@@ -39,19 +39,39 @@
 
   .body {
     color: #3a3b40;
-    font-size: 20px;
-    line-height: 27px;
+    font-size: 16px;
+    line-height: 22px;
   }
 
   .body:dark {
     color: #dddfe3;
   }
 
+  .onboarding-list {
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 12px;
+    background-color: #15222b;
+    border-width: 1px;
+    border-color: #2a3e4e;
+  }
+
+  .onboarding-step {
+    color: #8ce2d2;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
   .button {
     justify-content: flex-start;
-    margin-left: 22px;
-    margin-right: 22px;
-    margin-bottom: 22px;
+    margin-left: 24px;
+    margin-right: 24px;
+    margin-bottom: 20px;
   }
 
   .button-label {
@@ -60,16 +80,22 @@
 </style>
 <Panel class="panel-root">
   <div class="panel-content">
-    <div class="eyebrow">DESKMATE / MIXED-REALITY WORKSPACE</div>
-    <div class="heading">Welcome to your workday.</div>
-    <div class="body">Your daily plan is ready. Enter the workspace</div>
-    <div class="body">to focus, review, and reset at your own pace.</div>
+    <div class="eyebrow">DESKMATE / META QUEST XR 2026</div>
+    <div class="heading">Plan with your hands on your real desk.</div>
+    <div class="body">Seated hands-first mixed reality productivity. Focus beside an AI companion or body-doubling friend, and watch your habit garden bloom.</div>
+    <div class="onboarding-list">
+      <span class="onboarding-step">1. Enter Mixed Reality & pinch your first task card</span>
+      <span class="onboarding-step">2. Place cards on Morning, Afternoon & Evening ruler</span>
+      <span class="onboarding-step">3. Overloaded slots wobble & alert you to balance work</span>
+      <span class="onboarding-step">4. Pip AI converts spoken thoughts into task cards</span>
+      <span class="onboarding-step">5. Drop finished cards into the glass jar to bloom your garden</span>
+    </div>
   </div>
   <Button id="xr-button" class="button">
     <ButtonIcon>
       <RectangleGoggles></RectangleGoggles>
     </ButtonIcon>
-    <ButtonLabel class="button-label">Enter XR</ButtonLabel>
+    <ButtonLabel class="button-label">Enter Mixed Reality</ButtonLabel>
   </Button>
   <Button id="exit-button" class="button" style="display: none">
     <ButtonIcon>
