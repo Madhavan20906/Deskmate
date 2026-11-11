@@ -21,29 +21,11 @@ World.create(
     const xrHint = document.getElementById('xr-hint');
 
     if (domXrBtn && xrLauncher) {
-      domXrBtn.addEventListener('click', async () => {
+      domXrBtn.addEventListener('click', () => {
         try {
-          if (!navigator.xr) {
-            if (xrHint) {
-              xrHint.textContent = 'ℹ️ WebXR not detected. Open on Meta Quest or IWER emulator to enter VR/AR!';
-              xrHint.style.color = '#f2bf7b';
-            }
-            return;
-          }
-          const isArSupported = await navigator.xr.isSessionSupported('immersive-ar').catch(() => false);
-          const isVrSupported = await navigator.xr.isSessionSupported('immersive-vr').catch(() => false);
-
-          if (!isArSupported && !isVrSupported) {
-            if (xrHint) {
-              xrHint.textContent = 'ℹ️ No XR headset connected. Exploring in 3D desktop preview (Right-drag to look around).';
-              xrHint.style.color = '#8ce2d2';
-            }
-            return;
-          }
           world.launchXR();
         } catch (err) {
           console.warn('[XR] Launch attempt:', err);
-          world.launchXR();
         }
       });
 
