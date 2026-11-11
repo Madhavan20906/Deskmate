@@ -74,6 +74,23 @@
   },
   "nodes": [
     {
+      "content": {
+        "asset": "cozy-room",
+        "receiveShadow": true,
+        "type": "asset"
+      },
+      "id": "cozy-room",
+      "name": "Cozy Room Environment",
+      "transform": {
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "scale": 1
+      }
+    },
+    {
       "components": {
         "ShadowCatcher": {
           "color": [
@@ -147,15 +164,15 @@
       "transform": {
         "position": [
           0,
-          1.25,
-          -1.05
+          1.34,
+          -1.06
         ],
         "rotationDeg": [
-          -3,
+          -4,
           0,
           0
         ],
-        "scale": 0.105
+        "scale": 0.098
       }
     },
     {
@@ -182,16 +199,16 @@
       "name": "Roadmap Task Card",
       "transform": {
         "position": [
-          -0.38,
-          0.82,
-          -0.74
+          -0.28,
+          0.735,
+          -0.68
         ],
         "rotationDeg": [
-          14,
-          10,
-          -2
+          22,
+          6,
+          0
         ],
-        "scale": 0.09
+        "scale": 0.076
       }
     },
     {
@@ -219,15 +236,15 @@
       "transform": {
         "position": [
           0,
-          0.80,
-          -0.70
+          0.732,
+          -0.66
         ],
         "rotationDeg": [
-          16,
+          22,
           0,
           0
         ],
-        "scale": 0.09
+        "scale": 0.076
       }
     },
     {
@@ -254,16 +271,16 @@
       "name": "Inbox Task Card",
       "transform": {
         "position": [
-          0.38,
-          0.82,
-          -0.74
+          0.28,
+          0.735,
+          -0.68
         ],
         "rotationDeg": [
-          14,
-          -10,
-          2
+          22,
+          -6,
+          0
         ],
-        "scale": 0.09
+        "scale": 0.076
       }
     },
     {
@@ -395,9 +412,9 @@
       "name": "Pip Companion",
       "transform": {
         "position": [
-          0.50,
-          0.72,
-          -0.72
+          0.48,
+          0.725,
+          -0.66
         ],
         "scale": 1
       }
@@ -416,9 +433,9 @@
       "name": "Ghost Deskmate",
       "transform": {
         "position": [
-          -0.50,
-          0.72,
-          -0.72
+          -0.48,
+          0.78,
+          -0.66
         ],
         "scale": 1
       }
@@ -438,9 +455,9 @@
       "name": "Evening Reward Jar",
       "transform": {
         "position": [
-          0.40,
-          0.72,
-          -0.58
+          0.44,
+          0.725,
+          -0.84
         ],
         "scale": 1
       }
