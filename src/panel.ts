@@ -864,7 +864,7 @@ export class PanelSystem extends createSystem({
       socialPresence.subscribe((state) => {
         this.presenceState = state;
         if (companionText) {
-          const modeTag = state.mode === 'ghost' ? 'GHOST' : 'FRIEND';
+          const modeTag = state.mode === 'ghost' ? 'GHOST DESKMATE (LEFT)' : 'FRIEND';
           const statusTag = state.partnerIsFocusing ? 'FOCUSING' : 'ON BREAK';
           companionText.setProperties({
             text: `${modeTag}: ${statusTag}`,
@@ -879,7 +879,11 @@ export class PanelSystem extends createSystem({
 
     const updateDeskHeightUI = () => {
       const cm = Math.round(this.deskHeightOffset * 100);
-      deskHeightText?.setProperties({ text: `DESK: ${cm >= 0 ? `+${cm}` : cm}cm` });
+      const isVisible = this.deskSurface?.visible !== false;
+      const offsetStr = cm >= 0 ? `+${cm}` : `${cm}`;
+      deskHeightText?.setProperties({
+        text: isVisible ? `DESK: ${offsetStr}cm` : `DESK: REAL (${offsetStr}cm)`,
+      });
       if (this.deskSurface !== undefined) {
         this.deskSurface.position.y = this.deskHeightOffset;
       }
@@ -908,6 +912,17 @@ export class PanelSystem extends createSystem({
         () => deskDown.removeEventListener('click', down),
         () => deskUp.removeEventListener('click', up),
       );
+    }
+
+    if (deskHeightText != null) {
+      const toggleDeskMesh = () => {
+        if (this.deskSurface !== undefined) {
+          this.deskSurface.visible = !this.deskSurface.visible;
+          updateDeskHeightUI();
+        }
+      };
+      deskHeightText.addEventListener('click', toggleDeskMesh);
+      this.cleanupFuncs.push(() => deskHeightText.removeEventListener('click', toggleDeskMesh));
     }
 
     try {
@@ -1973,6 +1988,9 @@ export class PanelSystem extends createSystem({
         this.pipProcessingTimeout = null;
       }
       if (this.pipInteractionState === 'thinking') this.pipInteractionState = 'idle';
+    } else {
+      this.pipQuickCommandsVisible = true;
+      this.pipQuickCommands?.setProperties({ display: 'flex' });
     }
     this.pipPanelRoot.setProperties({ display: visible ? 'flex' : 'none' });
     this.pipToggleButton.name = visible ? 'Hide Pip assistant panel' : 'Open Pip assistant panel';

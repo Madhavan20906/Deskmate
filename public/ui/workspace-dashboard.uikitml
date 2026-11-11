@@ -854,7 +854,7 @@
           <span id="desk-height-text" class="desk-height-text">DESK: 0cm</span>
           <Button id="desk-up" class="desk-ctrl-btn"><ButtonLabel>+ 5cm</ButtonLabel></Button>
         </div>
-        <div class="day-chip"><span id="companion-text" class="day-chip-text">GHOST COMPANION</span></div>
+        <div class="day-chip"><span id="companion-text" class="day-chip-text">GHOST DESKMATE (LEFT)</span></div>
         <Button id="pip-toggle" class="pip-toggle">
           <span id="pip-launcher-orb" class="pip-launcher-orb"></span>
           <ButtonLabel>PIP</ButtonLabel>
@@ -891,7 +891,7 @@
           <ButtonLabel>Daily recap</ButtonLabel>
         </Button>
       </div>
-      <div id="pip-quick-commands" class="pip-quick-commands" style="display: none">
+      <div id="pip-quick-commands" class="pip-quick-commands">
         <span class="pip-quick-label">QUICK LOCAL COMMANDS (TAP TO EXECUTE)</span>
         <div class="pip-chips">
           <Button id="pip-cmd-add" class="pip-chip-btn"><ButtonLabel>+ Add 30m Task</ButtonLabel></Button>
