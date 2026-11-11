@@ -23,9 +23,9 @@ World.create(
     const exitWorkspaceBtn = document.getElementById('exit-workspace-btn');
 
     const initialPos = { x: 0, y: 1.28, z: -0.05 };
-    const seatedPos = { x: 0, y: 1.04, z: -0.32 };
+    const seatedPos = { x: 0, y: 1.20, z: -0.10 };
     const initialLookAt = { x: 0, y: 1.10, z: -0.92 };
-    const seatedLookAt = { x: 0, y: 0.92, z: -0.85 };
+    const seatedLookAt = { x: 0, y: 1.02, z: -0.90 };
 
     let isTransitioning = false;
 
