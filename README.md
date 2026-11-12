@@ -18,6 +18,9 @@ The app keeps its existing living-room scene and central spatial dashboard.
   that Pip uses local command parsing rather than a hosted AI model.
 - A productivity garden and seven-day analytics derived from saved task completion
   dates and focus history. Growth and streaks are retained through that source data.
+- A room-aware workspace that can be pinned above a detected tabletop and restored
+  across XR sessions when the browser supports persistent WebXR anchors. The board
+  faces the user while task cards stay within reach above the desk.
 - Versioned local browser storage with validation and a protected read-only
   recovery mode for unreadable task/focus data.
 
@@ -40,11 +43,13 @@ production bundle.
   Speech transcription depends on browser support and permissions.
 - The garden visualization and analytics are dashboard-scale UIKit, not a
   persistent 3D garden environment.
-- Physical desk detection, plane raycasting, and persistent world anchors are
-  not enabled or claimed. The app retains AR/passthrough configuration, but this
-  workspace has not been tested on a physical Quest headset.
-- The current runtime validation target is the managed IWER Quest 3 profile on a
-  Windows desktop; it is not evidence of Quest hand-tracking or frame-rate
+- Desk placement uses WebXR plane detection and persistent anchors rather than
+  Unity's MRUK, because Deskmate is an IWSDK/WebXR app. Room setup, supported browser
+  features, and anchor permissions affect placement; the floating workspace remains
+  available when a suitable table is not detected.
+- Physical Quest validation has not been completed. The current runtime validation
+  target is the managed IWER Quest 3 profile on a Windows desktop; it is not evidence
+  of real-room plane detection, persistent placement, hand tracking, or frame-rate
   performance on hardware.
 
 ## References

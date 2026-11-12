@@ -8,8 +8,29 @@
     />
     <link rel="icon" href="data:," />
     <title>deskmate</title>
+    <style>
+      html,
+      body,
+      #scene-container {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        overflow: hidden;
+      }
+
+      #scene-container {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+      }
+    </style>
   </head>
-  <body style="margin: 0">
+  <body>
     <div id="scene-container"></div>
     <script type="module" src="/src/index.ts"></script>
   </body>

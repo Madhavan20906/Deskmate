@@ -61,15 +61,15 @@
 <Panel class="panel-root">
   <div class="panel-content">
     <div class="eyebrow">DESKMATE / MIXED-REALITY WORKSPACE</div>
-    <div class="heading">Welcome to your workday.</div>
-    <div class="body">Your daily plan is ready. Enter the workspace</div>
-    <div class="body">to focus, review, and reset at your own pace.</div>
+    <div class="heading">Make room for focused work.</div>
+    <div class="body">Bring your plan to a detected desk surface. Pin the workspace,</div>
+    <div class="body">pull a task card close, and begin one clear focus session.</div>
   </div>
   <Button id="xr-button" class="button">
     <ButtonIcon>
       <RectangleGoggles></RectangleGoggles>
     </ButtonIcon>
-    <ButtonLabel class="button-label">Enter XR</ButtonLabel>
+    <ButtonLabel class="button-label">Enter workspace</ButtonLabel>
   </Button>
   <Button id="exit-button" class="button" style="display: none">
     <ButtonIcon>
