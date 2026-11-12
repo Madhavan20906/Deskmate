@@ -29,10 +29,63 @@
         height: 100vh;
         height: 100dvh;
       }
+
+      .xr-overlay {
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        border-radius: 9999px;
+        background: rgba(22, 34, 46, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(83, 203, 181, 0.3);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #e2e8f0;
+      }
+
+      .xr-badge {
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: #8ce2d2;
+      }
+
+      .xr-launch-button {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        background: #0082fb;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.15s ease, background-color 0.15s ease;
+      }
+
+      .xr-launch-button:hover {
+        background: #006dd4;
+        transform: scale(1.03);
+      }
     </style>
   </head>
   <body>
     <div id="scene-container"></div>
+    <div class="xr-overlay">
+      <span class="xr-badge">Deskmate • Meta Quest WebXR</span>
+      <button class="xr-launch-button" onclick="window.__launchXR ? window.__launchXR() : null">
+        🥽 Enter Mixed Reality (XR)
+      </button>
+    </div>
     <script type="module" src="/src/index.ts"></script>
   </body>
 </html>
