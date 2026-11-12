@@ -29,6 +29,30 @@
     gap: 8px;
   }
 
+  .workspace-setup {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 10px;
+    background-color: #203039;
+  }
+
+  .workspace-anchor-status {
+    color: #8ce2d2;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .workspace-setup-actions {
+    flex-direction: row;
+    gap: 8px;
+  }
+
   .pip-toggle {
     flex-direction: row;
     align-items: center;
@@ -622,6 +646,17 @@
         <Button id="pip-toggle" class="pip-toggle">
           <span id="pip-launcher-orb" class="pip-launcher-orb"></span>
           <ButtonLabel>PIP</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div class="workspace-setup">
+      <span id="workspace-anchor-status" class="workspace-anchor-status">Workspace ready. Enter XR, look at a tabletop, then pin your desk.</span>
+      <div class="workspace-setup-actions">
+        <Button id="workspace-pin">
+          <ButtonLabel>Pin to desk</ButtonLabel>
+        </Button>
+        <Button id="workspace-reset">
+          <ButtonLabel>Reset</ButtonLabel>
         </Button>
       </div>
     </div>
