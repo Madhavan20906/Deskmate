@@ -2,7 +2,7 @@
   .task-root {
     flex-direction: column;
     gap: 8px;
-    width: 300px;
+    width: 320px;
     border-radius: 18px;
     border-width: 2px;
     border-color: #3b6470;
@@ -20,19 +20,19 @@
 
   .eyebrow {
     color: #77dec9;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
   }
 
   .title {
     color: #f3f6f7;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
   }
 
   .description {
     color: #b6c7ce;
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .status-button {
