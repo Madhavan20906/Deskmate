@@ -14,6 +14,9 @@ World.create(
   document.getElementById('scene-container') as HTMLDivElement,
   projectOptions,
 ).then((world) => {
+  (window as unknown as { __launchXR?: () => void }).__launchXR = () => {
+    world.launchXR();
+  };
   world.registerSystem(PanelSystem);
   world.registerSystem(WorkspaceSystem);
 });

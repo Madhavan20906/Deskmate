@@ -725,9 +725,10 @@ export class PanelSystem extends createSystem({
   private pipProcessingTimeout: number | null = null;
 
   init(): void {
+    const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
     const panel = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
-    const xrButton = panel?.getElementById('xr-button');
-    const exitButton = panel?.getElementById('exit-button');
+    const xrButton = dashboard?.getElementById('xr-button') ?? panel?.getElementById('xr-button');
+    const exitButton = dashboard?.getElementById('exit-button') ?? panel?.getElementById('exit-button');
     if (xrButton != null && exitButton != null) {
       if (!this.world.xrEnabled) {
         xrButton.setProperties({ display: 'none' });
@@ -748,8 +749,6 @@ export class PanelSystem extends createSystem({
         );
       }
     }
-
-    const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
     const createButton = dashboard?.getElementById('task-create');
     const summary = dashboard?.getElementById('task-summary');
     const selectedLabel = dashboard?.getElementById('selected-task');

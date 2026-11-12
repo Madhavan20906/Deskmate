@@ -29,6 +29,10 @@
     gap: 8px;
   }
 
+  .xr-button {
+    background-color: #0082fb;
+  }
+
   .workspace-setup {
     flex-direction: row;
     align-items: center;
@@ -643,6 +647,12 @@
       </div>
       <div class="header-actions">
         <div class="day-chip"><span class="day-chip-text">YOUR DAY</span></div>
+        <Button id="xr-button" class="xr-button">
+          <ButtonLabel>Enter XR</ButtonLabel>
+        </Button>
+        <Button id="exit-button" class="xr-button" style="display: none">
+          <ButtonLabel>Exit XR</ButtonLabel>
+        </Button>
         <Button id="pip-toggle" class="pip-toggle">
           <span id="pip-launcher-orb" class="pip-launcher-orb"></span>
           <ButtonLabel>PIP</ButtonLabel>
