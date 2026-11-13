@@ -32,29 +32,59 @@
 
       .xr-overlay {
         position: fixed;
-        top: 16px;
+        bottom: 24px;
         left: 50%;
         transform: translateX(-50%);
-        z-index: 9999;
+        z-index: 100;
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 8px 16px;
+        padding: 6px 8px 6px 14px;
         border-radius: 9999px;
-        background: rgba(22, 34, 46, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(83, 203, 181, 0.3);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        background: rgba(18, 24, 38, 0.65);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         color: #e2e8f0;
+        opacity: 0.88;
+        transition: opacity 0.25s ease, transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+        pointer-events: auto;
+      }
+
+      .xr-overlay:hover {
+        opacity: 1;
+        background: rgba(22, 30, 46, 0.85);
+        border-color: rgba(83, 203, 181, 0.35);
+      }
+
+      .xr-overlay.xr-session-active {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(-50%) translateY(16px);
+      }
+
+      .xr-badge-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        user-select: none;
+      }
+
+      .xr-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #8ce2d2;
+        box-shadow: 0 0 8px rgba(140, 226, 210, 0.6);
       }
 
       .xr-badge {
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        color: #8ce2d2;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        color: rgba(226, 232, 240, 0.8);
       }
 
       .xr-launch-button {
@@ -63,27 +93,35 @@
         gap: 6px;
         padding: 6px 14px;
         border-radius: 9999px;
-        background: #0082fb;
+        background: rgba(0, 130, 251, 0.85);
         color: #ffffff;
         font-size: 13px;
         font-weight: 600;
         border: none;
         cursor: pointer;
-        transition: transform 0.15s ease, background-color 0.15s ease;
+        transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
       }
 
       .xr-launch-button:hover {
-        background: #006dd4;
-        transform: scale(1.03);
+        background: #0082fb;
+        box-shadow: 0 2px 14px rgba(0, 130, 251, 0.45);
+        transform: translateY(-1px);
+      }
+
+      .xr-launch-button:active {
+        transform: translateY(0);
       }
     </style>
   </head>
   <body>
     <div id="scene-container"></div>
     <div class="xr-overlay">
-      <span class="xr-badge">Deskmate • Meta Quest WebXR</span>
+      <div class="xr-badge-group">
+        <span class="xr-dot"></span>
+        <span class="xr-badge">Deskmate MR</span>
+      </div>
       <button class="xr-launch-button" onclick="window.__launchXR ? window.__launchXR() : null">
-        🥽 Enter Mixed Reality (XR)
+        🥽 Enter XR
       </button>
     </div>
     <script type="module" src="/src/index.ts"></script>

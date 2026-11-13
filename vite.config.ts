@@ -22,6 +22,7 @@ export default defineConfig({
   // (its own three vs the app's super-three alias). Duplicate Component classes break
   // instanceof checks → "Only pmndrs/uikit components can be added as children".
   resolve: {
+    preserveSymlinks: true,
     dedupe: [
       'three',
       '@pmndrs/uikit',

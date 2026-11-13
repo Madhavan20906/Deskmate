@@ -14,9 +14,25 @@ World.create(
   document.getElementById('scene-container') as HTMLDivElement,
   projectOptions,
 ).then((world) => {
+  const overlay = document.querySelector('.xr-overlay') as HTMLElement | null;
+  const updateSessionUI = () => {
+    if (overlay) {
+      if (world.session) {
+        overlay.classList.add('xr-session-active');
+      } else {
+        overlay.classList.remove('xr-session-active');
+      }
+    }
+  };
+
   (window as unknown as { __launchXR?: () => void }).__launchXR = () => {
     world.launchXR();
   };
+
+  world.renderer.xr.addEventListener('sessionstart', updateSessionUI);
+  world.renderer.xr.addEventListener('sessionend', updateSessionUI);
+  updateSessionUI();
+
   world.registerSystem(PanelSystem);
   world.registerSystem(WorkspaceSystem);
 });
