@@ -147,6 +147,26 @@
         "RayInteractable": {}
       },
       "content": {
+        "asset": "focus-lamp",
+        "type": "asset"
+      },
+      "id": "focus-lamp",
+      "name": "Focus Lamp",
+      "transform": {
+        "position": [
+          0.26,
+          0.74,
+          -0.80
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
         "asset": "workspace-dashboard",
         "type": "asset"
       },

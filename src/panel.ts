@@ -10,6 +10,7 @@ import {
   Entity,
   Grabbed,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   Object3D,
   Quaternion,
@@ -814,6 +815,12 @@ export class PanelSystem extends createSystem({
   private plantSwayPhase = 0;
   private plantProximityTarget = new Vector3();
 
+  // Focus Lamp 3D
+  private lampObject: Object3D | null = null;
+  private lampBulbMesh: Mesh | null = null;
+  private lampPoolMesh: Mesh | null = null;
+  private lampCurrentIntensity = 0.0;
+
   init(): void {
     const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
     const panel = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
@@ -1038,6 +1045,17 @@ export class PanelSystem extends createSystem({
       };
       this.plantObject.addEventListener('click', onPlantClick);
       this.cleanupFuncs.push(() => this.plantObject?.removeEventListener('click', onPlantClick));
+    }
+
+    this.lampObject = this.world.getSceneObject('focus-lamp') ?? null;
+    if (this.lampObject) {
+      this.lampBulbMesh = (this.lampObject.getObjectByName('LampBulb') as Mesh) ?? null;
+      this.lampPoolMesh = (this.lampObject.getObjectByName('LampLightPool') as Mesh) ?? null;
+      const onLampClick = () => {
+        this.toggleFocusSprintFromLamp();
+      };
+      this.lampObject.addEventListener('click', onLampClick);
+      this.cleanupFuncs.push(() => this.lampObject?.removeEventListener('click', onLampClick));
     }
 
     if (this.ghostAudioButton !== null) {
@@ -2848,14 +2866,20 @@ export class PanelSystem extends createSystem({
             ? '#302b3d'
             : '#15232b';
       const isSelected = this.selectedTask === task.id;
+      const isFocused = this.focusStorage.active !== null && this.focusStorage.active.taskId === task.id;
+      const isOtherDuringFocus = this.focusStorage.active !== null && !isFocused;
+      const cardOpacity = isOtherDuringFocus ? '0.45' : '1.0';
       card.root.setProperties({
         display: 'flex',
-        borderColor: isSelected
-          ? '#f5d90a'
-          : conflictingIds.has(task.id)
-            ? '#ef756d'
-            : priorityColor,
-        backgroundColor: taskBackground,
+        opacity: cardOpacity,
+        borderColor: isFocused
+          ? '#ffd54f'
+          : isSelected
+            ? '#f5d90a'
+            : conflictingIds.has(task.id)
+              ? '#ef756d'
+              : priorityColor,
+        backgroundColor: isOtherDuringFocus ? '#0f171d' : taskBackground,
       });
       card.title.setProperties({ text: task.title });
       card.description.setProperties({
@@ -3531,12 +3555,57 @@ export class PanelSystem extends createSystem({
     }
   }
 
+  private toggleFocusSprintFromLamp(): void {
+    this.ghostAudio.playLampToggle();
+    this.recordUserInteraction();
+
+    if (this.focusStorage.active !== null) {
+      this.stopFocusSession();
+      this.setPipMessage('Focus sprint stopped. Lamp turned off.');
+    } else {
+      let targetSlot = -1;
+      if (this.selectedTask !== null) {
+        targetSlot = this.tasks.findIndex((t) => t?.id === this.selectedTask && t.status !== 'completed');
+      }
+      if (targetSlot === -1) {
+        targetSlot = this.tasks.findIndex((t) => t !== null && t.status !== 'completed');
+      }
+      if (targetSlot !== -1) {
+        this.startFocusSession(targetSlot);
+        this.setPipMessage('Focus sprint started! Lamp illuminates the desk.');
+      } else {
+        this.setPipMessage('All tasks completed! Add or reactivate a task to start focus.');
+      }
+    }
+  }
+
+  private updateDeskLamp(delta: number): void {
+    if (!this.lampObject || !this.lampBulbMesh || !this.lampPoolMesh) return;
+
+    const isFocusing = this.focusStorage?.active !== null;
+    const targetIntensity = isFocusing ? 1.0 : 0.0;
+
+    this.lampCurrentIntensity += (targetIntensity - this.lampCurrentIntensity) * Math.min(1.0, delta * 8.0);
+
+    const bulbMat = this.lampBulbMesh.material as MeshStandardMaterial;
+    if (bulbMat) {
+      bulbMat.emissiveIntensity = this.lampCurrentIntensity * 1.5;
+    }
+
+    const poolMat = this.lampPoolMesh.material as MeshBasicMaterial;
+    if (poolMat) {
+      poolMat.opacity = this.lampCurrentIntensity * 0.65;
+      this.lampPoolMesh.visible = this.lampCurrentIntensity > 0.01;
+    }
+  }
+
   update(delta: number, _time: number): void {
     this.checkPinchDragTimelineDrop();
     this.updateCardReturnAnimations(delta);
     this.updatePipInteractions(delta);
     this.updateDialInteractions(delta);
     this.updateDeskPlant(delta);
+    this.updateDeskLamp(delta);
     this.checkIdleNudge();
   }
 
