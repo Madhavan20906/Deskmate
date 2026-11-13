@@ -24,6 +24,9 @@ importers:
       '@pmndrs/uikit-lucide':
         specifier: ^1.0.74
         version: 1.0.78(super-three@0.185.0)
+      elics:
+        specifier: ^3.4.1
+        version: 3.4.2
       three:
         specifier: npm:super-three@0.185.0
         version: super-three@0.185.0

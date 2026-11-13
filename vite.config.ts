@@ -5,8 +5,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import fs from 'node:fs';
 import { iwsdkDev } from '@iwsdk/vite-plugin-dev';
 import { defineConfig } from 'vite';
+
+// Shim fs.realpathSync.native on Windows where sandboxed drive realpath throws EPERM
+if (process.platform === 'win32' && typeof fs.realpathSync?.native === 'function') {
+  try {
+    fs.realpathSync.native(process.cwd());
+  } catch {
+    fs.realpathSync.native = fs.realpathSync;
+  }
+}
 
 export default defineConfig({
   plugins: [iwsdkDev()],
@@ -22,7 +32,6 @@ export default defineConfig({
   // (its own three vs the app's super-three alias). Duplicate Component classes break
   // instanceof checks → "Only pmndrs/uikit components can be added as children".
   resolve: {
-    preserveSymlinks: true,
     dedupe: [
       'three',
       '@pmndrs/uikit',
