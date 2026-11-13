@@ -10,6 +10,10 @@ export type PipCommand =
   | { intent: 'complete-task'; taskQuery: string }
   | { intent: 'list-tasks'; filter: 'all' | 'pending' }
   | { intent: 'start-focus'; taskQuery?: string }
+  | { intent: 'morning-ritual' }
+  | { intent: 'evening-ritual' }
+  | { intent: 'start-break' }
+  | { intent: 'jar-history' }
   | { intent: 'recap' }
   | { intent: 'help' }
   | { intent: 'invalid-duration' }
@@ -80,6 +84,10 @@ function isIntent(value: unknown): value is PipIntent {
     value === 'complete-task' ||
     value === 'list-tasks' ||
     value === 'start-focus' ||
+    value === 'morning-ritual' ||
+    value === 'evening-ritual' ||
+    value === 'start-break' ||
+    value === 'jar-history' ||
     value === 'recap' ||
     value === 'help' ||
     value === 'invalid-duration' ||
@@ -139,6 +147,10 @@ export function validatePipCommand(value: unknown): PipCommand | null {
         record.taskQuery.trim().length > 0 && record.taskQuery.trim().length <= 80
         ? { intent: 'complete-task', taskQuery: record.taskQuery.trim() }
         : null;
+    case 'morning-ritual':
+    case 'evening-ritual':
+    case 'start-break':
+    case 'jar-history':
     case 'recap':
     case 'help':
     case 'invalid-duration':
@@ -168,7 +180,15 @@ export function parsePipCommand(input: string): PipCommand {
   const lower = text.toLowerCase();
 
   let candidate: unknown;
-  if (/\b(?:show|list|what)\b.*\b(?:pending|incomplete|unfinished)\b/.test(lower)) {
+  if (/\b(?:morning\s+ritual|good\s+morning|plan\s+(?:the\s+|my\s+)?day|start\s+(?:the\s+)?day)\b/.test(lower)) {
+    candidate = { intent: 'morning-ritual' };
+  } else if (/\b(?:evening\s+ritual|wind\s*down|evening\s+review|good\s+evening|wrap\s+up)\b/.test(lower)) {
+    candidate = { intent: 'evening-ritual' };
+  } else if (/\b(?:take\s+a\s+break|stretch|breathing\s+break|seated\s+break|start\s+break)\b/.test(lower)) {
+    candidate = { intent: 'start-break' };
+  } else if (/\b(?:jar(?:\s+history)?|today'?s\s+jar|focus\s+jar|marbles?|tokens?)\b/.test(lower)) {
+    candidate = { intent: 'jar-history' };
+  } else if (/\b(?:show|list|what)\b.*\b(?:pending|incomplete|unfinished)\b/.test(lower)) {
     candidate = { intent: 'list-tasks', filter: 'pending' };
   } else if (/\b(?:start|begin)\b.*\bfocus\b/.test(lower)) {
     const focusTask = text.match(/\bfocus\s+(?:on|for)\s+(?:my\s+)?(.+)$/i)?.[1];

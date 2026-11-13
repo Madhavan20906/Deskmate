@@ -22,4 +22,13 @@ export const TaskData = createComponent('TaskData', {
 	completedAt: { type: Types.Float64, default: 0 },
 });
 
-export default defineComponents([TaskData]);
+export const DeskmateState = createComponent('DeskmateState', {
+	ritualMode: { type: Types.String, default: 'none' }, // 'morning' | 'evening' | 'none'
+	breakActive: { type: Types.Boolean, default: false },
+	breakSecondsRemaining: { type: Types.Int16, default: 60 },
+	pipEmote: { type: Types.String, default: 'greeting' }, // 'greeting' | 'encouragement' | 'celebration' | 'nudge' | 'idle'
+	ghostAudioEnabled: { type: Types.Boolean, default: true },
+	ghostAudioVolume: { type: Types.Float32, default: 0.15 },
+});
+
+export default defineComponents([TaskData, DeskmateState]);

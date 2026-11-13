@@ -8,9 +8,11 @@
 import {
   createSystem,
   Entity,
+  Grabbed,
   UIKitMLAsset,
   VisibilityState,
 } from '@iwsdk/core';
+import { GhostDeskmateAudio } from './audio.js';
 import { TaskData } from './components.js';
 import { parsePipCommand, validatePipCommand, type PipCommand } from './pip.js';
 import { calculateProductivityInsights } from './productivity.js';
@@ -724,6 +726,41 @@ export class PanelSystem extends createSystem({
   >;
   private pipProcessingTimeout: number | null = null;
 
+  private ghostAudio = new GhostDeskmateAudio();
+  private ghostAudioButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private ghostAudioLabel: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private pipEmoteBadge: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private pipMorningRitualButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private pipEveningRitualButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private pipRitualActions: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private pipRitualNextButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private pipRitualNextLabel: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private pipRitualFinishButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private breakBanner: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private breakTimer: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private breakSuggestion: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private breakCompleteButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private breakSkipButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private timelineZoneMorningButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private timelineZoneMiddayButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private timelineZoneEveningButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private welcomeBackLine: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private todayJarBadge: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private todayJarStatus: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private jarDayLabels: Array<NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null> = [];
+  private jarBoxes: Array<NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null> = [];
+  private jarTokenCounts: Array<NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null> = [];
+
+  private ritualMode: 'morning' | 'evening' | null = null;
+  private ritualStep = 0;
+  private breakActive = false;
+  private breakSecondsRemaining = 60;
+  private breakInterval: number | null = null;
+  private currentPipEmote: 'greeting' | 'encouragement' | 'celebration' | 'nudge' | 'idle' = 'greeting';
+  private lastUserInteractionTime = Date.now();
+  private idleNudged = false;
+  private cardWasGrabbed: boolean[] = [false, false, false, false, false, false];
+
   init(): void {
     const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
     const panel = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
@@ -888,6 +925,123 @@ export class PanelSystem extends createSystem({
     this.pipCancelScheduleButton = pipCancelScheduleButton;
     this.timelineSlots = timelineSlots as TimelineSlotElements[];
     this.loadSegments = loadSegments;
+
+    this.ghostAudioButton = dashboard?.getElementById('ghost-audio-toggle') ?? null;
+    this.ghostAudioLabel = dashboard?.getElementById('ghost-audio-label') ?? null;
+    this.pipEmoteBadge = dashboard?.getElementById('pip-emote-badge') ?? null;
+    this.pipMorningRitualButton = dashboard?.getElementById('pip-morning-ritual') ?? null;
+    this.pipEveningRitualButton = dashboard?.getElementById('pip-evening-ritual') ?? null;
+    this.pipRitualActions = dashboard?.getElementById('pip-ritual-actions') ?? null;
+    this.pipRitualNextButton = dashboard?.getElementById('pip-ritual-next') ?? null;
+    this.pipRitualNextLabel = dashboard?.getElementById('pip-ritual-next-label') ?? null;
+    this.pipRitualFinishButton = dashboard?.getElementById('pip-ritual-finish') ?? null;
+    this.breakBanner = dashboard?.getElementById('break-banner') ?? null;
+    this.breakTimer = dashboard?.getElementById('break-timer') ?? null;
+    this.breakSuggestion = dashboard?.getElementById('break-suggestion') ?? null;
+    this.breakCompleteButton = dashboard?.getElementById('break-complete-btn') ?? null;
+    this.breakSkipButton = dashboard?.getElementById('break-skip-btn') ?? null;
+    this.timelineZoneMorningButton = dashboard?.getElementById('timeline-zone-morning') ?? null;
+    this.timelineZoneMiddayButton = dashboard?.getElementById('timeline-zone-midday') ?? null;
+    this.timelineZoneEveningButton = dashboard?.getElementById('timeline-zone-evening') ?? null;
+    this.welcomeBackLine = dashboard?.getElementById('welcome-back-line') ?? null;
+    this.todayJarBadge = dashboard?.getElementById('today-jar-badge') ?? null;
+    this.todayJarStatus = dashboard?.getElementById('today-jar-status') ?? null;
+    this.jarDayLabels = Array.from({ length: 7 }, (_, i) => dashboard?.getElementById(`jar-day-label-${i + 1}`) ?? null);
+    this.jarBoxes = Array.from({ length: 7 }, (_, i) => dashboard?.getElementById(`jar-box-${i + 1}`) ?? null);
+    this.jarTokenCounts = Array.from({ length: 7 }, (_, i) => dashboard?.getElementById(`jar-tokens-${i + 1}`) ?? null);
+
+    if (this.ghostAudioButton !== null) {
+      const toggleGhostAudio = () => {
+        this.recordUserInteraction();
+        this.ghostAudio.ensureRunning();
+        const enabled = this.ghostAudio.toggle();
+        this.ghostAudioLabel?.setProperties({
+          text: enabled ? 'Deskmate: Sound on' : 'Deskmate: Sound muted',
+        });
+        this.setPipMessage(
+          enabled
+            ? 'Ghost Deskmate spatial ambient audio enabled. Soft keyboard and page-turns will sound from its side of the desk, quieter during focus.'
+            : 'Ghost Deskmate ambient audio muted.',
+        );
+      };
+      this.ghostAudioButton.addEventListener('click', toggleGhostAudio);
+      this.cleanupFuncs.push(() => this.ghostAudioButton?.removeEventListener('click', toggleGhostAudio));
+    }
+
+    if (this.pipMorningRitualButton !== null) {
+      const runMorning = () => {
+        this.recordUserInteraction();
+        this.startMorningRitual();
+      };
+      this.pipMorningRitualButton.addEventListener('click', runMorning);
+      this.cleanupFuncs.push(() => this.pipMorningRitualButton?.removeEventListener('click', runMorning));
+    }
+
+    if (this.pipEveningRitualButton !== null) {
+      const runEvening = () => {
+        this.recordUserInteraction();
+        this.startEveningRitual();
+      };
+      this.pipEveningRitualButton.addEventListener('click', runEvening);
+      this.cleanupFuncs.push(() => this.pipEveningRitualButton?.removeEventListener('click', runEvening));
+    }
+
+    if (this.pipRitualNextButton !== null) {
+      const nextRitual = () => {
+        this.recordUserInteraction();
+        this.advanceRitual();
+      };
+      this.pipRitualNextButton.addEventListener('click', nextRitual);
+      this.cleanupFuncs.push(() => this.pipRitualNextButton?.removeEventListener('click', nextRitual));
+    }
+
+    if (this.pipRitualFinishButton !== null) {
+      const finishRitual = () => {
+        this.recordUserInteraction();
+        this.finishRitual();
+      };
+      this.pipRitualFinishButton.addEventListener('click', finishRitual);
+      this.cleanupFuncs.push(() => this.pipRitualFinishButton?.removeEventListener('click', finishRitual));
+    }
+
+    if (this.breakCompleteButton !== null) {
+      const completeBreak = () => {
+        this.recordUserInteraction();
+        this.finishBreakMode(true);
+      };
+      this.breakCompleteButton.addEventListener('click', completeBreak);
+      this.cleanupFuncs.push(() => this.breakCompleteButton?.removeEventListener('click', completeBreak));
+    }
+
+    if (this.breakSkipButton !== null) {
+      const skipBreak = () => {
+        this.recordUserInteraction();
+        this.finishBreakMode(false);
+      };
+      this.breakSkipButton.addEventListener('click', skipBreak);
+      this.cleanupFuncs.push(() => this.breakSkipButton?.removeEventListener('click', skipBreak));
+    }
+
+    if (this.timelineZoneMorningButton !== null) {
+      const dropMorning = () => this.dropSelectedTaskToZone(9 * 60, 'Morning (09:00)');
+      this.timelineZoneMorningButton.addEventListener('click', dropMorning);
+      this.cleanupFuncs.push(() => this.timelineZoneMorningButton?.removeEventListener('click', dropMorning));
+    }
+
+    if (this.timelineZoneMiddayButton !== null) {
+      const dropMidday = () => this.dropSelectedTaskToZone(12 * 60, 'Midday (12:00)');
+      this.timelineZoneMiddayButton.addEventListener('click', dropMidday);
+      this.cleanupFuncs.push(() => this.timelineZoneMiddayButton?.removeEventListener('click', dropMidday));
+    }
+
+    if (this.timelineZoneEveningButton !== null) {
+      const dropEvening = () => this.dropSelectedTaskToZone(15 * 60, 'Evening (15:00)');
+      this.timelineZoneEveningButton.addEventListener('click', dropEvening);
+      this.cleanupFuncs.push(() => this.timelineZoneEveningButton?.removeEventListener('click', dropEvening));
+    }
+
+    this.cleanupFuncs.push(() => this.ghostAudio.dispose());
+
     dashboard?.getElementById('day-date')?.setProperties({
       text: new Intl.DateTimeFormat('en-US', {
         weekday: 'long',
@@ -1211,7 +1365,9 @@ export class PanelSystem extends createSystem({
         this.persistFocusStorage();
         this.stopFocusTicker();
         this.lastTimerSecond = -1;
+        this.ghostAudio.setFocusing(false);
         shouldRender = true;
+        this.startBreakMode();
       } else {
         const timerSecond = Math.ceil(remainingMs / 1000);
         if (timerSecond !== this.lastTimerSecond) {
@@ -1439,6 +1595,37 @@ export class PanelSystem extends createSystem({
     this.analyticsSummary.setProperties({
       text: `${insights.weeklyCompletedTasks} TASKS / ${formatDuration(insights.weeklyFocusMinutes)} FOCUS / ${Math.round(insights.completionRate * 100)}% COMPLETE / ${insights.weeklyChange.toUpperCase()} TREND`,
     });
+
+    if (this.welcomeBackLine !== null) {
+      this.welcomeBackLine.setProperties({ text: insights.welcomeBackLine });
+    }
+    if (this.todayJarBadge !== null) {
+      this.todayJarBadge.setProperties({
+        text: `${insights.todayJarTokens} / ${insights.todayJarGoal} TOKENS`,
+      });
+    }
+    if (this.todayJarStatus !== null) {
+      this.todayJarStatus.setProperties({
+        text: `Today's jar: ${insights.todayJarTokens} token${insights.todayJarTokens === 1 ? '' : 's'} collected. ${insights.todayJarTokens >= insights.todayJarGoal ? 'Daily goal reached! 🏺🌟' : 'Finish sprints & breaks to fill it!'}`,
+      });
+    }
+    insights.weekJarHistory.forEach((item, index) => {
+      const label = this.jarDayLabels[index];
+      const box = this.jarBoxes[index];
+      const count = this.jarTokenCounts[index];
+      label?.setProperties({ text: item.label });
+      count?.setProperties({ text: String(item.tokens) });
+      box?.setProperties({
+        backgroundColor: item.tokens === 0
+          ? '#203039'
+          : item.tokens >= 4
+            ? '#3a3b1a'
+            : item.tokens >= 2
+              ? '#1c3e36'
+              : '#183942',
+        borderColor: item.tokens >= 4 ? '#f5d90a' : item.tokens > 0 ? '#53cbb5' : '#34434c',
+      });
+    });
   }
 
   private startFocusSession(slot: number): void {
@@ -1467,6 +1654,10 @@ export class PanelSystem extends createSystem({
     this.lastTimerSecond = -1;
     this.persistFocusStorage();
     this.startFocusTicker();
+    this.ghostAudio.ensureRunning();
+    this.ghostAudio.setFocusing(true);
+    this.setPipEmote('encouragement');
+    this.recordUserInteraction();
     this.renderTasks();
     this.updateFocusClock(true);
   }
@@ -1484,6 +1675,7 @@ export class PanelSystem extends createSystem({
     active.deadlineAt = null;
     active.remainingMs = remainingMs;
     this.stopFocusTicker();
+    this.ghostAudio.setFocusing(false);
     this.lastTimerSecond = Math.ceil(remainingMs / 1000);
     this.persistFocusStorage();
     this.renderTasks();
@@ -1503,11 +1695,16 @@ export class PanelSystem extends createSystem({
     this.lastTimerSecond = -1;
     this.persistFocusStorage();
     this.startFocusTicker();
+    this.ghostAudio.ensureRunning();
+    this.ghostAudio.setFocusing(true);
+    this.setPipEmote('encouragement');
+    this.recordUserInteraction();
     this.updateFocusClock(true);
   }
 
   private stopFocusSession(): void {
     this.updateFocusClock(true);
+    this.ghostAudio.setFocusing(false);
     if (this.focusStorage.active?.status === 'awaiting-completion') return;
     this.finishFocusSession('stopped', false);
   }
@@ -1515,6 +1712,7 @@ export class PanelSystem extends createSystem({
   private finishFocusSession(status: FocusSessionStatus, taskCompleted: boolean): void {
     const active = this.focusStorage.active;
     if (active === null) return;
+    this.ghostAudio.setFocusing(false);
     const plannedMs = active.plannedDurationMinutes * 60_000;
     const remainingMs = status === 'completed'
       ? 0
@@ -1608,8 +1806,21 @@ export class PanelSystem extends createSystem({
           ? 'THINKING / LOCAL COMMAND'
           : 'RESPONDING / LOCAL MODE';
     this.pipStateLabel.setProperties({ text: stateLabel });
-    this.pipOrb.setProperties({ backgroundColor: colors[this.pipInteractionState] });
-    this.pipLauncherOrb.setProperties({ backgroundColor: colors[this.pipInteractionState] });
+    const emoteColors: Record<'greeting' | 'encouragement' | 'celebration' | 'nudge' | 'idle', string> = {
+      greeting: '#f5d90a',
+      encouragement: '#53cbb5',
+      celebration: '#ffb703',
+      nudge: '#d1b3ff',
+      idle: '#53cbb5',
+    };
+    const orbColor = this.pipInteractionState === 'idle'
+      ? emoteColors[this.currentPipEmote]
+      : colors[this.pipInteractionState];
+    this.pipOrb.setProperties({ backgroundColor: orbColor });
+    this.pipLauncherOrb.setProperties({ backgroundColor: orbColor });
+    if (this.pipEmoteBadge !== null) {
+      this.pipEmoteBadge.setProperties({ text: this.currentPipEmote.toUpperCase() });
+    }
     this.pipListenLabel.setProperties({
       text: this.pipInteractionState === 'listening' ? 'Stop listening' : 'Listen',
     });
@@ -1621,6 +1832,17 @@ export class PanelSystem extends createSystem({
     this.pipConfirmationRow.setProperties({
       display: this.pipPendingSchedule === null ? 'none' : 'flex',
     });
+  }
+
+  private setPipEmote(emote: 'greeting' | 'encouragement' | 'celebration' | 'nudge' | 'idle'): void {
+    this.currentPipEmote = emote;
+    this.renderPip();
+  }
+
+  private recordUserInteraction(): void {
+    this.lastUserInteractionTime = Date.now();
+    this.idleNudged = false;
+    this.ghostAudio.ensureRunning();
   }
 
   private setPipMessage(
@@ -1787,8 +2009,20 @@ export class PanelSystem extends createSystem({
       case 'recap':
         this.respondToPipRecap();
         return;
+      case 'morning-ritual':
+        this.startMorningRitual();
+        return;
+      case 'evening-ritual':
+        this.startEveningRitual();
+        return;
+      case 'start-break':
+        this.startBreakMode();
+        return;
+      case 'jar-history':
+        this.respondToJarHistory();
+        return;
       case 'help':
-        this.setPipMessage('Try: "Add a task to finish my project", "Schedule studying for two hours today", "Mark my assignment as completed", or "What tasks do I have today?".');
+        this.setPipMessage('Try: "Morning ritual", "Evening wind-down", "Show jar history", "Take a break", "Add a task to finish my project", or "Start focus".');
         return;
       case 'invalid-duration':
         this.setPipMessage('Task durations must be between 5 and 480 minutes. Nothing was changed.');
@@ -2687,5 +2921,269 @@ export class PanelSystem extends createSystem({
     this.scheduleSuggestionButton.name = hasSuggestions
       ? `Apply suggested time ${formatTime(suggestedStarts[0])} for ${selected.title}`
       : 'No suggested time available';
+  }
+
+  private respondToJarHistory(): void {
+    const tasks = this.tasks.filter((t): t is TaskRecord => t !== null);
+    const insights = calculateProductivityInsights(tasks, this.focusStorage.history, Date.now());
+    this.setPipEmote('celebration');
+    this.setPipMessage(
+      `Focus Jar Status: You have ${insights.todayJarTokens} token${insights.todayJarTokens === 1 ? '' : 's'} in today's jar (${insights.todayJarGoal} token daily goal). Weekly total: ${insights.weeklyCompletedTasks} tasks finished & ${insights.weeklyFocusMinutes} focus minutes!`,
+      'responding',
+    );
+  }
+
+  private startMorningRitual(): void {
+    this.setPipPanelVisible(true);
+    this.ritualMode = 'morning';
+    this.ritualStep = 0;
+    this.pipRitualActions?.setProperties({ display: 'flex' });
+    this.renderMorningRitualStep();
+  }
+
+  private renderMorningRitualStep(): void {
+    const tasks = this.tasks.filter((t): t is TaskRecord => t !== null);
+    const pendingTasks = tasks.filter((t) => t.status !== 'completed');
+    const workload = analyzeWorkload(
+      tasks,
+      WORKLOAD_CAPACITY_MINUTES,
+      WORKDAY_START_MINUTE,
+      WORKDAY_END_MINUTE,
+    );
+    const freeHours = Math.max(0, Math.round(workload.remainingCapacityMinutes / 60));
+
+    if (this.ritualStep === 0) {
+      this.setPipEmote('greeting');
+      this.pipRitualNextLabel?.setProperties({ text: 'Review schedule' });
+      this.setPipMessage(
+        `Good morning! Pip is here to help you plan the day. You have ${pendingTasks.length} tasks ready. Let's make today calm, purposeful, and focused!`,
+        'responding',
+      );
+    } else if (this.ritualStep === 1) {
+      this.setPipEmote('encouragement');
+      this.pipRitualNextLabel?.setProperties({ text: 'Lock in day plan' });
+      this.setPipMessage(
+        `Step 1: Check your timeline. You have ~${freeHours}h free capacity today. Pinch-drag your top priority cards into Morning (08:00-11:30) or Midday (11:30-14:30) blocks.`,
+        'responding',
+      );
+    } else {
+      this.setPipEmote('celebration');
+      this.pipRitualNextLabel?.setProperties({ text: 'Finish ritual' });
+      this.setPipMessage(
+        'Step 2: Day plan ready! Pick a task card to begin your first sprint whenever you\'re ready. Have an energizing morning!',
+        'responding',
+      );
+    }
+  }
+
+  private startEveningRitual(): void {
+    this.setPipPanelVisible(true);
+    this.ritualMode = 'evening';
+    this.ritualStep = 0;
+    this.pipRitualActions?.setProperties({ display: 'flex' });
+    this.renderEveningRitualStep();
+  }
+
+  private renderEveningRitualStep(): void {
+    const tasks = this.tasks.filter((t): t is TaskRecord => t !== null);
+    const completedTasks = tasks.filter((t) => t.status === 'completed');
+    const pendingTasks = tasks.filter((t) => t.status !== 'completed');
+    const now = Date.now();
+    const insights = calculateProductivityInsights(tasks, this.focusStorage.history, now);
+
+    if (this.ritualStep === 0) {
+      this.setPipEmote('greeting');
+      this.pipRitualNextLabel?.setProperties({ text: 'Review today\'s jar' });
+      this.setPipMessage(
+        'Good evening! Time for your wind-down ritual. Let\'s step back, review today\'s jar, and tuck tomorrow away.',
+        'responding',
+      );
+    } else if (this.ritualStep === 1) {
+      this.setPipEmote('celebration');
+      this.pipRitualNextLabel?.setProperties({ text: 'Set up tomorrow' });
+      this.setPipMessage(
+        `Today's Jar Walkthrough: You collected ${insights.todayJarTokens} focus tokens in today's jar and finished ${completedTasks.length} task${completedTasks.length === 1 ? '' : 's'}! ${insights.todayJarTokens >= 4 ? 'Daily focus goal achieved!' : 'Every token nurtures your garden.'}`,
+        'responding',
+      );
+    } else {
+      this.setPipEmote('encouragement');
+      this.pipRitualNextLabel?.setProperties({ text: 'Rest up' });
+      this.setPipMessage(
+        `Setting up tomorrow: ${pendingTasks.length > 0 ? `${pendingTasks.length} unfinished task${pendingTasks.length === 1 ? '' : 's'} rolled over safely for tomorrow.` : 'All tasks completed! Tomorrow starts clean and fresh.'} Your desk is saved. Rest well tonight!`,
+        'responding',
+      );
+    }
+  }
+
+  private advanceRitual(): void {
+    if (this.ritualMode === 'morning') {
+      if (this.ritualStep < 2) {
+        this.ritualStep += 1;
+        this.renderMorningRitualStep();
+      } else {
+        this.finishRitual();
+      }
+    } else if (this.ritualMode === 'evening') {
+      if (this.ritualStep < 2) {
+        this.ritualStep += 1;
+        this.renderEveningRitualStep();
+      } else {
+        this.finishRitual();
+      }
+    }
+  }
+
+  private finishRitual(): void {
+    this.ritualMode = null;
+    this.ritualStep = 0;
+    this.pipRitualActions?.setProperties({ display: 'none' });
+    this.setPipEmote('idle');
+  }
+
+  private startBreakMode(): void {
+    this.breakActive = true;
+    this.breakSecondsRemaining = 60;
+    this.breakBanner?.setProperties({ display: 'flex' });
+    this.setPipEmote('encouragement');
+    this.setPipMessage(
+      'Sprint finished! Pip suggests: Take a 60-second seated breathing or stretch break before today\'s jar fills.',
+      'responding',
+    );
+    this.updateBreakBannerText();
+    if (this.breakInterval !== null) {
+      window.clearInterval(this.breakInterval);
+    }
+    this.breakInterval = window.setInterval(() => {
+      this.breakSecondsRemaining -= 1;
+      this.updateBreakBannerText();
+      if (this.breakSecondsRemaining <= 0) {
+        this.finishBreakMode(true);
+      }
+    }, 1000);
+  }
+
+  private updateBreakBannerText(): void {
+    this.breakTimer?.setProperties({
+      text: `${this.breakSecondsRemaining}s remaining`,
+    });
+    const s = this.breakSecondsRemaining;
+    const prompt = s > 45
+      ? 'Pip suggests: Gently roll your shoulders back 5 times and inhale deeply.'
+      : s > 30
+        ? 'Pip suggests: Turn your head slowly left, then right. Release neck tension.'
+        : s > 15
+          ? 'Pip suggests: Clasp your hands, stretch your arms out, and exhale.'
+          : 'Pip suggests: Take one slow, full breath in... and out. Almost done!';
+    this.breakSuggestion?.setProperties({ text: prompt });
+  }
+
+  private finishBreakMode(fillJar: boolean): void {
+    if (this.breakInterval !== null) {
+      window.clearInterval(this.breakInterval);
+      this.breakInterval = null;
+    }
+    this.breakActive = false;
+    this.breakBanner?.setProperties({ display: 'none' });
+
+    if (fillJar) {
+      this.finishFocusSession('completed', true);
+      this.ghostAudio.playJarFillSound();
+      this.setPipEmote('celebration');
+      this.setPipMessage(
+        'Break completed! Today\'s jar filled with +1 focus token! 🏺✨ Great balance of work & recovery.',
+        'responding',
+      );
+    } else {
+      this.finishFocusSession('completed', false);
+      this.setPipMessage('Break skipped. Focus session saved.', 'idle');
+    }
+    this.renderTasks();
+  }
+
+  private dropSelectedTaskToZone(startMinute: number, zoneName: string): void {
+    this.recordUserInteraction();
+    const selected = this.getSelectedTask();
+    if (selected === null) {
+      this.setPipMessage('Select a task card first, then tap a zone to schedule it.');
+      return;
+    }
+    selected.scheduledStartMinute = startMinute;
+    selected.scheduleNeedsReview = false;
+    this.persistTasks();
+    this.renderTasks();
+    this.setPipEmote('celebration');
+    this.setPipMessage(`Scheduled "${selected.title}" for ${zoneName}!`);
+    this.ghostAudio.playJarFillSound();
+  }
+
+  private checkPinchDragTimelineDrop(): void {
+    for (let slot = 0; slot < MAX_TASKS; slot += 1) {
+      const entity = this.taskEntities[slot];
+      const task = this.tasks[slot];
+      if (entity == null || task == null) continue;
+
+      const isGrabbed = entity.hasComponent(Grabbed);
+      if (isGrabbed) {
+        this.cardWasGrabbed[slot] = true;
+        this.recordUserInteraction();
+      } else if (this.cardWasGrabbed[slot]) {
+        this.cardWasGrabbed[slot] = false;
+        this.recordUserInteraction();
+        const obj = this.world.getSceneObject(TASK_NODE_IDS[slot]);
+        if (obj != null) {
+          const pos = obj.position;
+          if (pos.y >= 1.20 && pos.y <= 1.70 && pos.z <= -0.65) {
+            let startMinute: number;
+            let zoneName: string;
+            if (pos.x < -0.15) {
+              startMinute = 9 * 60; // 09:00
+              zoneName = 'Morning (09:00)';
+            } else if (pos.x > 0.15) {
+              startMinute = 15 * 60; // 15:00
+              zoneName = 'Evening (15:00)';
+            } else {
+              startMinute = 12 * 60; // 12:00
+              zoneName = 'Midday (12:00)';
+            }
+            task.scheduledStartMinute = startMinute;
+            task.scheduleNeedsReview = false;
+            this.selectedTask = task.id;
+            this.persistTasks();
+            this.renderTasks();
+            this.setPipEmote('celebration');
+            this.setPipMessage(
+              `Pinch-drag placed "${task.title}" into ${zoneName}!`,
+              'responding',
+            );
+            this.ghostAudio.playJarFillSound();
+          }
+        }
+      }
+    }
+  }
+
+  update(_delta: number, _time: number): void {
+    this.checkPinchDragTimelineDrop();
+    this.checkIdleNudge();
+  }
+
+  private checkIdleNudge(): void {
+    if (
+      this.idleNudged ||
+      this.breakActive ||
+      this.focusStorage.active?.status === 'running' ||
+      this.ritualMode !== null
+    ) {
+      return;
+    }
+    const elapsed = Date.now() - this.lastUserInteractionTime;
+    if (elapsed > 90_000) {
+      this.idleNudged = true;
+      this.setPipEmote('nudge');
+      this.setPipMessage(
+        'Pip: Gentle nudge! Roll your shoulders, check today\'s plan, or pick a task when you\'re ready to focus.',
+        'idle',
+      );
+    }
   }
 }

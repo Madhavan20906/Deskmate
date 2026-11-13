@@ -1,0 +1,204 @@
+/**
+ * Spatial ambient audio for the Ghost Deskmate.
+ * Generates faint procedural keyboard typing and page turns
+ * spatially positioned on the companion side of the desk.
+ * Dynamically lowers volume during active focus sessions.
+ */
+
+export class GhostDeskmateAudio {
+  private ctx: AudioContext | null = null;
+  private panner: PannerNode | null = null;
+  private gainNode: GainNode | null = null;
+  private timer: number | null = null;
+  private enabled = true;
+  private isFocusing = false;
+  private baseVolume = 0.10;
+  private focusVolume = 0.025;
+
+  public init(): void {
+    if (this.ctx !== null) return;
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      this.ctx = new AudioCtx();
+      this.gainNode = this.ctx.createGain();
+      this.gainNode.gain.setValueAtTime(this.baseVolume, this.ctx.currentTime);
+
+      // Create spatial panner positioned on the side of the desk (+0.7m right, -0.6m forward)
+      if (typeof this.ctx.createPanner === 'function') {
+        this.panner = this.ctx.createPanner();
+        this.panner.panningModel = 'HRTF';
+        this.panner.distanceModel = 'inverse';
+        this.panner.refDistance = 0.5;
+        this.panner.maxDistance = 5;
+        this.panner.rolloffFactor = 1;
+        if (this.panner.positionX) {
+          this.panner.positionX.setValueAtTime(0.7, this.ctx.currentTime);
+          this.panner.positionY.setValueAtTime(0.0, this.ctx.currentTime);
+          this.panner.positionZ.setValueAtTime(-0.6, this.ctx.currentTime);
+        } else {
+          this.panner.setPosition(0.7, 0.0, -0.6);
+        }
+        this.gainNode.connect(this.panner);
+        this.panner.connect(this.ctx.destination);
+      } else {
+        this.gainNode.connect(this.ctx.destination);
+      }
+
+      this.scheduleNextAmbientSound();
+    } catch {
+      // AudioContext unavailable or blocked by policy
+    }
+  }
+
+  public ensureRunning(): void {
+    if (this.ctx === null) {
+      this.init();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      void this.ctx.resume();
+    }
+  }
+
+  public setFocusing(focusing: boolean): void {
+    this.isFocusing = focusing;
+    if (this.gainNode && this.ctx) {
+      const targetVol = this.enabled ? (this.isFocusing ? this.focusVolume : this.baseVolume) : 0;
+      this.gainNode.gain.linearRampToValueAtTime(targetVol, this.ctx.currentTime + 1.0);
+    }
+  }
+
+  public toggle(): boolean {
+    this.enabled = !this.enabled;
+    if (this.gainNode && this.ctx) {
+      const targetVol = this.enabled ? (this.isFocusing ? this.focusVolume : this.baseVolume) : 0;
+      this.gainNode.gain.setValueAtTime(targetVol, this.ctx.currentTime);
+    }
+    return this.enabled;
+  }
+
+  public isEnabled(): boolean {
+    return this.enabled;
+  }
+
+  private scheduleNextAmbientSound(): void {
+    if (this.timer !== null) {
+      window.clearTimeout(this.timer);
+    }
+    // Random delay between 4 and 10 seconds
+    const delay = Math.floor(Math.random() * 6000) + 4000;
+    this.timer = window.setTimeout(() => {
+      this.playRandomAmbientSound();
+      this.scheduleNextAmbientSound();
+    }, delay);
+  }
+
+  private playRandomAmbientSound(): void {
+    if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+    // 70% chance typing cluster, 30% chance page turn
+    if (Math.random() < 0.7) {
+      this.playKeyboardBurst();
+    } else {
+      this.playPageTurn();
+    }
+  }
+
+  private playKeyboardBurst(): void {
+    if (!this.ctx || !this.gainNode) return;
+    const keyCount = Math.floor(Math.random() * 4) + 2; // 2 to 5 keystrokes
+    let offset = 0;
+    for (let i = 0; i < keyCount; i++) {
+      window.setTimeout(() => this.playSingleKeystroke(), offset);
+      offset += Math.floor(Math.random() * 120) + 70; // 70-190ms interval between keys
+    }
+  }
+
+  private playSingleKeystroke(): void {
+    if (!this.ctx || !this.gainNode || this.ctx.state !== 'running') return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const oscGain = this.ctx.createGain();
+
+    // Subtle wooden/plastic mechanical click frequency
+    const freq = 1400 + Math.random() * 600;
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, now);
+    osc.frequency.exponentialRampToValueAtTime(300, now + 0.025);
+
+    oscGain.gain.setValueAtTime(0.08, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.028);
+
+    osc.connect(oscGain);
+    oscGain.connect(this.gainNode);
+
+    osc.start(now);
+    osc.stop(now + 0.03);
+  }
+
+  private playPageTurn(): void {
+    if (!this.ctx || !this.gainNode || this.ctx.state !== 'running') return;
+    const now = this.ctx.currentTime;
+    const bufferSize = Math.floor(this.ctx.sampleRate * 0.2); // 200ms noise
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+    }
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(800, now);
+    filter.frequency.linearRampToValueAtTime(1600, now + 0.15);
+    filter.Q.value = 1.8;
+
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.001, now);
+    noiseGain.gain.linearRampToValueAtTime(0.07, now + 0.05);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.gainNode);
+
+    noise.start(now);
+  }
+
+  public playJarFillSound(): void {
+    if (!this.ctx || !this.gainNode) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 chime
+    notes.forEach((freq, idx) => {
+      if (!this.ctx || !this.gainNode) return;
+      const osc = this.ctx.createOscillator();
+      const noteGain = this.ctx.createGain();
+      const startTime = now + idx * 0.08;
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+
+      noteGain.gain.setValueAtTime(0.12, startTime);
+      noteGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.5);
+
+      osc.connect(noteGain);
+      noteGain.connect(this.gainNode);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.52);
+    });
+  }
+
+  public dispose(): void {
+    if (this.timer !== null) {
+      window.clearTimeout(this.timer);
+      this.timer = null;
+    }
+    if (this.ctx !== null) {
+      void this.ctx.close();
+      this.ctx = null;
+    }
+  }
+}
