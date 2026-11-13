@@ -12,6 +12,7 @@ import { createSprintDialAsset } from './scene-assets/sprint-dial.scene-asset.js
 import { createDeskPlantAsset } from './scene-assets/desk-plant.scene-asset.js';
 import { createFocusLampAsset } from './scene-assets/focus-lamp.scene-asset.js';
 import { createMarblesJarAsset } from './scene-assets/jar.scene-asset.js';
+import { createGhostAsset } from './scene-assets/ghost.scene-asset.js';
 
 const publicAssetUrl = (filePath: string): string =>
   `${import.meta.env.BASE_URL}${filePath.replace(/^\/+/u, '')}`;
@@ -29,6 +30,7 @@ export default defineAssets({
   'desk-plant': createDeskPlantAsset(),
   'focus-lamp': createFocusLampAsset(),
   'marbles-jar': createMarblesJarAsset(),
+  'ghost-companion': createGhostAsset(),
   'workspace-dashboard': uikitml('workspace-dashboard.uikitml', 'Daily Workspace'),
   'task-roadmap': uikitml('task-card.uikitml', 'Task Card'),
   'task-design-review': uikitml('task-card.uikitml', 'Task Card'),
