@@ -6,7 +6,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
-    <link rel="icon" href="data:," />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0f141c" />
+    <link rel="icon" href="/icons/icon-192.png" />
     <title>deskmate</title>
     <style>
       html,
@@ -120,7 +122,7 @@
         <span class="xr-dot"></span>
         <span class="xr-badge">Deskmate MR</span>
       </div>
-      <button class="xr-launch-button" onclick="window.__launchXR ? window.__launchXR() : null">
+      <button id="xr-overlay-launch-btn" class="xr-launch-button" onclick="window.__launchXR ? window.__launchXR() : null">
         🥽 Enter XR
       </button>
     </div>

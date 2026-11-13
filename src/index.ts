@@ -29,6 +29,25 @@ World.create(
     world.launchXR();
   };
 
+  const launchButton =
+    document.getElementById('xr-overlay-launch-btn') ??
+    document.querySelector('.xr-launch-button');
+  launchButton?.addEventListener('click', () => {
+    world.launchXR();
+  });
+
+  const nav = navigator as Navigator & {
+    xr?: { isSessionSupported?: (m: string) => Promise<boolean> };
+  };
+  if ('getDigitalGoodsService' in window && nav.xr?.isSessionSupported) {
+    nav.xr
+      .isSessionSupported('immersive-ar')
+      .then((supported) => {
+        if (supported) world.launchXR();
+      })
+      .catch(() => {});
+  }
+
   world.renderer.xr.addEventListener('sessionstart', updateSessionUI);
   world.renderer.xr.addEventListener('sessionend', updateSessionUI);
   updateSessionUI();
