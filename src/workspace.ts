@@ -35,6 +35,7 @@ const WORKSPACE_NODE_IDS = [
   'sprint-dial',
   'desk-plant',
   'focus-lamp',
+  'marbles-jar',
   'workspace-dashboard',
   'task-card-roadmap',
   'task-card-design-review',
