@@ -6,6 +6,7 @@
  */
 
 import { AssetType, defineAssets } from '@iwsdk/core';
+import { createDeskAsset } from './scene-assets/desk.scene-asset.js';
 
 const publicAssetUrl = (filePath: string): string =>
   `${import.meta.env.BASE_URL}${filePath.replace(/^\/+/u, '')}`;
@@ -17,6 +18,7 @@ const uikitml = (fileName: string, name: string) => ({
 });
 
 export default defineAssets({
+  'workspace-desk': createDeskAsset(),
   'workspace-dashboard': uikitml('workspace-dashboard.uikitml', 'Daily Workspace'),
   'task-roadmap': uikitml('task-card.uikitml', 'Task Card'),
   'task-design-review': uikitml('task-card.uikitml', 'Task Card'),

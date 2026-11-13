@@ -9,7 +9,9 @@ import {
   createSystem,
   Entity,
   Grabbed,
+  Quaternion,
   UIKitMLAsset,
+  Vector3,
   VisibilityState,
 } from '@iwsdk/core';
 import { GhostDeskmateAudio } from './audio.js';
@@ -760,6 +762,26 @@ export class PanelSystem extends createSystem({
   private lastUserInteractionTime = Date.now();
   private idleNudged = false;
   private cardWasGrabbed: boolean[] = [false, false, false, false, false, false];
+  private cardIsHovered: boolean[] = [false, false, false, false, false, false];
+  private cardHomePositions: Vector3[] = [
+    new Vector3(-0.36, 1.00, -0.80),
+    new Vector3(0.00, 1.00, -0.80),
+    new Vector3(0.36, 1.00, -0.80),
+    new Vector3(-0.36, 0.65, -0.80),
+    new Vector3(0.00, 0.65, -0.80),
+    new Vector3(0.36, 0.65, -0.80),
+  ];
+  private cardHomeRotations: Quaternion[] = [
+    new Quaternion(),
+    new Quaternion(),
+    new Quaternion(),
+    new Quaternion(),
+    new Quaternion(),
+    new Quaternion(),
+  ];
+  private cardReturnStartPos: Vector3[] = Array.from({ length: 6 }, () => new Vector3());
+  private cardReturnStartRot: Quaternion[] = Array.from({ length: 6 }, () => new Quaternion());
+  private cardReturnProgress: number[] = [1, 1, 1, 1, 1, 1];
 
   init(): void {
     const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
@@ -1291,6 +1313,26 @@ export class PanelSystem extends createSystem({
         () => focusCompleteButton.removeEventListener('click', completeFocusTask),
         () => focusContinueButton.removeEventListener('click', continueAfterFocus),
         () => focusAgainButton.removeEventListener('click', startAnotherFocus),
+      );
+
+      const onHoverEnter = () => {
+        if (!this.cardIsHovered[slot]) {
+          this.cardIsHovered[slot] = true;
+          this.ghostAudio.playHoverHum();
+          root.setProperties({ borderColor: '#8ce2d2', borderWidth: 3 });
+        }
+      };
+      const onHoverLeave = () => {
+        if (this.cardIsHovered[slot]) {
+          this.cardIsHovered[slot] = false;
+          root.setProperties({ borderColor: '#3b6470', borderWidth: 2 });
+        }
+      };
+      root.addEventListener('pointerenter', onHoverEnter);
+      root.addEventListener('pointerleave', onHoverLeave);
+      this.cleanupFuncs.push(
+        () => root.removeEventListener('pointerenter', onHoverEnter),
+        () => root.removeEventListener('pointerleave', onHoverLeave),
       );
     }
 
@@ -3124,8 +3166,12 @@ export class PanelSystem extends createSystem({
 
       const isGrabbed = entity.hasComponent(Grabbed);
       if (isGrabbed) {
-        this.cardWasGrabbed[slot] = true;
-        this.recordUserInteraction();
+        if (!this.cardWasGrabbed[slot]) {
+          this.cardWasGrabbed[slot] = true;
+          this.cardReturnProgress[slot] = 1;
+          this.ghostAudio.playPinchTick();
+          this.recordUserInteraction();
+        }
       } else if (this.cardWasGrabbed[slot]) {
         this.cardWasGrabbed[slot] = false;
         this.recordUserInteraction();
@@ -3156,14 +3202,44 @@ export class PanelSystem extends createSystem({
               'responding',
             );
             this.ghostAudio.playJarFillSound();
+          } else {
+            this.startCardReturnHome(slot);
           }
         }
       }
     }
   }
 
-  update(_delta: number, _time: number): void {
+  private startCardReturnHome(slot: number): void {
+    const obj = this.world.getSceneObject(TASK_NODE_IDS[slot]);
+    if (!obj) return;
+    this.cardReturnStartPos[slot].copy(obj.position);
+    this.cardReturnStartRot[slot].copy(obj.quaternion);
+    this.cardReturnProgress[slot] = 0;
+  }
+
+  private updateCardReturnAnimations(delta: number): void {
+    for (let slot = 0; slot < MAX_TASKS; slot += 1) {
+      if (this.cardReturnProgress[slot] < 1) {
+        this.cardReturnProgress[slot] += delta * 3.5;
+        const t = Math.min(1, this.cardReturnProgress[slot]);
+        const ease = 1 - Math.pow(1 - t, 3);
+        const obj = this.world.getSceneObject(TASK_NODE_IDS[slot]);
+        if (obj) {
+          obj.position.lerpVectors(this.cardReturnStartPos[slot], this.cardHomePositions[slot], ease);
+          obj.quaternion.slerpQuaternions(this.cardReturnStartRot[slot], this.cardHomeRotations[slot], ease);
+        }
+        if (t >= 1) {
+          this.cardReturnProgress[slot] = 1;
+          this.ghostAudio.playSnapSound();
+        }
+      }
+    }
+  }
+
+  update(delta: number, _time: number): void {
     this.checkPinchDragTimelineDrop();
+    this.updateCardReturnAnimations(delta);
     this.checkIdleNudge();
   }
 

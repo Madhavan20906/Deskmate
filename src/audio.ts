@@ -191,6 +191,89 @@ export class GhostDeskmateAudio {
     });
   }
 
+  public playPinchTick(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const tickGain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(2400, now);
+    osc.frequency.exponentialRampToValueAtTime(500, now + 0.015);
+
+    tickGain.gain.setValueAtTime(0.15, now);
+    tickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.018);
+
+    osc.connect(tickGain);
+    tickGain.connect(this.gainNode);
+
+    osc.start(now);
+    osc.stop(now + 0.02);
+  }
+
+  public playHoverHum(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const humGain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(520, now);
+
+    humGain.gain.setValueAtTime(0.04, now);
+    humGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+    osc.connect(humGain);
+    humGain.connect(this.gainNode);
+
+    osc.start(now);
+    osc.stop(now + 0.045);
+  }
+
+  public playSnapSound(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const snapGain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(220, now + 0.04);
+
+    snapGain.gain.setValueAtTime(0.14, now);
+    snapGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+    osc.connect(snapGain);
+    snapGain.connect(this.gainNode);
+
+    osc.start(now);
+    osc.stop(now + 0.055);
+  }
+
+  public playPipChirp(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const chirpGain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(659.25, now);
+    osc.frequency.exponentialRampToValueAtTime(1046.5, now + 0.07);
+
+    chirpGain.gain.setValueAtTime(0.12, now);
+    chirpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+    osc.connect(chirpGain);
+    chirpGain.connect(this.gainNode);
+
+    osc.start(now);
+    osc.stop(now + 0.11);
+  }
+
   public dispose(): void {
     if (this.timer !== null) {
       window.clearTimeout(this.timer);

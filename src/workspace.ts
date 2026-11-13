@@ -30,6 +30,7 @@ type PlacementLoadResult = {
 const PLACEMENT_STORAGE_KEY = 'deskmate.workspace-placement.v1';
 const DEFAULT_WORKSPACE_POSITION = [0, 0.75, -0.85] as const;
 const WORKSPACE_NODE_IDS = [
+  'workspace-desk',
   'workspace-dashboard',
   'task-card-roadmap',
   'task-card-design-review',
