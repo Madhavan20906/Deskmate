@@ -9,6 +9,7 @@ import {
   createSystem,
   Entity,
   Grabbed,
+  Object3D,
   Quaternion,
   UIKitMLAsset,
   Vector3,
@@ -783,6 +784,19 @@ export class PanelSystem extends createSystem({
   private cardReturnStartRot: Quaternion[] = Array.from({ length: 6 }, () => new Quaternion());
   private cardReturnProgress: number[] = [1, 1, 1, 1, 1, 1];
 
+  // Pip 3D companion
+  private pipObject: Object3D | null = null;
+  private pipEyesGroup: Object3D | null = null;
+  private pipAntennaGroup: Object3D | null = null;
+  private pipBodyMesh: Object3D | null = null;
+  private pipWasGrabbed = false;
+  private pipWiggleTimer = 0;
+  private pipHopTimer = 1;
+  private pipHopStartPos = new Vector3(-0.48, 0.74, -0.70);
+  private pipHopTargetPos = new Vector3(-0.48, 0.74, -0.70);
+  private pipRestingPos = new Vector3(-0.48, 0.74, -0.70);
+  private pipLookTarget = new Vector3();
+
   init(): void {
     const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
     const panel = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
@@ -971,6 +985,17 @@ export class PanelSystem extends createSystem({
     this.jarDayLabels = Array.from({ length: 7 }, (_, i) => dashboard?.getElementById(`jar-day-label-${i + 1}`) ?? null);
     this.jarBoxes = Array.from({ length: 7 }, (_, i) => dashboard?.getElementById(`jar-box-${i + 1}`) ?? null);
     this.jarTokenCounts = Array.from({ length: 7 }, (_, i) => dashboard?.getElementById(`jar-tokens-${i + 1}`) ?? null);
+
+    this.pipObject = this.world.getSceneObject('pip-companion') ?? null;
+    if (this.pipObject) {
+      this.pipBodyMesh = this.pipObject.getObjectByName('PipBody') ?? null;
+      this.pipEyesGroup = this.pipObject.getObjectByName('PipEyesGroup') ?? null;
+      this.pipAntennaGroup = this.pipObject.getObjectByName('PipAntennaGroup') ?? null;
+      this.pipRestingPos.copy(this.pipObject.position);
+      const onPipPoke = () => this.triggerPipWiggle();
+      this.pipObject.addEventListener('click', onPipPoke);
+      this.cleanupFuncs.push(() => this.pipObject?.removeEventListener('click', onPipPoke));
+    }
 
     if (this.ghostAudioButton !== null) {
       const toggleGhostAudio = () => {
@@ -3237,9 +3262,107 @@ export class PanelSystem extends createSystem({
     }
   }
 
+  private triggerPipWiggle(): void {
+    this.pipWiggleTimer = 0.45;
+    this.ghostAudio.playPipChirp();
+    this.setPipEmote('celebration');
+    this.setPipMessage('Pip: *happy wiggle* Ready to focus with you!', 'responding');
+    this.recordUserInteraction();
+  }
+
+  private startPipHop(targetX: number, targetZ: number): void {
+    if (!this.pipObject) return;
+    this.pipHopStartPos.copy(this.pipObject.position);
+    this.pipHopTargetPos.set(targetX, 0.74, targetZ);
+    this.pipRestingPos.copy(this.pipHopTargetPos);
+    this.pipHopTimer = 0;
+    this.setPipEmote('celebration');
+    this.ghostAudio.playPinchTick();
+  }
+
+  private updatePipInteractions(delta: number): void {
+    if (!this.pipObject) return;
+
+    const entity = (this.pipObject as unknown as { entity?: Entity }).entity;
+    const isGrabbed = entity?.hasComponent(Grabbed) ?? false;
+
+    if (isGrabbed) {
+      if (!this.pipWasGrabbed) {
+        this.pipWasGrabbed = true;
+        this.pipHopTimer = 1;
+        this.ghostAudio.playPinchTick();
+        this.setPipEmote('greeting');
+        this.recordUserInteraction();
+      }
+    } else if (this.pipWasGrabbed) {
+      this.pipWasGrabbed = false;
+      this.recordUserInteraction();
+      const clampedX = Math.max(-0.62, Math.min(0.62, this.pipObject.position.x));
+      const clampedZ = Math.max(-0.95, Math.min(-0.45, this.pipObject.position.z));
+      this.startPipHop(clampedX, clampedZ);
+    }
+
+    if (this.pipHopTimer < 1) {
+      this.pipHopTimer += delta * 2.8;
+      const t = Math.min(1, this.pipHopTimer);
+      const ease = 1 - Math.pow(1 - t, 2);
+      this.pipObject.position.x = this.pipHopStartPos.x + (this.pipHopTargetPos.x - this.pipHopStartPos.x) * ease;
+      this.pipObject.position.z = this.pipHopStartPos.z + (this.pipHopTargetPos.z - this.pipHopStartPos.z) * ease;
+      const jumpArc = Math.sin(t * Math.PI) * 0.06;
+      this.pipObject.position.y = 0.74 + jumpArc;
+      if (this.pipBodyMesh) {
+        this.pipBodyMesh.scale.y = 1 + jumpArc * 2.2;
+        this.pipBodyMesh.scale.x = 1 - jumpArc * 1.1;
+        this.pipBodyMesh.scale.z = 1 - jumpArc * 1.1;
+      }
+      if (t >= 1) {
+        this.pipHopTimer = 1;
+        this.pipObject.position.copy(this.pipRestingPos);
+        if (this.pipBodyMesh) {
+          this.pipBodyMesh.scale.set(1, 1, 1);
+        }
+        this.ghostAudio.playPipChirp();
+      }
+    }
+
+    if (this.pipWiggleTimer > 0) {
+      this.pipWiggleTimer -= delta;
+      const wigglePhase = Math.sin((0.45 - this.pipWiggleTimer) * 32);
+      this.pipObject.rotation.z = wigglePhase * 0.18;
+      if (this.pipAntennaGroup) {
+        this.pipAntennaGroup.rotation.z = -wigglePhase * 0.35;
+      }
+      if (this.pipWiggleTimer <= 0) {
+        this.pipObject.rotation.z = 0;
+        if (this.pipAntennaGroup) {
+          this.pipAntennaGroup.rotation.z = 0;
+        }
+      }
+    }
+
+    this.world.camera.getWorldPosition(this.pipLookTarget);
+    const dx = this.pipLookTarget.x - this.pipObject.position.x;
+    const dy = this.pipLookTarget.y - (this.pipObject.position.y + 0.08);
+    const dz = this.pipLookTarget.z - this.pipObject.position.z;
+    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    if (dist < 2.0 && this.pipEyesGroup) {
+      const targetYaw = Math.atan2(dx, dz);
+      const targetPitch = -Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
+      const clampedYaw = Math.max(-0.6, Math.min(0.6, targetYaw));
+      const clampedPitch = Math.max(-0.4, Math.min(0.4, targetPitch));
+      this.pipEyesGroup.rotation.y += (clampedYaw - this.pipEyesGroup.rotation.y) * 0.1;
+      this.pipEyesGroup.rotation.x += (clampedPitch - this.pipEyesGroup.rotation.x) * 0.1;
+    }
+
+    if (dist < 0.14 && this.pipWiggleTimer <= 0 && !isGrabbed) {
+      this.triggerPipWiggle();
+    }
+  }
+
   update(delta: number, _time: number): void {
     this.checkPinchDragTimelineDrop();
     this.updateCardReturnAnimations(delta);
+    this.updatePipInteractions(delta);
     this.checkIdleNudge();
   }
 
