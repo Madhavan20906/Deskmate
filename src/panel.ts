@@ -1408,6 +1408,7 @@ export class PanelSystem extends createSystem({
         this.selectedTask = task.id;
         this.dismissedSuggestionFor = null;
         this.schedulerMessage = '';
+        this.ghostAudio.playPinchTick();
         this.renderTasks();
       };
       const advanceStatus = () => {
@@ -1434,6 +1435,7 @@ export class PanelSystem extends createSystem({
       const startAnotherFocus = () => this.startAnotherFocusSession(slot);
 
       selectButton.addEventListener('click', selectTask);
+      root.addEventListener('click', selectTask);
       statusButton.addEventListener('click', advanceStatus);
       editButton.addEventListener('click', editTask);
       deleteButton.addEventListener('click', deleteTask);
@@ -1447,6 +1449,7 @@ export class PanelSystem extends createSystem({
       focusAgainButton.addEventListener('click', startAnotherFocus);
       this.cleanupFuncs.push(
         () => selectButton.removeEventListener('click', selectTask),
+        () => root.removeEventListener('click', selectTask),
         () => statusButton.removeEventListener('click', advanceStatus),
         () => editButton.removeEventListener('click', editTask),
         () => deleteButton.removeEventListener('click', deleteTask),
@@ -2934,6 +2937,7 @@ export class PanelSystem extends createSystem({
       card.root.setProperties({
         display: 'flex',
         opacity: cardOpacity,
+        borderWidth: isSelected ? 4 : 2,
         borderColor: isFocused
           ? '#ffd54f'
           : isSelected
