@@ -19,6 +19,7 @@
     "@pmndrs/uikit": "^1.0.74",
     "@pmndrs/uikit-horizon": "^1.0.74",
     "@pmndrs/uikit-lucide": "^1.0.74",
+    "elics": "^3.4.1",
     "three": "npm:super-three@0.185.0"
   },
   "devDependencies": {
@@ -33,21 +34,6 @@
   "overrides": {
     "sharp": "0.35.4",
     "three": "npm:super-three@0.185.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "sharp": "0.35.4",
-      "three": "npm:super-three@0.185.0"
-    },
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "protobufjs",
-      "sharp"
-    ],
-    "ignoredBuiltDependencies": [
-      "@meta-quest/metavr",
-      "onnxruntime-node"
-    ]
   },
   "engines": {
     "node": ">=20.19.0 <21.0.0-0 || >=22.12.0 <23.0.0-0 || >=24.0.0"
