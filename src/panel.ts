@@ -835,6 +835,19 @@ export class PanelSystem extends createSystem({
   private trayMarbleDropPos = new Vector3();
   private trayMarbleWasGrabbed = false;
 
+  // Ghost 3D Companion
+  private ghostObject: Object3D | null = null;
+  private ghostFloatGroup: Object3D | null = null;
+  private ghostRightArm: Object3D | null = null;
+  private ghostPalm: Object3D | null = null;
+  private ghostFloatPhase = 0;
+  private ghostWaveTimer = 0;
+  private ghostHighFiveReady = false;
+  private ghostHighFiveCelebrationTimer = 0;
+  private lastUserHandX = 0;
+  private userHandWaveReversals = 0;
+  private userHandWaveResetTimer = 0;
+
   init(): void {
     const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
     const panel = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
@@ -1082,6 +1095,22 @@ export class PanelSystem extends createSystem({
       };
       this.jarObject.addEventListener('click', onJarClick);
       this.cleanupFuncs.push(() => this.jarObject?.removeEventListener('click', onJarClick));
+    }
+
+    this.ghostObject = this.world.getSceneObject('ghost-companion') ?? null;
+    if (this.ghostObject) {
+      this.ghostFloatGroup = this.ghostObject.getObjectByName('GhostFloatGroup') ?? null;
+      this.ghostRightArm = this.ghostObject.getObjectByName('GhostRightArm') ?? null;
+      this.ghostPalm = this.ghostObject.getObjectByName('GhostPalm') ?? null;
+      const onGhostClick = () => {
+        if (this.ghostHighFiveReady) {
+          this.triggerGhostHighFive();
+        } else {
+          this.triggerGhostWave();
+        }
+      };
+      this.ghostObject.addEventListener('click', onGhostClick);
+      this.cleanupFuncs.push(() => this.ghostObject?.removeEventListener('click', onGhostClick));
     }
 
     if (this.ghostAudioButton !== null) {
@@ -1894,6 +1923,11 @@ export class PanelSystem extends createSystem({
     this.stopFocusTicker();
     this.lastTimerSecond = -1;
     this.persistFocusStorage();
+    if (status === 'completed' || taskCompleted) {
+      this.ghostHighFiveReady = true;
+      this.setPipEmote('celebration');
+      this.setPipMessage('Sprint complete! Reach out and high-five Ghost to celebrate!');
+    }
     this.renderTasks();
   }
 
@@ -3804,6 +3838,86 @@ export class PanelSystem extends createSystem({
     }
   }
 
+  public triggerGhostWave(): void {
+    this.ghostWaveTimer = 1.4;
+    this.ghostAudio.playPipChirp();
+    this.setPipEmote('celebration');
+    this.setPipMessage('Ghost: *waves friendly ghostly hand* Hello there!');
+    this.recordUserInteraction();
+  }
+
+  public triggerGhostHighFive(): void {
+    this.ghostHighFiveReady = false;
+    this.ghostHighFiveCelebrationTimer = 1.2;
+    this.ghostAudio.playHighFiveChime();
+    this.setPipEmote('celebration');
+    this.setPipMessage('High-five! Fantastic focus sprint completed!');
+    this.recordUserInteraction();
+  }
+
+  private updateGhostInteractions(delta: number): void {
+    if (!this.ghostObject || !this.ghostFloatGroup) return;
+
+    this.ghostFloatPhase += delta * 2.2;
+    this.ghostFloatGroup.position.y = Math.sin(this.ghostFloatPhase) * 0.015;
+
+    // Check hand / user proximity
+    this.world.camera.getWorldPosition(this.pipLookTarget);
+    const dx = this.pipLookTarget.x - this.ghostObject.position.x;
+    const dy = this.pipLookTarget.y - (this.ghostObject.position.y + 0.08);
+    const dz = this.pipLookTarget.z - this.ghostObject.position.z;
+    const distToGhost = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    // High-five celebration spin/bounce
+    if (this.ghostHighFiveCelebrationTimer > 0) {
+      this.ghostHighFiveCelebrationTimer -= delta;
+      this.ghostFloatGroup.rotation.y += delta * 12.0;
+      this.ghostFloatGroup.position.y += Math.sin(this.ghostHighFiveCelebrationTimer * 10) * 0.03;
+      if (this.ghostHighFiveCelebrationTimer <= 0) {
+        this.ghostFloatGroup.rotation.y = 0;
+      }
+    }
+
+    if (this.ghostRightArm) {
+      if (this.ghostHighFiveReady) {
+        // High-five waiting pose: arm extended forward with palm flat
+        this.ghostRightArm.rotation.set(0.2, -0.6, 1.35);
+
+        // Check if user touched palm
+        if (distToGhost < 0.22) {
+          this.triggerGhostHighFive();
+        }
+      } else if (this.ghostWaveTimer > 0) {
+        // Active waving animation
+        this.ghostWaveTimer -= delta;
+        const waveCycle = Math.sin((1.4 - this.ghostWaveTimer) * 16.0);
+        this.ghostRightArm.rotation.set(0.1, 0, 1.25 + waveCycle * 0.38);
+        if (this.ghostWaveTimer <= 0) {
+          this.ghostRightArm.rotation.set(0, 0, -0.3);
+        }
+      } else {
+        // Idle arm resting pose
+        this.ghostRightArm.rotation.set(0, 0, -0.3);
+
+        // User waving gesture detection (alternating horizontal hand movement)
+        this.userHandWaveResetTimer += delta;
+        const handVelocityX = (this.pipLookTarget.x - this.lastUserHandX) / Math.max(0.001, delta);
+        if (Math.abs(handVelocityX) > 0.45 && distToGhost < 1.4) {
+          this.userHandWaveReversals += 1;
+          if (this.userHandWaveReversals >= 3 && this.userHandWaveResetTimer < 1.0) {
+            this.userHandWaveReversals = 0;
+            this.triggerGhostWave();
+          }
+        }
+        if (this.userHandWaveResetTimer > 1.0) {
+          this.userHandWaveResetTimer = 0;
+          this.userHandWaveReversals = 0;
+        }
+        this.lastUserHandX = this.pipLookTarget.x;
+      }
+    }
+  }
+
   update(delta: number, _time: number): void {
     this.checkPinchDragTimelineDrop(delta);
     this.updateCardReturnAnimations(delta);
@@ -3812,6 +3926,7 @@ export class PanelSystem extends createSystem({
     this.updateDeskPlant(delta);
     this.updateDeskLamp(delta);
     this.updateMarblesJarInteractions(delta);
+    this.updateGhostInteractions(delta);
     this.checkIdleNudge();
   }
 
