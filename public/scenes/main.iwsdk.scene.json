@@ -81,6 +81,27 @@
     },
     {
       "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "pip-companion",
+        "type": "asset"
+      },
+      "id": "pip-companion",
+      "name": "Pip 3D Companion",
+      "transform": {
+        "position": [
+          -0.48,
+          0.74,
+          -0.70
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
         "PokeInteractable": {},
         "RayInteractable": {}
       },
