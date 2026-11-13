@@ -9,6 +9,8 @@ import {
   createSystem,
   Entity,
   Grabbed,
+  Mesh,
+  MeshStandardMaterial,
   Object3D,
   Quaternion,
   UIKitMLAsset,
@@ -797,6 +799,13 @@ export class PanelSystem extends createSystem({
   private pipRestingPos = new Vector3(-0.48, 0.74, -0.70);
   private pipLookTarget = new Vector3();
 
+  // Sprint Dial 3D
+  private dialObject: Object3D | null = null;
+  private dialKnobGroup: Object3D | null = null;
+  private dialRingMesh: Mesh | null = null;
+  private dialWasGrabbed = false;
+  private dialGlowPulse = 0;
+
   init(): void {
     const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
     const panel = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
@@ -818,6 +827,8 @@ export class PanelSystem extends createSystem({
             const is2D = visibilityState === VisibilityState.NonImmersive;
             xrButton.setProperties({ display: is2D ? 'flex' : 'none' });
             exitButton.setProperties({ display: is2D ? 'none' : 'flex' });
+            this.focusDurationDownButton?.setProperties({ display: is2D ? 'flex' : 'none' });
+            this.focusDurationUpButton?.setProperties({ display: is2D ? 'flex' : 'none' });
           }),
         );
       }
@@ -995,6 +1006,19 @@ export class PanelSystem extends createSystem({
       const onPipPoke = () => this.triggerPipWiggle();
       this.pipObject.addEventListener('click', onPipPoke);
       this.cleanupFuncs.push(() => this.pipObject?.removeEventListener('click', onPipPoke));
+    }
+
+    this.dialObject = this.world.getSceneObject('sprint-dial') ?? null;
+    if (this.dialObject) {
+      this.dialKnobGroup = this.dialObject.getObjectByName('RotaryKnob') ?? null;
+      this.dialRingMesh = (this.dialObject.getObjectByName('GlowingRing') as Mesh) ?? null;
+      this.syncDialRotationToDuration();
+      const onDialClick = () => {
+        this.stepSprintDuration(5);
+        this.ghostAudio.playPinchTick();
+      };
+      this.dialObject.addEventListener('click', onDialClick);
+      this.cleanupFuncs.push(() => this.dialObject?.removeEventListener('click', onDialClick));
     }
 
     if (this.ghostAudioButton !== null) {
@@ -3359,10 +3383,73 @@ export class PanelSystem extends createSystem({
     }
   }
 
+  private syncDialRotationToDuration(): void {
+    if (!this.dialKnobGroup) return;
+    const mins = this.focusStorage.durationMinutes;
+    const frac = (mins - 5) / 115;
+    this.dialKnobGroup.rotation.y = frac * Math.PI * 2;
+  }
+
+  private stepSprintDuration(deltaMinutes: number): void {
+    let current = this.focusStorage.durationMinutes;
+    current += deltaMinutes;
+    if (current > MAX_FOCUS_MINUTES) current = MIN_FOCUS_MINUTES;
+    if (current < MIN_FOCUS_MINUTES) current = MAX_FOCUS_MINUTES;
+    this.focusStorage.durationMinutes = current;
+    this.focusDurationValue.setProperties({ text: `${current} MIN` });
+    this.syncDialRotationToDuration();
+    this.dialGlowPulse = 1.0;
+    this.persistFocusStorage();
+    this.recordUserInteraction();
+  }
+
+  private updateDialInteractions(delta: number): void {
+    if (!this.dialObject || !this.dialKnobGroup) return;
+
+    const entity = (this.dialObject as unknown as { entity?: Entity }).entity;
+    const isGrabbed = entity?.hasComponent(Grabbed) ?? false;
+
+    if (isGrabbed) {
+      if (!this.dialWasGrabbed) {
+        this.dialWasGrabbed = true;
+        this.ghostAudio.playPinchTick();
+        this.recordUserInteraction();
+      }
+      this.world.camera.getWorldPosition(this.pipLookTarget);
+      const dx = this.pipLookTarget.x - this.dialObject.position.x;
+      const dz = this.pipLookTarget.z - this.dialObject.position.z;
+      const currentHandAngle = Math.atan2(dx, dz);
+      const normalizedAngle = ((currentHandAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const stepIndex = Math.round((normalizedAngle / (Math.PI * 2)) * 23);
+      const newMinutes = 5 + stepIndex * 5;
+      if (newMinutes !== this.focusStorage.durationMinutes && newMinutes >= 5 && newMinutes <= 120) {
+        this.focusStorage.durationMinutes = newMinutes;
+        this.focusDurationValue.setProperties({ text: `${newMinutes} MIN` });
+        this.syncDialRotationToDuration();
+        this.ghostAudio.playPinchTick();
+        this.dialGlowPulse = 1.0;
+        this.persistFocusStorage();
+      }
+    } else if (this.dialWasGrabbed) {
+      this.dialWasGrabbed = false;
+      this.ghostAudio.playSnapSound();
+      this.recordUserInteraction();
+    }
+
+    if (this.dialGlowPulse > 0) {
+      this.dialGlowPulse = Math.max(0, this.dialGlowPulse - delta * 3.0);
+      if (this.dialRingMesh && this.dialRingMesh.material) {
+        const mat = this.dialRingMesh.material as MeshStandardMaterial;
+        mat.emissiveIntensity = 0.7 + this.dialGlowPulse * 0.8;
+      }
+    }
+  }
+
   update(delta: number, _time: number): void {
     this.checkPinchDragTimelineDrop();
     this.updateCardReturnAnimations(delta);
     this.updatePipInteractions(delta);
+    this.updateDialInteractions(delta);
     this.checkIdleNudge();
   }
 

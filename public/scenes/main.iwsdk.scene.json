@@ -102,6 +102,27 @@
     },
     {
       "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "sprint-dial",
+        "type": "asset"
+      },
+      "id": "sprint-dial",
+      "name": "Sprint 3D Dial",
+      "transform": {
+        "position": [
+          -0.24,
+          0.74,
+          -0.65
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
         "PokeInteractable": {},
         "RayInteractable": {}
       },
