@@ -821,6 +821,16 @@ export class PanelSystem extends createSystem({
   private lampPoolMesh: Mesh | null = null;
   private lampCurrentIntensity = 0.0;
 
+  // Marbles & Jar 3D
+  private jarObject: Object3D | null = null;
+  private jarMarblesGroup: Object3D | null = null;
+  private trayMarbleMesh: Mesh | null = null;
+  private jarJiggleTimer = 0;
+  private trayMarbleRestingPos = new Vector3(-0.088, 0.018, 0.015);
+  private trayMarbleReturnTimer = 1.0;
+  private trayMarbleDropPos = new Vector3();
+  private trayMarbleWasGrabbed = false;
+
   init(): void {
     const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
     const panel = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
@@ -1028,6 +1038,7 @@ export class PanelSystem extends createSystem({
       this.dialKnobGroup = this.dialObject.getObjectByName('RotaryKnob') ?? null;
       this.dialRingMesh = (this.dialObject.getObjectByName('GlowingRing') as Mesh) ?? null;
       this.syncDialRotationToDuration();
+    this.syncJarMarblesCount();
       const onDialClick = () => {
         this.stepSprintDuration(5);
         this.ghostAudio.playPinchTick();
@@ -1056,6 +1067,17 @@ export class PanelSystem extends createSystem({
       };
       this.lampObject.addEventListener('click', onLampClick);
       this.cleanupFuncs.push(() => this.lampObject?.removeEventListener('click', onLampClick));
+    }
+
+    this.jarObject = this.world.getSceneObject('marbles-jar') ?? null;
+    if (this.jarObject) {
+      this.jarMarblesGroup = this.jarObject.getObjectByName('JarMarblesGroup') ?? null;
+      this.trayMarbleMesh = (this.jarObject.getObjectByName('TrayPickableMarble') as Mesh) ?? null;
+      const onJarClick = () => {
+        this.triggerJarJiggle();
+      };
+      this.jarObject.addEventListener('click', onJarClick);
+      this.cleanupFuncs.push(() => this.jarObject?.removeEventListener('click', onJarClick));
     }
 
     if (this.ghostAudioButton !== null) {
@@ -1165,6 +1187,7 @@ export class PanelSystem extends createSystem({
     this.focusStorageReadOnly = loadedFocusData.readOnly;
     this.focusStorageAvailable = !loadedFocusData.readOnly;
     this.syncDialRotationToDuration();
+    this.syncJarMarblesCount();
 
     const changeFocusDuration = (delta: number) => {
       if (this.focusStorage.active !== null) return;
@@ -1172,6 +1195,7 @@ export class PanelSystem extends createSystem({
         this.focusStorage.durationMinutes + delta,
       );
       this.syncDialRotationToDuration();
+    this.syncJarMarblesCount();
       this.persistFocusStorage();
       this.renderFocus();
     };
@@ -3445,6 +3469,7 @@ export class PanelSystem extends createSystem({
     this.focusStorage.durationMinutes = current;
     this.focusDurationValue.setProperties({ text: `${current} MIN` });
     this.syncDialRotationToDuration();
+    this.syncJarMarblesCount();
     this.dialGlowPulse = 1.0;
     this.persistFocusStorage();
     this.recordUserInteraction();
@@ -3473,6 +3498,7 @@ export class PanelSystem extends createSystem({
         this.focusStorage.durationMinutes = newMinutes;
         this.focusDurationValue.setProperties({ text: `${newMinutes} MIN` });
         this.syncDialRotationToDuration();
+    this.syncJarMarblesCount();
         this.ghostAudio.playPinchTick();
         this.dialGlowPulse = 1.0;
         this.persistFocusStorage();
@@ -3599,6 +3625,82 @@ export class PanelSystem extends createSystem({
     }
   }
 
+  public triggerJarJiggle(): void {
+    this.jarJiggleTimer = 0.45;
+    this.ghostAudio.playJarJiggle();
+  }
+
+  private syncJarMarblesCount(): void {
+    if (!this.jarMarblesGroup) return;
+    const tasks = this.tasks.filter((t): t is TaskRecord => t !== null);
+    const history = this.focusStorage?.history ?? [];
+    const insights = calculateProductivityInsights(tasks, history);
+    const tokenCount = Math.max(0, insights.todayJarTokens);
+
+    const children = this.jarMarblesGroup.children;
+    for (let i = 0; i < children.length; i++) {
+      children[i].visible = i < tokenCount;
+    }
+  }
+
+  private updateMarblesJarInteractions(delta: number): void {
+    if (!this.jarObject) return;
+
+    if (this.jarJiggleTimer > 0) {
+      this.jarJiggleTimer -= delta;
+      const jiggleFrac = Math.max(0, this.jarJiggleTimer / 0.45);
+      const shakeOffset = Math.sin((0.45 - this.jarJiggleTimer) * 45) * 0.003 * jiggleFrac;
+      if (this.jarMarblesGroup) {
+        this.jarMarblesGroup.position.y = 0.012 + Math.abs(shakeOffset);
+        this.jarMarblesGroup.rotation.z = shakeOffset * 4.0;
+      }
+      if (this.jarJiggleTimer <= 0 && this.jarMarblesGroup) {
+        this.jarMarblesGroup.position.y = 0.012;
+        this.jarMarblesGroup.rotation.z = 0;
+      }
+    }
+
+    if (this.trayMarbleMesh) {
+      const entity = (this.jarObject as unknown as { entity?: Entity }).entity;
+      const isGrabbed = entity?.hasComponent(Grabbed) ?? false;
+
+      if (isGrabbed) {
+        if (!this.trayMarbleWasGrabbed) {
+          this.trayMarbleWasGrabbed = true;
+          this.ghostAudio.playPinchTick();
+          this.recordUserInteraction();
+        }
+        this.trayMarbleMesh.position.set(-0.044, 0.065, 0.008);
+      } else if (this.trayMarbleWasGrabbed) {
+        this.trayMarbleWasGrabbed = false;
+        const jarDist = this.trayMarbleMesh.position.length();
+        if (jarDist < 0.12) {
+          this.ghostAudio.playMarbleClink();
+          this.triggerJarJiggle();
+          this.recordUserInteraction();
+          const active = this.focusStorage.active;
+          if (active) {
+            this.finishFocusSession('completed', false);
+          }
+          this.syncJarMarblesCount();
+          this.setPipEmote('celebration');
+          this.setPipMessage('Token marble dropped into the jar with a bright clink!');
+        } else {
+          this.ghostAudio.playSnapSound();
+        }
+        this.trayMarbleReturnTimer = 0.0;
+        this.trayMarbleDropPos.copy(this.trayMarbleMesh.position);
+      }
+
+      if (this.trayMarbleReturnTimer < 1.0) {
+        this.trayMarbleReturnTimer = Math.min(1.0, this.trayMarbleReturnTimer + delta * 3.5);
+        const t = this.trayMarbleReturnTimer;
+        const ease = 1 - Math.pow(1 - t, 3);
+        this.trayMarbleMesh.position.lerpVectors(this.trayMarbleDropPos, this.trayMarbleRestingPos, ease);
+      }
+    }
+  }
+
   update(delta: number, _time: number): void {
     this.checkPinchDragTimelineDrop();
     this.updateCardReturnAnimations(delta);
@@ -3606,6 +3708,7 @@ export class PanelSystem extends createSystem({
     this.updateDialInteractions(delta);
     this.updateDeskPlant(delta);
     this.updateDeskLamp(delta);
+    this.updateMarblesJarInteractions(delta);
     this.checkIdleNudge();
   }
 

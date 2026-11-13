@@ -163,6 +163,27 @@
     },
     {
       "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "marbles-jar",
+        "type": "asset"
+      },
+      "id": "marbles-jar",
+      "name": "Productivity Marbles & Jar",
+      "transform": {
+        "position": [
+          0.10,
+          0.74,
+          -0.66
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
         "PokeInteractable": {},
         "RayInteractable": {}
       },
