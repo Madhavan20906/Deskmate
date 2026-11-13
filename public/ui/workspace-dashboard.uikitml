@@ -637,6 +637,157 @@
   .create-button {
     margin-top: 2px;
   }
+
+  .ghost-audio-button {
+    background-color: #182b33;
+    border-color: #3b5664;
+  }
+
+  .pip-emote {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+    border-radius: 6px;
+    background-color: #203039;
+    color: #8ce2d2;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .break-banner {
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 12px;
+    background-color: #172d34;
+    border-width: 1px;
+    border-color: #53cbb5;
+  }
+
+  .break-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .break-title {
+    color: #8ce2d2;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .break-timer {
+    color: #f2bf7b;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .break-suggestion {
+    color: #e8eef0;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .break-actions {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .break-btn {
+    flex-grow: 1;
+  }
+
+  .timeline-zones {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .timeline-zone {
+    flex-grow: 1;
+    border-width: 1px;
+    border-color: #2b414c;
+    background-color: #182833;
+  }
+
+  .welcome-back-bar {
+    padding-top: 7px;
+    padding-bottom: 7px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 10px;
+    background-color: #182b33;
+    border-width: 1px;
+    border-color: #3b5664;
+  }
+
+  .welcome-back-line {
+    color: #8ce2d2;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .jar-header-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .jar-badge {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 8px;
+    background-color: #183942;
+    color: #8ce2d2;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .jar-status {
+    color: #b6c7ce;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .jar-week-display {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .jar-day-col {
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .jar-day-label {
+    color: #9eb4bf;
+    font-size: 9px;
+    font-weight: 700;
+  }
+
+  .jar-box {
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 30px;
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: #34434c;
+    background-color: #203039;
+  }
+
+  .jar-token-count {
+    color: #f2bf7b;
+    font-size: 11px;
+    font-weight: 700;
+  }
 </style>
 <Panel class="dashboard">
   <div class="content">
@@ -647,6 +798,9 @@
       </div>
       <div class="header-actions">
         <div class="day-chip"><span class="day-chip-text">YOUR DAY</span></div>
+        <Button id="ghost-audio-toggle" class="ghost-audio-button">
+          <ButtonLabel id="ghost-audio-label">Deskmate: Sound on</ButtonLabel>
+        </Button>
         <Button id="xr-button" class="xr-button">
           <ButtonLabel>Enter XR</ButtonLabel>
         </Button>
@@ -682,6 +836,7 @@
           <span class="pip-name">PIP / LOCAL COMMAND MODE</span>
           <span id="pip-state" class="pip-state">READY / LOCAL MODE</span>
         </div>
+        <span id="pip-emote-badge" class="pip-emote">GREETING</span>
         <Button id="pip-dismiss">
           <ButtonLabel>Hide</ButtonLabel>
         </Button>
@@ -699,6 +854,12 @@
         <Button id="pip-recap" class="pip-control-button">
           <ButtonLabel>Daily recap</ButtonLabel>
         </Button>
+        <Button id="pip-morning-ritual" class="pip-control-button">
+          <ButtonLabel>Morning ritual</ButtonLabel>
+        </Button>
+        <Button id="pip-evening-ritual" class="pip-control-button">
+          <ButtonLabel>Evening wind-down</ButtonLabel>
+        </Button>
       </div>
       <div id="pip-confirmation-row" class="pip-confirmation-row" style="display: none">
         <Button id="pip-confirm-schedule" class="pip-confirm-button">
@@ -706,6 +867,29 @@
         </Button>
         <Button id="pip-cancel-schedule" class="pip-confirm-button">
           <ButtonLabel>Cancel</ButtonLabel>
+        </Button>
+      </div>
+      <div id="pip-ritual-actions" class="pip-confirmation-row" style="display: none">
+        <Button id="pip-ritual-next" class="pip-confirm-button">
+          <ButtonLabel id="pip-ritual-next-label">Next step</ButtonLabel>
+        </Button>
+        <Button id="pip-ritual-finish" class="pip-confirm-button">
+          <ButtonLabel>Finish ritual</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="break-banner" class="break-banner" style="display: none">
+      <div class="break-header">
+        <span class="break-title">SEATED BREAK MODE</span>
+        <span id="break-timer" class="break-timer">60s remaining</span>
+      </div>
+      <span id="break-suggestion" class="break-suggestion">Pip suggests: Roll your shoulders back and take a deep breath. The jar fills when your break is complete!</span>
+      <div class="break-actions">
+        <Button id="break-complete-btn" class="break-btn">
+          <ButtonLabel>Finish break &amp; fill jar</ButtonLabel>
+        </Button>
+        <Button id="break-skip-btn" class="break-btn">
+          <ButtonLabel>Skip break</ButtonLabel>
         </Button>
       </div>
     </div>
@@ -732,6 +916,17 @@
     <div class="timeline-heading">
       <span class="timeline-title">TODAY'S TIMELINE</span>
       <span class="timeline-note">WORKING HOURS / 08:00 - 18:00</span>
+    </div>
+    <div class="timeline-zones">
+      <Button id="timeline-zone-morning" class="timeline-zone">
+        <ButtonLabel id="timeline-zone-morning-label">Morning (08:00 - 11:30)</ButtonLabel>
+      </Button>
+      <Button id="timeline-zone-midday" class="timeline-zone">
+        <ButtonLabel id="timeline-zone-midday-label">Midday (11:30 - 14:30)</ButtonLabel>
+      </Button>
+      <Button id="timeline-zone-evening" class="timeline-zone">
+        <ButtonLabel id="timeline-zone-evening-label">Evening (14:30 - 18:00)</ButtonLabel>
+      </Button>
     </div>
     <div class="time-markers">
       <span class="time-marker">08:00</span>
@@ -803,6 +998,9 @@
         <div id="focus-progress-8" class="focus-progress-segment"></div>
       </div>
     </div>
+    <div class="welcome-back-bar">
+      <span id="welcome-back-line" class="welcome-back-line">Welcome back! 3-day focus streak active - let's fill today's jar!</span>
+    </div>
     <div class="insights-row">
       <div class="insight-card">
         <span class="insight-heading">PRODUCTIVITY GARDEN</span>
@@ -829,6 +1027,22 @@
           <div id="garden-progress-2" class="garden-progress-segment"></div>
           <div id="garden-progress-3" class="garden-progress-segment"></div>
           <div id="garden-progress-4" class="garden-progress-segment"></div>
+        </div>
+      </div>
+      <div class="insight-card">
+        <div class="jar-header-row">
+          <span class="insight-heading">WEEKLY FOCUS JAR</span>
+          <span id="today-jar-badge" class="jar-badge">0 / 4 TOKENS</span>
+        </div>
+        <span id="today-jar-status" class="jar-status">Today: 0 tokens in jar. Sprints &amp; breaks fill it!</span>
+        <div class="jar-week-display">
+          <div class="jar-day-col"><span id="jar-day-label-1" class="jar-day-label">MON</span><div id="jar-box-1" class="jar-box"><span id="jar-tokens-1" class="jar-token-count">0</span></div></div>
+          <div class="jar-day-col"><span id="jar-day-label-2" class="jar-day-label">TUE</span><div id="jar-box-2" class="jar-box"><span id="jar-tokens-2" class="jar-token-count">0</span></div></div>
+          <div class="jar-day-col"><span id="jar-day-label-3" class="jar-day-label">WED</span><div id="jar-box-3" class="jar-box"><span id="jar-tokens-3" class="jar-token-count">0</span></div></div>
+          <div class="jar-day-col"><span id="jar-day-label-4" class="jar-day-label">THU</span><div id="jar-box-4" class="jar-box"><span id="jar-tokens-4" class="jar-token-count">0</span></div></div>
+          <div class="jar-day-col"><span id="jar-day-label-5" class="jar-day-label">FRI</span><div id="jar-box-5" class="jar-box"><span id="jar-tokens-5" class="jar-token-count">0</span></div></div>
+          <div class="jar-day-col"><span id="jar-day-label-6" class="jar-day-label">SAT</span><div id="jar-box-6" class="jar-box"><span id="jar-tokens-6" class="jar-token-count">0</span></div></div>
+          <div class="jar-day-col"><span id="jar-day-label-7" class="jar-day-label">SUN</span><div id="jar-box-7" class="jar-box"><span id="jar-tokens-7" class="jar-token-count">0</span></div></div>
         </div>
       </div>
       <div class="insight-card">

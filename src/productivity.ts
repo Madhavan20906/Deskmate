@@ -25,6 +25,13 @@ export interface GardenMilestone {
   earnedAt: number;
 }
 
+export interface JarDayHistory {
+  dateKey: string;
+  label: string;
+  tokens: number;
+  completedTasks: number;
+}
+
 export interface ProductivityInsights {
   completedTasks: number;
   totalTasks: number;
@@ -40,6 +47,10 @@ export interface ProductivityInsights {
   weeklyCompletedTasks: number;
   weeklyFocusMinutes: number;
   weeklyChange: 'up' | 'steady' | 'down';
+  todayJarTokens: number;
+  todayJarGoal: number;
+  weekJarHistory: JarDayHistory[];
+  welcomeBackLine: string;
 }
 
 const GARDEN_MILESTONES = [
@@ -158,6 +169,24 @@ export function calculateProductivityInsights(
       ? 'down'
       : 'steady';
 
+  const todayKey = formatLocalDateKey(localDayOffset(now, 0));
+  const todayPoint = byDay.get(todayKey);
+  const todayJarTokens = Math.floor((todayPoint?.focusMinutes ?? 0) / 25) + (todayPoint?.completedTasks ?? 0);
+  const todayJarGoal = 4; // 4 focus tokens standard goal
+
+  const weekJarHistory: JarDayHistory[] = days.map((day) => ({
+    dateKey: day.dateKey,
+    label: day.label,
+    tokens: Math.floor(day.focusMinutes / 25) + day.completedTasks,
+    completedTasks: day.completedTasks,
+  }));
+
+  const welcomeBackLine = streakDays > 1
+    ? `Welcome back! ${streakDays}-day streak active - let's fill today's jar!`
+    : streakDays === 1
+      ? "Welcome back! Yesterday's momentum is yours - let's grow today's garden!"
+      : "Welcome back! A fresh day awaits - start a sprint to plant your first seed.";
+
   return {
     completedTasks,
     totalTasks,
@@ -173,5 +202,9 @@ export function calculateProductivityInsights(
     weeklyCompletedTasks,
     weeklyFocusMinutes,
     weeklyChange,
+    todayJarTokens,
+    todayJarGoal,
+    weekJarHistory,
+    welcomeBackLine,
   };
 }
