@@ -274,6 +274,117 @@ export class GhostDeskmateAudio {
     osc.stop(now + 0.11);
   }
 
+  public playPlantRustle(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const rustleGain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.exponentialRampToValueAtTime(580, now + 0.08);
+
+    rustleGain.gain.setValueAtTime(0.08, now);
+    rustleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+    osc.connect(rustleGain);
+    rustleGain.connect(this.gainNode);
+
+    osc.start(now);
+    osc.stop(now + 0.13);
+  }
+
+  public playLampToggle(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const clickGain = this.ctx.createGain();
+
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(120, now + 0.025);
+
+    clickGain.gain.setValueAtTime(0.15, now);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+    osc.connect(clickGain);
+    clickGain.connect(this.gainNode);
+
+    osc.start(now);
+    osc.stop(now + 0.04);
+  }
+
+  public playMarbleClink(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    const clinkGain = this.ctx.createGain();
+
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(1760, now); // A6
+    osc1.frequency.exponentialRampToValueAtTime(1500, now + 0.12);
+
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(2637, now); // E7 harmonic
+    osc2.frequency.exponentialRampToValueAtTime(2200, now + 0.08);
+
+    clinkGain.gain.setValueAtTime(0.16, now);
+    clinkGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+    osc1.connect(clinkGain);
+    osc2.connect(clinkGain);
+    clinkGain.connect(this.gainNode);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.16);
+    osc2.stop(now + 0.16);
+  }
+
+  public playJarJiggle(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    for (let i = 0; i < 3; i++) {
+      const delay = i * 0.035;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1400 + i * 200, now + delay);
+      gain.gain.setValueAtTime(0.09 - i * 0.02, now + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.06);
+      osc.connect(gain);
+      gain.connect(this.gainNode);
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.07);
+    }
+  }
+
+  public playHighFiveChime(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const freqs = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6 arpeggio
+    freqs.forEach((freq, idx) => {
+      if (!this.ctx || !this.gainNode) return;
+      const delay = idx * 0.045;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + delay);
+      gain.gain.setValueAtTime(0.14, now + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.22);
+      osc.connect(gain);
+      gain.connect(this.gainNode);
+      osc.start(now + delay);
+      osc.stop(now + delay + 0.24);
+    });
+  }
+
   public dispose(): void {
     if (this.timer !== null) {
       window.clearTimeout(this.timer);

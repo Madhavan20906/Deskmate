@@ -127,6 +127,26 @@
         "RayInteractable": {}
       },
       "content": {
+        "asset": "desk-plant",
+        "type": "asset"
+      },
+      "id": "desk-plant",
+      "name": "Desk Plant",
+      "transform": {
+        "position": [
+          0.46,
+          0.74,
+          -0.72
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
         "asset": "workspace-dashboard",
         "type": "asset"
       },

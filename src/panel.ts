@@ -806,6 +806,14 @@ export class PanelSystem extends createSystem({
   private dialWasGrabbed = false;
   private dialGlowPulse = 0;
 
+  // Desk Plant 3D
+  private plantObject: Object3D | null = null;
+  private plantStemGroup: Object3D | null = null;
+  private plantFlowerGroup: Object3D | null = null;
+  private plantPerkUpTimer = 0;
+  private plantSwayPhase = 0;
+  private plantProximityTarget = new Vector3();
+
   init(): void {
     const dashboard = this.world.getSceneObject<UIKitMLAsset>('workspace-dashboard');
     const panel = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
@@ -1021,6 +1029,17 @@ export class PanelSystem extends createSystem({
       this.cleanupFuncs.push(() => this.dialObject?.removeEventListener('click', onDialClick));
     }
 
+    this.plantObject = this.world.getSceneObject('desk-plant') ?? null;
+    if (this.plantObject) {
+      this.plantStemGroup = this.plantObject.getObjectByName('plant-stem-group') ?? null;
+      this.plantFlowerGroup = this.plantObject.getObjectByName('plant-flower-group') ?? null;
+      const onPlantClick = () => {
+        this.triggerPlantPerkUp();
+      };
+      this.plantObject.addEventListener('click', onPlantClick);
+      this.cleanupFuncs.push(() => this.plantObject?.removeEventListener('click', onPlantClick));
+    }
+
     if (this.ghostAudioButton !== null) {
       const toggleGhostAudio = () => {
         this.recordUserInteraction();
@@ -1127,12 +1146,14 @@ export class PanelSystem extends createSystem({
     this.focusStorage = loadedFocusData.storage;
     this.focusStorageReadOnly = loadedFocusData.readOnly;
     this.focusStorageAvailable = !loadedFocusData.readOnly;
+    this.syncDialRotationToDuration();
 
     const changeFocusDuration = (delta: number) => {
       if (this.focusStorage.active !== null) return;
       this.focusStorage.durationMinutes = normalizeFocusMinutes(
         this.focusStorage.durationMinutes + delta,
       );
+      this.syncDialRotationToDuration();
       this.persistFocusStorage();
       this.renderFocus();
     };
@@ -1840,6 +1861,7 @@ export class PanelSystem extends createSystem({
     task.status = 'completed';
     task.completedAt = Date.now();
     this.persistTasks();
+    this.triggerPlantPerkUp();
     this.finishFocusSession('completed', true);
   }
 
@@ -2193,6 +2215,7 @@ export class PanelSystem extends createSystem({
     task.status = 'completed';
     task.completedAt = Date.now();
     const saved = this.persistTasks();
+    this.triggerPlantPerkUp();
     this.setPipMessage(saved
       ? `Marked "${task.title}" completed.`
       : `Marked "${task.title}" completed for this session, but local storage could not save it.`);
@@ -3384,8 +3407,8 @@ export class PanelSystem extends createSystem({
   }
 
   private syncDialRotationToDuration(): void {
-    if (!this.dialKnobGroup) return;
-    const mins = this.focusStorage.durationMinutes;
+    if (!this.dialKnobGroup || !this.focusStorage) return;
+    const mins = this.focusStorage.durationMinutes ?? 25;
     const frac = (mins - 5) / 115;
     this.dialKnobGroup.rotation.y = frac * Math.PI * 2;
   }
@@ -3445,11 +3468,75 @@ export class PanelSystem extends createSystem({
     }
   }
 
+  public triggerPlantPerkUp(): void {
+    this.plantPerkUpTimer = 1.0;
+    this.ghostAudio.playPlantRustle();
+  }
+
+  private updateDeskPlant(delta: number): void {
+    if (!this.plantObject || !this.plantStemGroup) return;
+
+    this.plantSwayPhase += delta * 2.5;
+
+    // Check hand / user proximity
+    this.world.camera.getWorldPosition(this.plantProximityTarget);
+    const dx = this.plantProximityTarget.x - this.plantObject.position.x;
+    const dy = this.plantProximityTarget.y - (this.plantObject.position.y + 0.1);
+    const dz = this.plantProximityTarget.z - this.plantObject.position.z;
+    const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    const isNear = dist < 0.45;
+    const proximity = isNear ? (0.45 - dist) / 0.45 : 0;
+
+    // Hand proximity sway: gentle ambient sway when far, reactive responsive bend when hand is near
+    const baseSway = Math.sin(this.plantSwayPhase) * 0.025;
+    const targetRotZ = baseSway + (dx > 0 ? -0.12 : 0.12) * proximity;
+    const targetRotX = Math.cos(this.plantSwayPhase * 2.2) * (0.02 + proximity * 0.08);
+
+    this.plantStemGroup.rotation.z += (targetRotZ - this.plantStemGroup.rotation.z) * 0.12;
+    this.plantStemGroup.rotation.x += (targetRotX - this.plantStemGroup.rotation.x) * 0.12;
+
+    // Perk up on task completion or poke
+    if (this.plantPerkUpTimer > 0) {
+      this.plantPerkUpTimer -= delta;
+      const perkFrac = Math.max(0, this.plantPerkUpTimer / 1.0);
+      const stretchY = 1.0 + Math.sin((1.0 - perkFrac) * Math.PI) * 0.32;
+      const stretchXZ = 1.0 + Math.sin((1.0 - perkFrac) * Math.PI) * 0.08;
+      this.plantStemGroup.scale.set(stretchXZ, stretchY, stretchXZ);
+      if (this.plantPerkUpTimer <= 0) {
+        this.plantStemGroup.scale.set(1, 1, 1);
+      }
+    }
+
+    // Bloom scale driven by garden milestones
+    if (this.plantFlowerGroup) {
+      const tasks = this.tasks.filter((t): t is TaskRecord => t !== null);
+      const insights = calculateProductivityInsights(tasks, this.focusStorage.history);
+      const stage = insights.gardenStage;
+      let targetBloomScale = 0.25;
+      if (stage === 'Canopy' || stage === 'Bloom') {
+        targetBloomScale = 1.0;
+      } else if (stage === 'Sapling') {
+        targetBloomScale = 0.6;
+      } else if (stage === 'Sprout') {
+        targetBloomScale = 0.38;
+      }
+
+      const curScale = this.plantFlowerGroup.scale.x;
+      const newScale = curScale + (targetBloomScale - curScale) * 0.08;
+      this.plantFlowerGroup.scale.set(newScale, newScale, newScale);
+      if (stage === 'Bloom' || stage === 'Canopy') {
+        this.plantFlowerGroup.rotation.y += delta * 0.4;
+      }
+    }
+  }
+
   update(delta: number, _time: number): void {
     this.checkPinchDragTimelineDrop();
     this.updateCardReturnAnimations(delta);
     this.updatePipInteractions(delta);
     this.updateDialInteractions(delta);
+    this.updateDeskPlant(delta);
     this.checkIdleNudge();
   }
 

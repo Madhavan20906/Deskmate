@@ -33,6 +33,7 @@ const WORKSPACE_NODE_IDS = [
   'workspace-desk',
   'pip-companion',
   'sprint-dial',
+  'desk-plant',
   'workspace-dashboard',
   'task-card-roadmap',
   'task-card-design-review',
