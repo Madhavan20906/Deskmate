@@ -786,6 +786,10 @@ export class PanelSystem extends createSystem({
   private cardReturnStartPos: Vector3[] = Array.from({ length: 6 }, () => new Vector3());
   private cardReturnStartRot: Quaternion[] = Array.from({ length: 6 }, () => new Quaternion());
   private cardReturnProgress: number[] = [1, 1, 1, 1, 1, 1];
+  private cardPrevPos: Vector3[] = Array.from({ length: 6 }, () => new Vector3());
+  private cardVelocity: Vector3[] = Array.from({ length: 6 }, () => new Vector3());
+  private cardFlickVelocity: Vector3[] = Array.from({ length: 6 }, () => new Vector3());
+  private cardFlickActive: boolean[] = [false, false, false, false, false, false];
 
   // Pip 3D companion
   private pipObject: Object3D | null = null;
@@ -3278,56 +3282,155 @@ export class PanelSystem extends createSystem({
     this.ghostAudio.playJarFillSound();
   }
 
-  private checkPinchDragTimelineDrop(): void {
+  private checkPinchDragTimelineDrop(delta: number): void {
+    const morningZoneX = -0.25;
+    const middayZoneX = 0.0;
+    const eveningZoneX = 0.25;
+    const zoneCenterY = 1.45;
+    const zoneCenterZ = -0.90;
+    const snapRadius = 0.22;
+
+    let hoveredZone: 'morning' | 'midday' | 'evening' | null = null;
+
     for (let slot = 0; slot < MAX_TASKS; slot += 1) {
       const entity = this.taskEntities[slot];
       const task = this.tasks[slot];
+      const card = this.taskCards[slot];
       if (entity == null || task == null) continue;
 
+      const obj = this.world.getSceneObject(TASK_NODE_IDS[slot]);
+      if (obj == null) continue;
+
       const isGrabbed = entity.hasComponent(Grabbed);
+
       if (isGrabbed) {
         if (!this.cardWasGrabbed[slot]) {
           this.cardWasGrabbed[slot] = true;
           this.cardReturnProgress[slot] = 1;
+          this.cardFlickActive[slot] = false;
+          this.cardPrevPos[slot].copy(obj.position);
+          this.cardVelocity[slot].set(0, 0, 0);
           this.ghostAudio.playPinchTick();
           this.recordUserInteraction();
+        }
+
+        // 1. Calculate velocity and dynamic tilt
+        const dt = Math.max(0.001, delta);
+        this.cardVelocity[slot].subVectors(obj.position, this.cardPrevPos[slot]).divideScalar(dt);
+        this.cardPrevPos[slot].copy(obj.position);
+
+        // Dynamic tilt based on hand movement
+        const tiltRoll = Math.max(-0.4, Math.min(0.4, -this.cardVelocity[slot].x * 0.35));
+        const tiltPitch = Math.max(-0.35, Math.min(0.35, this.cardVelocity[slot].y * -0.3));
+        obj.rotation.z += (tiltRoll - obj.rotation.z) * Math.min(1.0, delta * 12.0);
+        obj.rotation.x += (tiltPitch - obj.rotation.x) * Math.min(1.0, delta * 12.0);
+
+        // 2. Magnetic snap & glow to timeline zones
+        const pos = obj.position;
+        const distMorning = Math.hypot(pos.x - morningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+        const distMidday = Math.hypot(pos.x - middayZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+        const distEvening = Math.hypot(pos.x - eveningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+
+        if (distMorning < snapRadius) {
+          hoveredZone = 'morning';
+          obj.position.x += (morningZoneX - obj.position.x) * 0.12;
+          obj.position.y += (zoneCenterY - obj.position.y) * 0.12;
+          card?.root.setProperties({ borderColor: '#4ade80' });
+        } else if (distMidday < snapRadius) {
+          hoveredZone = 'midday';
+          obj.position.x += (middayZoneX - obj.position.x) * 0.12;
+          obj.position.y += (zoneCenterY - obj.position.y) * 0.12;
+          card?.root.setProperties({ borderColor: '#4ade80' });
+        } else if (distEvening < snapRadius) {
+          hoveredZone = 'evening';
+          obj.position.x += (eveningZoneX - obj.position.x) * 0.12;
+          obj.position.y += (zoneCenterY - obj.position.y) * 0.12;
+          card?.root.setProperties({ borderColor: '#4ade80' });
         }
       } else if (this.cardWasGrabbed[slot]) {
         this.cardWasGrabbed[slot] = false;
         this.recordUserInteraction();
-        const obj = this.world.getSceneObject(TASK_NODE_IDS[slot]);
-        if (obj != null) {
-          const pos = obj.position;
-          if (pos.y >= 1.20 && pos.y <= 1.70 && pos.z <= -0.65) {
-            let startMinute: number;
-            let zoneName: string;
-            if (pos.x < -0.15) {
-              startMinute = 9 * 60; // 09:00
-              zoneName = 'Morning (09:00)';
-            } else if (pos.x > 0.15) {
-              startMinute = 15 * 60; // 15:00
-              zoneName = 'Evening (15:00)';
-            } else {
-              startMinute = 12 * 60; // 12:00
-              zoneName = 'Midday (12:00)';
-            }
-            task.scheduledStartMinute = startMinute;
-            task.scheduleNeedsReview = false;
-            this.selectedTask = task.id;
-            this.persistTasks();
-            this.renderTasks();
-            this.setPipEmote('celebration');
-            this.setPipMessage(
-              `Pinch-drag placed "${task.title}" into ${zoneName}!`,
-              'responding',
-            );
-            this.ghostAudio.playJarFillSound();
-          } else {
-            this.startCardReturnHome(slot);
-          }
+
+        const releaseSpeed = this.cardVelocity[slot].length();
+        const pos = obj.position;
+        const distMorning = Math.hypot(pos.x - morningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+        const distMidday = Math.hypot(pos.x - middayZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+        const distEvening = Math.hypot(pos.x - eveningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+
+        if (distMorning < snapRadius) {
+          this.scheduleTaskToTimelineZone(slot, 9 * 60, 'Morning (09:00)');
+        } else if (distMidday < snapRadius) {
+          this.scheduleTaskToTimelineZone(slot, 12 * 60, 'Midday (12:00)');
+        } else if (distEvening < snapRadius) {
+          this.scheduleTaskToTimelineZone(slot, 15 * 60, 'Evening (15:00)');
+        } else if (releaseSpeed > 0.6) {
+          // Flick throw initiated!
+          this.cardFlickActive[slot] = true;
+          this.cardFlickVelocity[slot].copy(this.cardVelocity[slot]);
+          this.ghostAudio.playPlantRustle();
+        } else {
+          this.startCardReturnHome(slot);
+        }
+      } else if (this.cardFlickActive[slot]) {
+        // 3. Flick throw momentum simulation
+        obj.position.addScaledVector(this.cardFlickVelocity[slot], delta);
+        this.cardFlickVelocity[slot].multiplyScalar(Math.exp(-delta * 5.0));
+
+        // Check if captured by magnetic zone during flick
+        const pos = obj.position;
+        const distMorning = Math.hypot(pos.x - morningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+        const distMidday = Math.hypot(pos.x - middayZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+        const distEvening = Math.hypot(pos.x - eveningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+
+        if (distMorning < 0.18) {
+          this.cardFlickActive[slot] = false;
+          this.scheduleTaskToTimelineZone(slot, 9 * 60, 'Morning (09:00)');
+        } else if (distMidday < 0.18) {
+          this.cardFlickActive[slot] = false;
+          this.scheduleTaskToTimelineZone(slot, 12 * 60, 'Midday (12:00)');
+        } else if (distEvening < 0.18) {
+          this.cardFlickActive[slot] = false;
+          this.scheduleTaskToTimelineZone(slot, 15 * 60, 'Evening (15:00)');
+        } else if (this.cardFlickVelocity[slot].length() < 0.08) {
+          this.cardFlickActive[slot] = false;
+          this.startCardReturnHome(slot);
         }
       }
     }
+
+    // Update glowing highlights on timeline zone buttons
+    if (this.timelineZoneMorningButton) {
+      this.timelineZoneMorningButton.setProperties({
+        borderColor: hoveredZone === 'morning' ? '#4ade80' : '#2b414c',
+        backgroundColor: hoveredZone === 'morning' ? '#1c3e2e' : '#182833',
+      });
+    }
+    if (this.timelineZoneMiddayButton) {
+      this.timelineZoneMiddayButton.setProperties({
+        borderColor: hoveredZone === 'midday' ? '#4ade80' : '#2b414c',
+        backgroundColor: hoveredZone === 'midday' ? '#1c3e2e' : '#182833',
+      });
+    }
+    if (this.timelineZoneEveningButton) {
+      this.timelineZoneEveningButton.setProperties({
+        borderColor: hoveredZone === 'evening' ? '#4ade80' : '#2b414c',
+        backgroundColor: hoveredZone === 'evening' ? '#1c3e2e' : '#182833',
+      });
+    }
+  }
+
+  private scheduleTaskToTimelineZone(slot: number, startMinute: number, zoneName: string): void {
+    const task = this.tasks[slot];
+    if (task == null) return;
+    task.scheduledStartMinute = startMinute;
+    task.scheduleNeedsReview = false;
+    this.selectedTask = task.id;
+    this.persistTasks();
+    this.renderTasks();
+    this.setPipEmote('celebration');
+    this.setPipMessage(`Snapped "${task.title}" to ${zoneName}!`, 'responding');
+    this.ghostAudio.playSnapSound();
+    this.startCardReturnHome(slot);
   }
 
   private startCardReturnHome(slot: number): void {
@@ -3702,7 +3805,7 @@ export class PanelSystem extends createSystem({
   }
 
   update(delta: number, _time: number): void {
-    this.checkPinchDragTimelineDrop();
+    this.checkPinchDragTimelineDrop(delta);
     this.updateCardReturnAnimations(delta);
     this.updatePipInteractions(delta);
     this.updateDialInteractions(delta);
