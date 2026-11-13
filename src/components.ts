@@ -31,4 +31,15 @@ export const DeskmateState = createComponent('DeskmateState', {
 	ghostAudioVolume: { type: Types.Float32, default: 0.15 },
 });
 
-export default defineComponents([TaskData, DeskmateState]);
+export const InteractiveObject = createComponent('InteractiveObject', {
+	objectType: { type: Types.String, default: 'generic' },
+	homeX: { type: Types.Float32, default: 0 },
+	homeY: { type: Types.Float32, default: 0 },
+	homeZ: { type: Types.Float32, default: 0 },
+	isHovered: { type: Types.Boolean, default: false },
+	isGrabbed: { type: Types.Boolean, default: false },
+	isReturning: { type: Types.Boolean, default: false },
+	returnProgress: { type: Types.Float32, default: 0 },
+});
+
+export default defineComponents([TaskData, DeskmateState, InteractiveObject]);

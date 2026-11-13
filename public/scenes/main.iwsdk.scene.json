@@ -64,6 +64,22 @@
   },
   "nodes": [
     {
+      "content": {
+        "asset": "workspace-desk",
+        "type": "asset"
+      },
+      "id": "workspace-desk",
+      "name": "Workspace Desk Table",
+      "transform": {
+        "position": [
+          0,
+          0,
+          -0.80
+        ],
+        "scale": 1
+      }
+    },
+    {
       "components": {
         "PokeInteractable": {},
         "RayInteractable": {}
