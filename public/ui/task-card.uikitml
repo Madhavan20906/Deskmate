@@ -19,20 +19,21 @@
   }
 
   .eyebrow {
-    color: #77dec9;
-    font-size: 13px;
+    color: #8ce2d2;
+    font-size: 14px;
     font-weight: 700;
   }
 
   .title {
-    color: #f3f6f7;
-    font-size: 20px;
+    color: #ffffff;
+    font-size: 21px;
     font-weight: 700;
   }
 
   .description {
-    color: #b6c7ce;
-    font-size: 14px;
+    color: #e2e8f0;
+    font-size: 15px;
+    font-weight: 500;
   }
 
   .status-button {
