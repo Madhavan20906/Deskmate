@@ -222,6 +222,42 @@ const DEFAULT_TASKS: TaskRecord[] = [
     createdAt: Date.now(),
     completedAt: null,
   },
+  {
+    id: 'seed-standup',
+    title: 'Team sync & standup',
+    description: 'Align priorities with engineering',
+    category: 'Planning',
+    priority: 'medium',
+    estimatedMinutes: 30,
+    scheduledStartMinute: 10 * 60,
+    status: 'todo',
+    createdAt: Date.now(),
+    completedAt: null,
+  },
+  {
+    id: 'seed-deep-focus',
+    title: 'Ship focus sprint',
+    description: 'Implement core prototype milestone',
+    category: 'Design',
+    priority: 'high',
+    estimatedMinutes: 90,
+    scheduledStartMinute: 11 * 60 + 30,
+    status: 'todo',
+    createdAt: Date.now(),
+    completedAt: null,
+  },
+  {
+    id: 'seed-recap',
+    title: 'Daily recap & wrap-up',
+    description: 'Reflect on wins and plan tomorrow',
+    category: 'Admin',
+    priority: 'low',
+    estimatedMinutes: 30,
+    scheduledStartMinute: 16 * 60 + 30,
+    status: 'todo',
+    createdAt: Date.now(),
+    completedAt: null,
+  },
 ];
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -816,12 +852,12 @@ export class PanelSystem extends createSystem({
   private cardWasGrabbed: boolean[] = [false, false, false, false, false, false];
   private cardIsHovered: boolean[] = [false, false, false, false, false, false];
   private cardHomePositions: Vector3[] = [
-    new Vector3(-0.48, 1.06, -0.75),
-    new Vector3(0.00, 1.06, -0.75),
-    new Vector3(0.48, 1.06, -0.75),
-    new Vector3(-0.48, 0.72, -0.75),
-    new Vector3(0.00, 0.72, -0.75),
-    new Vector3(0.48, 0.72, -0.75),
+    new Vector3(-0.48, 1.10, -0.74),
+    new Vector3(0.00, 1.10, -0.74),
+    new Vector3(0.48, 1.10, -0.74),
+    new Vector3(-0.48, 0.82, -0.72),
+    new Vector3(0.00, 0.82, -0.72),
+    new Vector3(0.48, 0.82, -0.72),
   ];
   private cardHomeRotations: Quaternion[] = [
     new Quaternion(),
@@ -894,6 +930,8 @@ export class PanelSystem extends createSystem({
   private ghostWaveTimer = 0;
   private ghostHighFiveReady = false;
   private ghostHighFiveCelebrationTimer = 0;
+  private ghostWasGrabbed = false;
+  private ghostRestingPos = new Vector3(-0.45, 1.02, -0.62);
   private lastUserHandX = 0;
   private userHandWaveReversals = 0;
   private userHandWaveResetTimer = 0;
@@ -4330,6 +4368,23 @@ export class PanelSystem extends createSystem({
 
   private updateGhostInteractions(delta: number): void {
     if (!this.ghostObject || !this.ghostFloatGroup) return;
+
+    const entity = (this.ghostObject as unknown as { entity?: Entity }).entity;
+    const isGrabbed = entity?.hasComponent(Grabbed) ?? false;
+
+    if (isGrabbed) {
+      if (!this.ghostWasGrabbed) {
+        this.ghostWasGrabbed = true;
+        this.ghostAudio.playPinchTick();
+        this.triggerGhostWave();
+        this.recordUserInteraction();
+      }
+    } else if (this.ghostWasGrabbed) {
+      this.ghostWasGrabbed = false;
+      this.ghostRestingPos.copy(this.ghostObject.position);
+      this.recordUserInteraction();
+      this.ghostAudio.playSnapSound();
+    }
 
     this.ghostFloatPhase += delta * 2.2;
     this.ghostFloatGroup.position.y = Math.sin(this.ghostFloatPhase) * 0.015;

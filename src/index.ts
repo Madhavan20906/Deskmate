@@ -29,6 +29,15 @@ async function bootstrap() {
     options,
   );
 
+  // Ensure razor-sharp WebGL rendering on Retina / high-DPI displays so all text is crystal clear
+  const pixelRatio = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+  world.renderer.setPixelRatio(pixelRatio);
+  if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => {
+      world.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    });
+  }
+
   const overlay = document.querySelector('.xr-overlay') as HTMLElement | null;
   const updateSessionUI = () => {
     if (overlay) {

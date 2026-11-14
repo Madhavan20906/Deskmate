@@ -22,36 +22,36 @@
   "components": {
     "com.iwsdk.components.DomeGradient": {
       "ground": [
-        0.03,
-        0.04,
-        0.06,
+        0.48,
+        0.38,
+        0.30,
         1
       ],
       "sky": [
-        0.07,
-        0.1,
-        0.14,
+        0.90,
+        0.88,
+        0.85,
         1
       ]
     },
     "com.iwsdk.components.IBLGradient": {
       "equator": [
-        0.2,
-        0.29,
-        0.34,
+        0.78,
+        0.73,
+        0.67,
         1
       ],
       "ground": [
-        0.08,
-        0.11,
-        0.14,
+        0.42,
+        0.34,
+        0.28,
         1
       ],
-      "intensity": 0.55,
+      "intensity": 0.85,
       "sky": [
-        0.12,
-        0.19,
-        0.25,
+        0.92,
+        0.90,
+        0.86,
         1
       ]
     }
@@ -198,9 +198,9 @@
       "name": "Ghost Deskmate Companion",
       "transform": {
         "position": [
-          -0.72,
-          1.25,
-          -1.00
+          -0.45,
+          1.02,
+          -0.62
         ],
         "scale": 1
       }
@@ -250,8 +250,8 @@
       "transform": {
         "position": [
           -0.48,
-          1.06,
-          -0.75
+          1.10,
+          -0.74
         ],
         "rotationDeg": [
           0,
@@ -286,8 +286,8 @@
       "transform": {
         "position": [
           0,
-          1.06,
-          -0.75
+          1.10,
+          -0.74
         ],
         "scale": 0.13
       }
@@ -317,8 +317,8 @@
       "transform": {
         "position": [
           0.48,
-          1.06,
-          -0.75
+          1.10,
+          -0.74
         ],
         "scale": 0.13
       }
@@ -329,8 +329,14 @@
         "PokeInteractable": {},
         "RayInteractable": {},
         "TaskData": {
-          "active": false,
-          "slot": 3
+          "active": true,
+          "description": "Align priorities with engineering",
+          "estimatedMinutes": 30,
+          "id": "seed-standup",
+          "priority": "medium",
+          "slot": 3,
+          "status": "todo",
+          "title": "Team sync & standup"
         }
       },
       "content": {
@@ -342,8 +348,8 @@
       "transform": {
         "position": [
           -0.48,
-          0.72,
-          -0.75
+          0.82,
+          -0.72
         ],
         "scale": 0.13
       }
@@ -354,8 +360,14 @@
         "PokeInteractable": {},
         "RayInteractable": {},
         "TaskData": {
-          "active": false,
-          "slot": 4
+          "active": true,
+          "description": "Implement core prototype milestone",
+          "estimatedMinutes": 90,
+          "id": "seed-deep-focus",
+          "priority": "high",
+          "slot": 4,
+          "status": "todo",
+          "title": "Ship focus sprint"
         }
       },
       "content": {
@@ -367,8 +379,8 @@
       "transform": {
         "position": [
           0,
-          0.72,
-          -0.75
+          0.82,
+          -0.72
         ],
         "scale": 0.13
       }
@@ -379,8 +391,14 @@
         "PokeInteractable": {},
         "RayInteractable": {},
         "TaskData": {
-          "active": false,
-          "slot": 5
+          "active": true,
+          "description": "Reflect on wins and plan tomorrow",
+          "estimatedMinutes": 30,
+          "id": "seed-recap",
+          "priority": "low",
+          "slot": 5,
+          "status": "todo",
+          "title": "Daily recap & wrap-up"
         }
       },
       "content": {
@@ -392,8 +410,8 @@
       "transform": {
         "position": [
           0.48,
-          0.72,
-          -0.75
+          0.82,
+          -0.72
         ],
         "scale": 0.13
       }
@@ -428,12 +446,12 @@
         "DirectionalLight": {
           "castShadow": false,
           "color": [
-            0.8,
-            0.91,
             1,
+            0.94,
+            0.86,
             1
           ],
-          "intensity": 1.2
+          "intensity": 1.5
         }
       },
       "id": "key-light",
@@ -453,18 +471,46 @@
     },
     {
       "components": {
-        "HemisphereLight": {
-          "groundColor": [
-            0.12,
-            0.15,
-            0.19,
+        "DirectionalLight": {
+          "castShadow": false,
+          "color": [
+            1,
+            0.96,
+            0.92,
             1
           ],
-          "intensity": 0.75,
+          "intensity": 0.8
+        }
+      },
+      "id": "front-light",
+      "name": "Workspace Front Fill Light",
+      "transform": {
+        "position": [
+          0,
+          2.5,
+          1.8
+        ],
+        "rotationDeg": [
+          -35,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "components": {
+        "HemisphereLight": {
+          "groundColor": [
+            0.52,
+            0.44,
+            0.38,
+            1
+          ],
+          "intensity": 1.0,
           "skyColor": [
-            0.54,
-            0.73,
-            0.82,
+            0.95,
+            0.93,
+            0.90,
             1
           ]
         }

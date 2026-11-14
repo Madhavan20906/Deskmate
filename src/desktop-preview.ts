@@ -2,7 +2,7 @@
  * DeskMate Desktop Preview System
  * Provides:
  * 1. Emulated Meta Quest 3 preview with balanced readable distance (neither too close nor too far).
- * 2. Instant toggle between "Living Room View" and "Scene Editor View" (matches IWSDK Scene Editor).
+ * 2. Unified environment selector (Living Room, Bedroom, Kitchen, Office) matching IWSDK XR emulator.
  * 3. Quick Zoom in / Zoom out / Reset controls.
  * 4. Dedicated "Wear Headset / Enter XR" trigger for judges using a physical Meta Quest.
  */
@@ -12,19 +12,25 @@ export function isQuestOrNativeXR(): boolean {
   return /OculusBrowser/i.test(navigator.userAgent);
 }
 
-// Default comfortable readable viewing pose:
-// Desk is at [0, 0, -0.80], tabletop at y = 0.74, cards at y = 1.06, dashboard at z = -1.05.
-// Camera at z = 0.90, y = 1.55 (~1.70m away) with 52° FOV gives clean, razor-sharp readability without crowding.
+export type EnvironmentId =
+  | 'sunlit_living_room'
+  | 'bedroom'
+  | 'kitchen'
+  | 'home_office';
+
+// Default comfortable readable seated viewing pose:
+// Desk is at [0, 0, -0.80], tabletop at y = 0.74, cards at y = 0.82 & 1.10, dashboard at z = -1.05.
+// Camera at z = 0.52, y = 1.38 (~1.15m away) with 54° FOV gives natural seated reach and razor-sharp text readability.
 const DEFAULT_POSE = {
   x: 0,
-  y: 1.55,
-  z: 0.90,
-  pitchRad: -0.15,
-  fovyRad: (52 * Math.PI) / 180,
+  y: 1.38,
+  z: 0.52,
+  pitchRad: -0.12,
+  fovyRad: (54 * Math.PI) / 180,
 };
 
 let currentZ = DEFAULT_POSE.z;
-let currentMode: 'room' | 'editor' = 'room';
+let currentEnv: EnvironmentId = 'sunlit_living_room';
 
 export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
   // Never run emulator if visitor is already in Meta Quest Browser
@@ -63,9 +69,9 @@ export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
     if (device) {
       device.primaryInputMode = 'hand';
       device.stereoEnabled = false;
-      // Disconnect idle wireframe hand overlays so they don't cover the dashboard & timeline
-      if (device.hands?.left) device.hands.left.connected = false;
-      if (device.hands?.right) device.hands.right.connected = false;
+      // Hands enabled for natural hands-first interaction in desktop emulator
+      if (device.hands?.left) device.hands.left.connected = true;
+      if (device.hands?.right) device.hands.right.connected = true;
       applyCameraPose(device, currentZ);
     }
 
@@ -90,56 +96,34 @@ function applyCameraPose(device: any, z: number) {
   device.quaternion.set(Math.sin(pitchRad / 2), 0, 0, Math.cos(pitchRad / 2));
 }
 
-function toggleEnvironmentMode(mode: 'room' | 'editor') {
-  currentMode = mode;
+export function switchEnvironment(env: EnvironmentId) {
+  currentEnv = env;
   const win = window as any;
   const sem = win.IWER_DEVICE?.sem;
-  const envCanvas = sem?.environmentCanvas;
-
-  if (envCanvas) {
-    envCanvas.style.transition = 'opacity 0.25s ease';
-    if (mode === 'editor') {
-      envCanvas.style.opacity = '0';
-      envCanvas.style.pointerEvents = 'none';
-      setTimeout(() => {
-        if (currentMode === 'editor') envCanvas.style.display = 'none';
-      }, 250);
-    } else {
-      envCanvas.style.display = 'block';
-      setTimeout(() => {
-        if (currentMode === 'room') envCanvas.style.opacity = '1';
-      }, 10);
-    }
+  if (sem && typeof sem.loadDefaultEnvironment === 'function') {
+    sem.loadDefaultEnvironment(env).catch((err: unknown) => {
+      console.warn('[DeskMate] Could not switch environment to ' + env, err);
+    });
   }
 
-  // Also query other background canvases if any
-  const canvases = document.querySelectorAll('canvas');
-  canvases.forEach((c) => {
-    if (c.parentElement !== document.getElementById('scene-container') && c !== envCanvas) {
-      if (mode === 'editor') {
-        c.style.display = 'none';
-      } else {
-        c.style.display = 'block';
-      }
+  const buttons: Record<EnvironmentId, string> = {
+    sunlit_living_room: 'dm-btn-env-living',
+    bedroom: 'dm-btn-env-bedroom',
+    kitchen: 'dm-btn-env-kitchen',
+    home_office: 'dm-btn-env-office',
+  };
+
+  (Object.keys(buttons) as EnvironmentId[]).forEach((key) => {
+    const btn = document.getElementById(buttons[key]);
+    if (!btn) return;
+    if (key === env) {
+      btn.style.background = '#0082fb';
+      btn.style.color = '#ffffff';
+    } else {
+      btn.style.background = 'rgba(255, 255, 255, 0.08)';
+      btn.style.color = '#cbd5e1';
     }
   });
-
-  // Update UI buttons
-  const roomBtn = document.getElementById('dm-btn-room');
-  const editorBtn = document.getElementById('dm-btn-editor');
-  if (roomBtn && editorBtn) {
-    if (mode === 'room') {
-      roomBtn.style.background = '#0082fb';
-      roomBtn.style.color = '#ffffff';
-      editorBtn.style.background = 'rgba(255, 255, 255, 0.08)';
-      editorBtn.style.color = '#cbd5e1';
-    } else {
-      editorBtn.style.background = '#8ce2d2';
-      editorBtn.style.color = '#0b1922';
-      roomBtn.style.background = 'rgba(255, 255, 255, 0.08)';
-      roomBtn.style.color = '#cbd5e1';
-    }
-  }
 }
 
 function adjustZoom(delta: number) {
@@ -186,13 +170,19 @@ function setupPreviewToolbar() {
   hud.style.userSelect = 'none';
 
   hud.innerHTML = `
-    <!-- Mode Switcher -->
-    <div style="display: flex; align-items: center; background: rgba(0, 0, 0, 0.35); padding: 2px; border-radius: 999px; gap: 2px;">
-      <button id="dm-btn-room" style="border: 0; background: #0082fb; color: #ffffff; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-        🏠 Living Room
+    <!-- Environment Switcher (Matches IWSDK Dev XR environments) -->
+    <div style="display: flex; align-items: center; background: rgba(0, 0, 0, 0.4); padding: 2px; border-radius: 999px; gap: 2px;">
+      <button id="dm-btn-env-living" title="Sunlit Living Room (Default)" style="border: 0; background: #0082fb; color: #ffffff; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+        🛋️ Living Room
       </button>
-      <button id="dm-btn-editor" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-        ✨ Scene Editor
+      <button id="dm-btn-env-bedroom" title="Cozy Bedroom" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+        🛏️ Bedroom
+      </button>
+      <button id="dm-btn-env-kitchen" title="Modern Kitchen" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+        🍳 Kitchen
+      </button>
+      <button id="dm-btn-env-office" title="Home Office" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+        💼 Office
       </button>
     </div>
 
@@ -216,8 +206,10 @@ function setupPreviewToolbar() {
   document.body.appendChild(hud);
 
   // Wire buttons
-  document.getElementById('dm-btn-room')?.addEventListener('click', () => toggleEnvironmentMode('room'));
-  document.getElementById('dm-btn-editor')?.addEventListener('click', () => toggleEnvironmentMode('editor'));
+  document.getElementById('dm-btn-env-living')?.addEventListener('click', () => switchEnvironment('sunlit_living_room'));
+  document.getElementById('dm-btn-env-bedroom')?.addEventListener('click', () => switchEnvironment('bedroom'));
+  document.getElementById('dm-btn-env-kitchen')?.addEventListener('click', () => switchEnvironment('kitchen'));
+  document.getElementById('dm-btn-env-office')?.addEventListener('click', () => switchEnvironment('home_office'));
   document.getElementById('dm-btn-zoom-in')?.addEventListener('click', () => adjustZoom(-0.12));
   document.getElementById('dm-btn-zoom-out')?.addEventListener('click', () => adjustZoom(0.12));
   document.getElementById('dm-btn-zoom-reset')?.addEventListener('click', () => resetZoom());
