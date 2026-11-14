@@ -773,6 +773,7 @@ export class PanelSystem extends createSystem({
 
   private ghostAudio = new GhostDeskmateAudio();
   private ghostAudioButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private demo60sButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
   private ghostAudioLabel: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
   private pipEmoteBadge: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
   private pipMorningRitualButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
@@ -1059,6 +1060,23 @@ export class PanelSystem extends createSystem({
 
     this.ghostAudioButton = dashboard?.getElementById('ghost-audio-toggle') ?? null;
     this.ghostAudioLabel = dashboard?.getElementById('ghost-audio-label') ?? null;
+    this.demo60sButton = dashboard?.getElementById('demo-60s-btn') ?? null;
+    if (this.demo60sButton != null) {
+      const runDemo = () => this.trigger60SecondDemo();
+      this.demo60sButton.name = 'Start 60-second interactive productivity demo';
+      this.demo60sButton.addEventListener('click', runDemo);
+      this.cleanupFuncs.push(() => this.demo60sButton?.removeEventListener('click', runDemo));
+    }
+
+    const welcomeAsset = this.world.getSceneObject<UIKitMLAsset>('welcome-panel');
+    if (welcomeAsset) {
+      const demoWelcomeBtn = welcomeAsset.getElementById('demo-60s-welcome-btn');
+      if (demoWelcomeBtn) {
+        const runDemo = () => this.trigger60SecondDemo();
+        demoWelcomeBtn.addEventListener('click', runDemo);
+        this.cleanupFuncs.push(() => demoWelcomeBtn.removeEventListener('click', runDemo));
+      }
+    }
     this.pipEmoteBadge = dashboard?.getElementById('pip-emote-badge') ?? null;
     this.pipMorningRitualButton = dashboard?.getElementById('pip-morning-ritual') ?? null;
     this.pipEveningRitualButton = dashboard?.getElementById('pip-evening-ritual') ?? null;
@@ -3017,6 +3035,83 @@ export class PanelSystem extends createSystem({
       'responding',
     );
     this.renderTasks();
+  }
+
+  public trigger60SecondDemo(): void {
+    this.recordUserInteraction();
+    this.setPipEmote('celebration');
+    this.setPipMessage(
+      'Starting 60-second interactive demo! Pip has pre-loaded 3 clean tasks and begun a demonstration focus sprint.',
+      'responding',
+    );
+    this.tasks[0] = {
+      id: createTaskId(),
+      title: 'Plan Q4 roadmap',
+      description: 'Deep work and milestones',
+      category: 'Planning',
+      priority: 'high',
+      estimatedMinutes: 60,
+      scheduledStartMinute: 540,
+      status: 'in-progress',
+      createdAt: Date.now(),
+      completedAt: null,
+    };
+    this.tasks[1] = {
+      id: createTaskId(),
+      title: 'Review design brief',
+      description: 'Share feedback with team',
+      category: 'Design',
+      priority: 'medium',
+      estimatedMinutes: 30,
+      scheduledStartMinute: 610,
+      status: 'todo',
+      createdAt: Date.now(),
+      completedAt: null,
+    };
+    this.tasks[2] = {
+      id: createTaskId(),
+      title: 'Inbox reset',
+      description: 'Clear queue & follow-ups',
+      category: 'Admin',
+      priority: 'low',
+      estimatedMinutes: 20,
+      scheduledStartMinute: 650,
+      status: 'todo',
+      createdAt: Date.now(),
+      completedAt: null,
+    };
+    this.selectedTask = this.tasks[0].id;
+    this.persistTasks();
+
+    const task0 = this.tasks[0]!;
+    this.focusStorage.active = {
+      id: 'demo-session-' + Date.now(),
+      taskId: task0.id,
+      taskTitle: task0.title,
+      taskDescription: task0.description,
+      plannedDurationMinutes: 25,
+      startedAt: Date.now(),
+      deadlineAt: Date.now() + 20000,
+      remainingMs: 20000,
+      status: 'running',
+    };
+    this.persistFocusStorage();
+    this.startFocusTicker();
+    this.ghostAudio.playHighFiveChime();
+    this.triggerPipWiggle();
+
+    window.setTimeout(() => {
+      if (this.focusStorage.active?.taskId === this.tasks[0]?.id) {
+        this.completeFocusedTask(0);
+        this.ghostAudio.playMarbleClink();
+        this.setPipEmote('celebration');
+        this.setPipMessage(
+          'Demo sprint complete! Jar token earned, marble dropped, flower bloomed. Starting seated recovery break!',
+          'responding',
+        );
+        this.startBreakMode();
+      }
+    }, 20000);
   }
 
   private getSelectedTask(): TaskRecord | null {

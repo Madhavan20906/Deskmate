@@ -62,14 +62,18 @@
   <div class="panel-content">
     <div class="eyebrow">DESKMATE / MIXED-REALITY WORKSPACE</div>
     <div class="heading">Make room for focused work.</div>
-    <div class="body">Bring your plan to a detected desk surface. Pin the workspace,</div>
-    <div class="body">pull a task card close, and begin one clear focus session.</div>
+    <div class="body">1. Pin to desk: Align workspace with your real desk.</div>
+    <div class="body">2. Meet Pip: Tap companion for "What next?".</div>
+    <div class="body">3. Focus sprint: Tap "Start focus" for quiet co-working.</div>
   </div>
   <Button id="xr-button" class="button">
     <ButtonIcon>
       <RectangleGoggles></RectangleGoggles>
     </ButtonIcon>
     <ButtonLabel class="button-label">Enter workspace</ButtonLabel>
+  </Button>
+  <Button id="demo-60s-welcome-btn" class="button">
+    <ButtonLabel class="button-label">Try 60-Second Demo</ButtonLabel>
   </Button>
   <Button id="exit-button" class="button" style="display: none">
     <ButtonIcon>
