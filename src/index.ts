@@ -9,11 +9,26 @@ import { World } from '@iwsdk/core';
 import projectOptions from 'virtual:iwsdk-project';
 import { PanelSystem } from './panel.js';
 import { WorkspaceSystem } from './workspace.js';
+import { initDesktopPreviewIfNeeded } from './desktop-preview.js';
 
-World.create(
-  document.getElementById('scene-container') as HTMLDivElement,
-  projectOptions,
-).then((world) => {
+async function bootstrap() {
+  const isPreview = await initDesktopPreviewIfNeeded();
+
+  const options = isPreview
+    ? {
+        ...projectOptions,
+        input: {
+          ...projectOptions.input,
+          canvasPointerEvents: { enabled: true, activeDuringXR: true },
+        },
+      }
+    : projectOptions;
+
+  const world = await World.create(
+    document.getElementById('scene-container') as HTMLDivElement,
+    options,
+  );
+
   const overlay = document.querySelector('.xr-overlay') as HTMLElement | null;
   const updateSessionUI = () => {
     if (overlay) {
@@ -46,6 +61,11 @@ World.create(
         if (supported) world.launchXR();
       })
       .catch(() => {});
+  } else if (isPreview) {
+    // In desktop preview, launch the emulated XR session so the visitor immediately sees the sunlit living room and 3D desk
+    setTimeout(() => {
+      world.launchXR();
+    }, 150);
   }
 
   world.renderer.xr.addEventListener('sessionstart', updateSessionUI);
@@ -54,4 +74,6 @@ World.create(
 
   world.registerSystem(PanelSystem);
   world.registerSystem(WorkspaceSystem);
-});
+}
+
+bootstrap().catch(console.error);
