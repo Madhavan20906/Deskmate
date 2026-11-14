@@ -31,6 +31,10 @@ import {
   formatMinuteTime,
   type TaskItem,
 } from './productivity-engine.js';
+import {
+  ActionDebouncer,
+  HandTrackingMonitor,
+} from './hand-interaction-engine.js';
 
 type TaskStatus = 'todo' | 'in-progress' | 'completed';
 type TaskPriority = 'low' | 'medium' | 'high';
@@ -754,6 +758,10 @@ export class PanelSystem extends createSystem({
   private pendingDeleteSlot: number | null = null;
   private pendingDeleteTimeout: number | null = null;
 
+  // Hands-only debouncing and tracking monitor
+  private actionDebouncer = new ActionDebouncer(280);
+  private handMonitor = new HandTrackingMonitor(3.0);
+
   private pipRecapButton!: NonNullable<
     ReturnType<UIKitMLAsset['getElementById']>
   >;
@@ -1105,7 +1113,10 @@ export class PanelSystem extends createSystem({
       this.pipEyesGroup = this.pipObject.getObjectByName('PipEyesGroup') ?? null;
       this.pipAntennaGroup = this.pipObject.getObjectByName('PipAntennaGroup') ?? null;
       this.pipRestingPos.copy(this.pipObject.position);
-      const onPipPoke = () => this.triggerPipWiggle();
+      const onPipPoke = () => {
+        if (!this.actionDebouncer.canExecute()) return;
+        this.triggerPipWiggle();
+      };
       this.pipObject.addEventListener('click', onPipPoke);
       this.cleanupFuncs.push(() => this.pipObject?.removeEventListener('click', onPipPoke));
     }
@@ -1115,8 +1126,9 @@ export class PanelSystem extends createSystem({
       this.dialKnobGroup = this.dialObject.getObjectByName('RotaryKnob') ?? null;
       this.dialRingMesh = (this.dialObject.getObjectByName('GlowingRing') as Mesh) ?? null;
       this.syncDialRotationToDuration();
-    this.syncJarMarblesCount();
+      this.syncJarMarblesCount();
       const onDialClick = () => {
+        if (!this.actionDebouncer.canExecute()) return;
         this.stepSprintDuration(5);
         this.ghostAudio.playPinchTick();
       };
@@ -1129,6 +1141,7 @@ export class PanelSystem extends createSystem({
       this.plantStemGroup = this.plantObject.getObjectByName('plant-stem-group') ?? null;
       this.plantFlowerGroup = this.plantObject.getObjectByName('plant-flower-group') ?? null;
       const onPlantClick = () => {
+        if (!this.actionDebouncer.canExecute()) return;
         this.triggerPlantPerkUp();
       };
       this.plantObject.addEventListener('click', onPlantClick);
@@ -1140,6 +1153,7 @@ export class PanelSystem extends createSystem({
       this.lampBulbMesh = (this.lampObject.getObjectByName('LampBulb') as Mesh) ?? null;
       this.lampPoolMesh = (this.lampObject.getObjectByName('LampLightPool') as Mesh) ?? null;
       const onLampClick = () => {
+        if (!this.actionDebouncer.canExecute()) return;
         this.toggleFocusSprintFromLamp();
       };
       this.lampObject.addEventListener('click', onLampClick);
@@ -1151,6 +1165,7 @@ export class PanelSystem extends createSystem({
       this.jarMarblesGroup = this.jarObject.getObjectByName('JarMarblesGroup') ?? null;
       this.trayMarbleMesh = (this.jarObject.getObjectByName('TrayPickableMarble') as Mesh) ?? null;
       const onJarClick = () => {
+        if (!this.actionDebouncer.canExecute()) return;
         this.triggerJarJiggle();
       };
       this.jarObject.addEventListener('click', onJarClick);
@@ -1163,6 +1178,7 @@ export class PanelSystem extends createSystem({
       this.ghostRightArm = this.ghostObject.getObjectByName('GhostRightArm') ?? null;
       this.ghostPalm = this.ghostObject.getObjectByName('GhostPalm') ?? null;
       const onGhostClick = () => {
+        if (!this.actionDebouncer.canExecute()) return;
         if (this.ghostHighFiveReady) {
           this.triggerGhostHighFive();
         } else {
@@ -4326,6 +4342,7 @@ export class PanelSystem extends createSystem({
   }
 
   update(delta: number, _time: number): void {
+    this.checkHandTrackingLoss(delta);
     this.checkPinchDragTimelineDrop(delta);
     this.updateCardReturnAnimations(delta);
     this.updatePipInteractions(delta);
@@ -4335,6 +4352,24 @@ export class PanelSystem extends createSystem({
     this.updateMarblesJarInteractions(delta);
     this.updateGhostInteractions(delta);
     this.checkIdleNudge();
+  }
+
+  private checkHandTrackingLoss(delta: number): void {
+    const session = this.world.session;
+    if (session == null) return;
+    let hasHand = false;
+    for (let i = 0; i < session.inputSources.length; i++) {
+      if (session.inputSources[i].hand != null) {
+        hasHand = true;
+        break;
+      }
+    }
+    const monitorStatus = this.handMonitor.update(delta, hasHand);
+    if (monitorStatus.shouldShowHint && this.pipInteractionState === 'idle') {
+      this.setPipMessage('Pip is watching: raise your hands into view to interact.');
+    } else if (monitorStatus.becameVisible) {
+      this.setPipMessage('Welcome back! Tap Pip or a task card to keep going.');
+    }
   }
 
   private checkIdleNudge(): void {
