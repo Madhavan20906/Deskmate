@@ -20,8 +20,7 @@
     "@pmndrs/uikit-horizon": "^1.0.74",
     "@pmndrs/uikit-lucide": "^1.0.74",
     "elics": "^3.4.1",
-    "three": "npm:super-three@0.185.0",
-    "@iwsdk/vite-plugin-dev": "1.1.0-rc.2"
+    "three": "npm:super-three@0.185.0"
   },
   "devDependencies": {
     "@iwsdk/reference": "1.1.0-rc.2",
