@@ -93,11 +93,11 @@
       "name": "Pip 3D Companion",
       "transform": {
         "position": [
-          -0.18,
-          0.74,
-          -0.56
+          0.00,
+          0.76,
+          -0.55
         ],
-        "scale": 1
+        "scale": 1.45
       }
     },
     {
@@ -114,7 +114,7 @@
       "name": "Sprint 3D Dial",
       "transform": {
         "position": [
-          0.18,
+          0.32,
           0.74,
           -0.56
         ],
@@ -246,7 +246,7 @@
       "name": "Roadmap Task Card",
       "transform": {
         "position": [
-          -0.42,
+          -0.48,
           1.06,
           -0.75
         ],
@@ -313,7 +313,7 @@
       "name": "Inbox Task Card",
       "transform": {
         "position": [
-          0.42,
+          0.48,
           1.06,
           -0.75
         ],
@@ -338,7 +338,7 @@
       "name": "Task Card 4",
       "transform": {
         "position": [
-          -0.42,
+          -0.48,
           0.72,
           -0.75
         ],
@@ -388,7 +388,7 @@
       "name": "Task Card 6",
       "transform": {
         "position": [
-          0.42,
+          0.48,
           0.72,
           -0.75
         ],
@@ -409,8 +409,8 @@
       "transform": {
         "position": [
           0,
-          1.98,
-          -1.5
+          1.76,
+          -1.40
         ],
         "rotationDeg": [
           -3,

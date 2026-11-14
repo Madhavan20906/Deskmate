@@ -156,8 +156,5 @@
     <Button id="task-delete" class="small-button">
       <ButtonLabel>Delete</ButtonLabel>
     </Button>
-    <Button id="task-duplicate" class="duplicate-button">
-      <ButtonLabel>Copy</ButtonLabel>
-    </Button>
   </div>
 </Panel>
