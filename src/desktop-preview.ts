@@ -33,28 +33,30 @@ export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
   }
 
   try {
-    // Dynamic import of the IWSDK Dev / IWER runtime
-    const { startIwsdkDevRuntime } = await (
-      // @ts-expect-error Dev runtime import
-      import('../node_modules/@iwsdk/vite-plugin-dev/dist/injection/runtime.js')
-    );
-
     const win = window as any;
-    win.__IWER_MCP_MANAGED = true;
-    try {
-      startIwsdkDevRuntime({
-        device: 'metaQuest3',
-        activation: 'always',
-        verbose: false,
-        sem: { defaultScene: 'sunlit_living_room' },
-        ai: { devUI: false },
-        workspace: null,
-        userAgentException: '/OculusBrowser/',
-        iwer: true,
-        nativeXRControl: false,
-      });
-    } finally {
-      delete win.__IWER_MCP_MANAGED;
+    if (!win.IWER_DEVICE) {
+      // Dynamic import of the IWSDK Dev / IWER runtime
+      const { startIwsdkDevRuntime } = await (
+        // @ts-expect-error Dev runtime import
+        import('../node_modules/@iwsdk/vite-plugin-dev/dist/injection/runtime.js')
+      );
+
+      win.__IWER_MCP_MANAGED = true;
+      try {
+        startIwsdkDevRuntime({
+          device: 'metaQuest3',
+          activation: 'always',
+          verbose: false,
+          sem: { defaultScene: 'sunlit_living_room' },
+          ai: { devUI: false },
+          workspace: null,
+          userAgentException: '/OculusBrowser/',
+          iwer: true,
+          nativeXRControl: false,
+        });
+      } finally {
+        delete win.__IWER_MCP_MANAGED;
+      }
     }
 
     const device = win.IWER_DEVICE;
