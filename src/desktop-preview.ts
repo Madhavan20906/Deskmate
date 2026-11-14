@@ -13,14 +13,14 @@ export function isQuestOrNativeXR(): boolean {
 }
 
 // Default comfortable readable viewing pose:
-// Desk is at [0, 0, -0.80], tabletop at y = 0.74, cards/dashboard at [0, 1.35, -0.95].
-// Camera at z = 0.82, y = 1.54 (~1.62m away) with 54° FOV gives complete, razor-sharp readability.
+// Desk is at [0, 0, -0.80], tabletop at y = 0.74, cards at y = 1.06, dashboard at z = -1.05.
+// Camera at z = 0.90, y = 1.55 (~1.70m away) with 52° FOV gives clean, razor-sharp readability without crowding.
 const DEFAULT_POSE = {
   x: 0,
-  y: 1.54,
-  z: 0.82,
-  pitchRad: -0.16,
-  fovyRad: (54 * Math.PI) / 180,
+  y: 1.55,
+  z: 0.90,
+  pitchRad: -0.15,
+  fovyRad: (52 * Math.PI) / 180,
 };
 
 let currentZ = DEFAULT_POSE.z;
@@ -61,6 +61,9 @@ export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
     if (device) {
       device.primaryInputMode = 'hand';
       device.stereoEnabled = false;
+      // Disconnect idle wireframe hand overlays so they don't cover the dashboard & timeline
+      if (device.hands?.left) device.hands.left.connected = false;
+      if (device.hands?.right) device.hands.right.connected = false;
       applyCameraPose(device, currentZ);
     }
 
@@ -201,8 +204,8 @@ function setupPreviewToolbar() {
 
     <!-- Enter Quest XR Button -->
     <div style="border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 10px;">
-      <button id="dm-btn-enter-xr" style="border: 0; background: linear-gradient(135deg, #0082fb 0%, #00b4d8 100%); color: #ffffff; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(0, 130, 251, 0.4);">
-        <span>🥽</span>
+      <button id="dm-btn-enter-xr" style="border: 0; background: linear-gradient(135deg, #0082fb 0%, #00d2ff 100%); color: #ffffff; padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 7px; box-shadow: 0 0 16px rgba(0, 130, 251, 0.55); letter-spacing: 0.3px;">
+        <span style="font-size: 15px;">🥽</span>
         <span>Enter Quest XR</span>
       </button>
     </div>

@@ -93,9 +93,9 @@
       "name": "Pip 3D Companion",
       "transform": {
         "position": [
-          -0.48,
+          -0.18,
           0.74,
-          -0.70
+          -0.56
         ],
         "scale": 1
       }
@@ -114,9 +114,9 @@
       "name": "Sprint 3D Dial",
       "transform": {
         "position": [
-          -0.24,
+          0.18,
           0.74,
-          -0.65
+          -0.56
         ],
         "scale": 1
       }
@@ -134,9 +134,9 @@
       "name": "Desk Plant",
       "transform": {
         "position": [
-          0.46,
+          0.58,
           0.74,
-          -0.72
+          -0.58
         ],
         "scale": 1
       }
@@ -154,9 +154,9 @@
       "name": "Focus Lamp",
       "transform": {
         "position": [
-          0.26,
+          0.44,
           0.74,
-          -0.80
+          -0.68
         ],
         "scale": 1
       }
@@ -175,9 +175,9 @@
       "name": "Productivity Marbles & Jar",
       "transform": {
         "position": [
-          0.10,
+          -0.52,
           0.74,
-          -0.66
+          -0.62
         ],
         "scale": 1
       }
@@ -195,9 +195,9 @@
       "name": "Ghost Deskmate Companion",
       "transform": {
         "position": [
-          -0.38,
-          0.95,
-          -0.78
+          -0.72,
+          1.25,
+          -1.00
         ],
         "scale": 1
       }
@@ -216,8 +216,8 @@
       "transform": {
         "position": [
           0,
-          1.45,
-          -0.92
+          1.48,
+          -1.05
         ],
         "scale": 0.115
       }
@@ -246,9 +246,9 @@
       "name": "Roadmap Task Card",
       "transform": {
         "position": [
-          -0.36,
-          1.00,
-          -0.80
+          -0.42,
+          1.06,
+          -0.75
         ],
         "rotationDeg": [
           0,
@@ -283,8 +283,8 @@
       "transform": {
         "position": [
           0,
-          1.00,
-          -0.80
+          1.06,
+          -0.75
         ],
         "scale": 0.13
       }
@@ -313,9 +313,9 @@
       "name": "Inbox Task Card",
       "transform": {
         "position": [
-          0.36,
-          1.00,
-          -0.80
+          0.42,
+          1.06,
+          -0.75
         ],
         "scale": 0.13
       }
@@ -338,9 +338,9 @@
       "name": "Task Card 4",
       "transform": {
         "position": [
-          -0.36,
-          0.65,
-          -0.80
+          -0.42,
+          0.72,
+          -0.75
         ],
         "scale": 0.13
       }
@@ -364,8 +364,8 @@
       "transform": {
         "position": [
           0,
-          0.65,
-          -0.80
+          0.72,
+          -0.75
         ],
         "scale": 0.13
       }
@@ -388,9 +388,9 @@
       "name": "Task Card 6",
       "transform": {
         "position": [
-          0.36,
-          0.65,
-          -0.80
+          0.42,
+          0.72,
+          -0.75
         ],
         "scale": 0.13
       }
