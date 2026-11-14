@@ -48,7 +48,7 @@
 
   .workspace-anchor-status {
     color: #8ce2d2;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -134,7 +134,7 @@
 
   .pip-state {
     color: #285d5d;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -144,7 +144,7 @@
 
   .pip-response {
     color: #173740;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
   }
 
@@ -154,7 +154,7 @@
 
   .pip-transcript {
     color: #31555d;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .pip-transcript:dark {
@@ -163,7 +163,7 @@
 
   .pip-disclosure {
     color: #465e65;
-    font-size: 11px;
+    font-size: 14px;
   }
 
   .pip-disclosure:dark {
@@ -186,6 +186,11 @@
 
   .pip-confirm-button {
     flex-grow: 1;
+  }
+
+  .brand-group {
+    flex-direction: column;
+    gap: 4px;
   }
 
   .brand {
@@ -255,7 +260,7 @@
     border-radius: 10px;
     background-color: #e4f0f3;
     color: #1c252a;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -266,7 +271,7 @@
 
   .workload-detail {
     color: #3a4b53;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
   }
 
@@ -314,7 +319,7 @@
 
   .time-marker {
     color: #9eb4bf;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -342,13 +347,13 @@
 
   .slot-time {
     color: #8ce2d2;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
   .slot-content {
     color: #e8eef0;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
   }
 
@@ -361,19 +366,19 @@
 
   .schedule-status {
     color: #dce7eb;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .smart-status {
     color: #8ce2d2;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
   .schedule-suggestion {
     color: #f2bf7b;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -418,7 +423,7 @@
 
   .focus-duration-value {
     color: #174b4b;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -437,7 +442,7 @@
 
   .focus-statistics {
     color: #35525a;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -447,7 +452,7 @@
 
   .focus-history {
     color: #9eb4bf;
-    font-size: 10px;
+    font-size: 14px;
   }
 
   .focus-progress {
@@ -482,7 +487,7 @@
 
   .insight-heading {
     color: #dce7eb;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -551,25 +556,25 @@
 
   .garden-details {
     color: #b6c7ce;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .garden-achievements {
     color: #b6c7ce;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .analytics-summary {
     color: #b6c7ce;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
   }
 
   .garden-stage {
     color: #8ce2d2;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -612,13 +617,13 @@
 
   .analytics-day-label {
     color: #9eb4bf;
-    font-size: 9px;
+    font-size: 14px;
     font-weight: 700;
   }
 
   .analytics-day-count {
     color: #9eb4bf;
-    font-size: 9px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -651,7 +656,7 @@
     border-radius: 6px;
     background-color: #203039;
     color: #8ce2d2;
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -688,7 +693,7 @@
 
   .break-suggestion {
     color: #e8eef0;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
   }
 
@@ -726,7 +731,7 @@
 
   .welcome-back-line {
     color: #8ce2d2;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -744,13 +749,13 @@
     border-radius: 8px;
     background-color: #183942;
     color: #8ce2d2;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
   }
 
   .jar-status {
     color: #b6c7ce;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
   }
 
@@ -768,7 +773,7 @@
 
   .jar-day-label {
     color: #9eb4bf;
-    font-size: 9px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -785,7 +790,7 @@
 
   .jar-token-count {
     color: #f2bf7b;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -830,7 +835,7 @@
 
   .capture-heading {
     color: #8ce2d2;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -841,7 +846,7 @@
 
   .capture-section-label {
     color: #9eb4bf;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
     margin-top: 4px;
   }
@@ -898,7 +903,7 @@
 
   .capture-dur-display {
     color: #f3f6f7;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     min-width: 50px;
     text-align: center;
@@ -937,7 +942,7 @@
 
   .backlog-title {
     color: #f2bf7b;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
   }
 
@@ -960,33 +965,27 @@
 
   .backlog-item-text {
     color: #e8eef0;
-    font-size: 12px;
+    font-size: 14px;
   }
 </style>
 <Panel class="dashboard">
   <div class="content">
     <div class="topline">
-      <div>
-        <div class="brand">DESKMATE</div>
-        <div id="day-date" class="date">TODAY</div>
+      <div class="brand-group">
+        <span class="brand">DESKMATE</span>
+        <span id="day-date" class="date">TODAY</span>
       </div>
       <div class="header-actions">
         <div class="day-chip"><span class="day-chip-text">YOUR DAY</span></div>
         <Button id="ghost-audio-toggle" class="ghost-audio-button">
-          <ButtonLabel id="ghost-audio-label">Deskmate: Sound on</ButtonLabel>
+          <ButtonLabel id="ghost-audio-label">Sound: ON</ButtonLabel>
         </Button>
         <Button id="demo-60s-btn" class="ghost-audio-button">
           <ButtonLabel>60s Demo</ButtonLabel>
         </Button>
-        <Button id="xr-button" class="xr-button">
-          <ButtonLabel>Enter XR</ButtonLabel>
-        </Button>
-        <Button id="exit-button" class="xr-button" style="display: none">
-          <ButtonLabel>Exit XR</ButtonLabel>
-        </Button>
         <Button id="pip-toggle" class="pip-toggle">
           <span id="pip-launcher-orb" class="pip-launcher-orb"></span>
-          <ButtonLabel>PIP</ButtonLabel>
+          <ButtonLabel>Pip</ButtonLabel>
         </Button>
       </div>
     </div>

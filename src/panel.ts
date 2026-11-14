@@ -144,7 +144,7 @@ interface TaskCardElements {
   selectButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>>;
   editButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>>;
   deleteButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>>;
-  duplicateButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>>;
+  duplicateButton?: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null;
   focusStartButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>>;
   focusPanel: NonNullable<ReturnType<UIKitMLAsset['getElementById']>>;
   focusState: NonNullable<ReturnType<UIKitMLAsset['getElementById']>>;
@@ -816,12 +816,12 @@ export class PanelSystem extends createSystem({
   private cardWasGrabbed: boolean[] = [false, false, false, false, false, false];
   private cardIsHovered: boolean[] = [false, false, false, false, false, false];
   private cardHomePositions: Vector3[] = [
-    new Vector3(-0.42, 1.06, -0.75),
+    new Vector3(-0.48, 1.06, -0.75),
     new Vector3(0.00, 1.06, -0.75),
-    new Vector3(0.42, 1.06, -0.75),
-    new Vector3(-0.42, 0.72, -0.75),
+    new Vector3(0.48, 1.06, -0.75),
+    new Vector3(-0.48, 0.72, -0.75),
     new Vector3(0.00, 0.72, -0.75),
-    new Vector3(0.42, 0.72, -0.75),
+    new Vector3(0.48, 0.72, -0.75),
   ];
   private cardHomeRotations: Quaternion[] = [
     new Quaternion(),
@@ -847,9 +847,9 @@ export class PanelSystem extends createSystem({
   private pipWasGrabbed = false;
   private pipWiggleTimer = 0;
   private pipHopTimer = 1;
-  private pipHopStartPos = new Vector3(-0.48, 0.74, -0.70);
-  private pipHopTargetPos = new Vector3(-0.48, 0.74, -0.70);
-  private pipRestingPos = new Vector3(-0.48, 0.74, -0.70);
+  private pipHopStartPos = new Vector3(0.00, 0.76, -0.55);
+  private pipHopTargetPos = new Vector3(0.00, 0.76, -0.55);
+  private pipRestingPos = new Vector3(0.00, 0.76, -0.55);
   private pipLookTarget = new Vector3();
 
   // Sprint Dial 3D
@@ -1195,7 +1195,7 @@ export class PanelSystem extends createSystem({
         this.ghostAudio.ensureRunning();
         const enabled = this.ghostAudio.toggle();
         this.ghostAudioLabel?.setProperties({
-          text: enabled ? 'Deskmate: Sound on' : 'Deskmate: Sound muted',
+          text: enabled ? 'Sound: ON' : 'Sound: OFF',
         });
         this.setPipMessage(
           enabled
@@ -1596,7 +1596,7 @@ export class PanelSystem extends createSystem({
       if (
         root == null || priority == null || title == null || description == null ||
         statusButton == null || statusLabelElement == null || selectButton == null ||
-        editButton == null || deleteButton == null || duplicateButton == null ||
+        editButton == null || deleteButton == null ||
         focusStartButton == null ||
         focusPanel == null || focusState == null || focusTimer == null ||
         focusPauseButton == null || focusResumeButton == null || focusStopButton == null ||
@@ -1666,7 +1666,9 @@ export class PanelSystem extends createSystem({
       statusButton.addEventListener('click', advanceStatus);
       editButton.addEventListener('click', editTask);
       deleteButton.addEventListener('click', deleteTask);
-      duplicateButton.addEventListener('click', duplicateTask);
+      if (duplicateButton != null) {
+        duplicateButton.addEventListener('click', duplicateTask);
+      }
       focusStartButton.addEventListener('click', startFocus);
       focusPauseButton.addEventListener('click', pauseFocus);
       focusResumeButton.addEventListener('click', resumeFocus);
@@ -1680,7 +1682,7 @@ export class PanelSystem extends createSystem({
         () => statusButton.removeEventListener('click', advanceStatus),
         () => editButton.removeEventListener('click', editTask),
         () => deleteButton.removeEventListener('click', deleteTask),
-        () => duplicateButton.removeEventListener('click', duplicateTask),
+        () => duplicateButton?.removeEventListener('click', duplicateTask),
         () => focusStartButton.removeEventListener('click', startFocus),
         () => focusPauseButton.removeEventListener('click', pauseFocus),
         () => focusResumeButton.removeEventListener('click', resumeFocus),
@@ -3391,7 +3393,9 @@ export class PanelSystem extends createSystem({
       card.selectButton.name = `Select ${task.title}`;
       card.editButton.name = `Edit ${task.title}`;
       card.deleteButton.name = `Delete ${task.title}`;
-      card.duplicateButton.name = `Duplicate ${task.title}`;
+      if (card.duplicateButton != null) {
+        card.duplicateButton.name = `Duplicate ${task.title}`;
+      }
     }
 
     const total = this.tasks.filter((task) => task !== null).length;
