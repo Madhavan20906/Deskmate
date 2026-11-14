@@ -975,6 +975,9 @@
         <Button id="ghost-audio-toggle" class="ghost-audio-button">
           <ButtonLabel id="ghost-audio-label">Deskmate: Sound on</ButtonLabel>
         </Button>
+        <Button id="demo-60s-btn" class="ghost-audio-button">
+          <ButtonLabel>60s Demo</ButtonLabel>
+        </Button>
         <Button id="xr-button" class="xr-button">
           <ButtonLabel>Enter XR</ButtonLabel>
         </Button>
