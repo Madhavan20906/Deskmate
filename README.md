@@ -97,7 +97,32 @@ npm test
 - Node.js $\ge 20.19.0$
 - `pnpm` $\ge 9.0.0$
 
-### Setup & Run
+---
+
+## 🥽 Meta Quest Judge Quick-Start (100% Hands-Only)
+
+Judges can run the entire experience on a Meta Quest 2, 3, or Pro without ever pairing or turning on controllers:
+
+1. **Meta Quest Headset Setup:**
+   - Go to **Settings → Movement tracking**.
+   - Turn **Hand tracking** **ON**.
+   - Put your controllers down on another table or remove their batteries.
+2. **Launch DeskMate:**
+   - Open **Meta Quest Browser**.
+   - Navigate to the deployment URL.
+   - Tap **"🥽 Enter Quest XR"** with your hand-ray pinch.
+3. **60-Second Instant Evaluation:**
+   - Tap **"Try 60-Second Demo"** on the Welcome panel.
+   - DeskMate will immediately load tasks, pin to your desk, start an accelerated 20-second focus sprint, clink a marble into the jar, and transition into seated breathing recovery.
+4. **Hands-Only Gesture Guide:**
+   - **👉 Poke:** Touch any button directly with your index fingertip.
+   - **🤏 Hand Ray + Pinch:** Point your hand ray at distant panels and pinch index + thumb to click.
+   - **✋ Move Task Card:** Pinch and drag a card to a timeline slot (Morning, Midday, Evening) with magnetic drop.
+   - **👋 Companion Touch:** Poke Pip to wiggle, or poke the Focus Lamp to toggle focus sprints.
+
+---
+
+### Setup & Run (Fresh Clone)
 ```bash
 # Install dependencies
 pnpm install

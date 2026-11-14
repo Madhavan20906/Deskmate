@@ -63,8 +63,8 @@
     <div class="eyebrow">DESKMATE / MIXED-REALITY WORKSPACE</div>
     <div class="heading">Make room for focused work.</div>
     <div class="body">1. Pin to desk: Align workspace with your real desk.</div>
-    <div class="body">2. Meet Pip: Tap companion for "What next?".</div>
-    <div class="body">3. Focus sprint: Tap "Start focus" for quiet co-working.</div>
+    <div class="body">2. Poke &amp; Pinch: Poke buttons with index finger, pinch cards to drag.</div>
+    <div class="body">3. Focus sprint: Tap "Start focus" or poke the lamp for quiet co-working.</div>
   </div>
   <Button id="xr-button" class="button">
     <ButtonIcon>

@@ -113,6 +113,18 @@
       .xr-launch-button:active {
         transform: translateY(0);
       }
+      .xr-guide-text {
+        font-size: 11px;
+        color: rgba(226, 232, 240, 0.7);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: 6px;
+      }
+
+      .xr-guide-dot {
+        opacity: 0.4;
+      }
     </style>
   </head>
   <body>
@@ -123,8 +135,15 @@
         <span class="xr-badge">Deskmate MR</span>
       </div>
       <button id="xr-overlay-launch-btn" class="xr-launch-button" onclick="window.__launchXR ? window.__launchXR() : null">
-        🥽 Enter XR
+        🥽 Enter Quest XR
       </button>
+      <div class="xr-guide-text">
+        <span>1. Open in Quest Browser</span>
+        <span class="xr-guide-dot">•</span>
+        <span>2. Hand tracking ON in Settings</span>
+        <span class="xr-guide-dot">•</span>
+        <span>3. Controllers down</span>
+      </div>
     </div>
     <script type="module" src="/src/index.ts"></script>
   </body>
