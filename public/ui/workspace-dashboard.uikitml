@@ -788,6 +788,25 @@
     font-size: 11px;
     font-weight: 700;
   }
+
+  .analytics-toggle-bar {
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 4px;
+    margin-bottom: 2px;
+  }
+
+  .analytics-toggle-button {
+    background-color: #1a2a34;
+    border-color: #3b5664;
+    border-width: 1px;
+    border-radius: 999px;
+  }
+
+  .analytics-drawer {
+    flex-direction: column;
+    gap: 12px;
+  }
 </style>
 <Panel class="dashboard">
   <div class="content">
@@ -984,79 +1003,86 @@
       <span class="selection-label">SELECTED TASK</span>
       <span id="selected-task" class="selection-value">Choose a task card</span>
     </div>
-    <div class="focus-stats">
-      <span id="focus-statistics" class="focus-statistics">FOCUS TODAY 0m / 120m GOAL / 0 SESSIONS / TOTAL 0m</span>
-      <span id="focus-history" class="focus-history">NO FOCUS HISTORY YET</span>
-      <div class="focus-progress">
-        <div id="focus-progress-1" class="focus-progress-segment"></div>
-        <div id="focus-progress-2" class="focus-progress-segment"></div>
-        <div id="focus-progress-3" class="focus-progress-segment"></div>
-        <div id="focus-progress-4" class="focus-progress-segment"></div>
-        <div id="focus-progress-5" class="focus-progress-segment"></div>
-        <div id="focus-progress-6" class="focus-progress-segment"></div>
-        <div id="focus-progress-7" class="focus-progress-segment"></div>
-        <div id="focus-progress-8" class="focus-progress-segment"></div>
+    <div class="analytics-toggle-bar">
+      <Button id="toggle-analytics" class="analytics-toggle-button">
+        <ButtonLabel id="toggle-analytics-label">Insights &amp; History (Show)</ButtonLabel>
+      </Button>
+    </div>
+    <div id="analytics-drawer" class="analytics-drawer" style="display: none">
+      <div class="focus-stats">
+        <span id="focus-statistics" class="focus-statistics">FOCUS TODAY 0m / 120m GOAL / 0 SESSIONS / TOTAL 0m</span>
+        <span id="focus-history" class="focus-history">NO FOCUS HISTORY YET</span>
+        <div class="focus-progress">
+          <div id="focus-progress-1" class="focus-progress-segment"></div>
+          <div id="focus-progress-2" class="focus-progress-segment"></div>
+          <div id="focus-progress-3" class="focus-progress-segment"></div>
+          <div id="focus-progress-4" class="focus-progress-segment"></div>
+          <div id="focus-progress-5" class="focus-progress-segment"></div>
+          <div id="focus-progress-6" class="focus-progress-segment"></div>
+          <div id="focus-progress-7" class="focus-progress-segment"></div>
+          <div id="focus-progress-8" class="focus-progress-segment"></div>
+        </div>
       </div>
-    </div>
-    <div class="welcome-back-bar">
-      <span id="welcome-back-line" class="welcome-back-line">Welcome back! 3-day focus streak active - let's fill today's jar!</span>
-    </div>
-    <div class="insights-row">
-      <div class="insight-card">
-        <span class="insight-heading">PRODUCTIVITY GARDEN</span>
-        <div class="garden-row">
-          <div class="garden-plant">
-            <div class="garden-crown">
-              <span id="garden-flower" class="garden-flower" style="display: none"></span>
-              <div id="garden-leaves-1" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
-              <div id="garden-leaves-2" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
-              <div id="garden-leaves-3" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
-              <div id="garden-leaves-4" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
+      <div class="welcome-back-bar">
+        <span id="welcome-back-line" class="welcome-back-line">Welcome back! 3-day focus streak active - let's fill today's jar!</span>
+      </div>
+      <div class="insights-row">
+        <div class="insight-card">
+          <span class="insight-heading">PRODUCTIVITY GARDEN</span>
+          <div class="garden-row">
+            <div class="garden-plant">
+              <div class="garden-crown">
+                <span id="garden-flower" class="garden-flower" style="display: none"></span>
+                <div id="garden-leaves-1" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
+                <div id="garden-leaves-2" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
+                <div id="garden-leaves-3" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
+                <div id="garden-leaves-4" class="garden-leaves" style="display: none"><span class="garden-leaf"></span><span class="garden-leaf"></span></div>
+              </div>
+              <div id="garden-stem" class="garden-stem"></div>
+              <div class="garden-soil"></div>
             </div>
-            <div id="garden-stem" class="garden-stem"></div>
-            <div class="garden-soil"></div>
+            <div class="garden-copy">
+              <span id="garden-stage" class="garden-stage">SEED GARDEN</span>
+              <span id="garden-details" class="garden-details">0 growth points / 0-day streak</span>
+              <span id="garden-achievements" class="garden-achievements">Next: Sprout at 20 points</span>
+            </div>
           </div>
-          <div class="garden-copy">
-            <span id="garden-stage" class="garden-stage">SEED GARDEN</span>
-            <span id="garden-details" class="garden-details">0 growth points / 0-day streak</span>
-            <span id="garden-achievements" class="garden-achievements">Next: Sprout at 20 points</span>
+          <div class="garden-progress">
+            <div id="garden-progress-1" class="garden-progress-segment"></div>
+            <div id="garden-progress-2" class="garden-progress-segment"></div>
+            <div id="garden-progress-3" class="garden-progress-segment"></div>
+            <div id="garden-progress-4" class="garden-progress-segment"></div>
           </div>
         </div>
-        <div class="garden-progress">
-          <div id="garden-progress-1" class="garden-progress-segment"></div>
-          <div id="garden-progress-2" class="garden-progress-segment"></div>
-          <div id="garden-progress-3" class="garden-progress-segment"></div>
-          <div id="garden-progress-4" class="garden-progress-segment"></div>
+        <div class="insight-card">
+          <div class="jar-header-row">
+            <span class="insight-heading">WEEKLY FOCUS JAR</span>
+            <span id="today-jar-badge" class="jar-badge">0 / 4 TOKENS</span>
+          </div>
+          <span id="today-jar-status" class="jar-status">Today: 0 tokens in jar. Sprints &amp; breaks fill it!</span>
+          <div class="jar-week-display">
+            <div class="jar-day-col"><span id="jar-day-label-1" class="jar-day-label">MON</span><div id="jar-box-1" class="jar-box"><span id="jar-tokens-1" class="jar-token-count">0</span></div></div>
+            <div class="jar-day-col"><span id="jar-day-label-2" class="jar-day-label">TUE</span><div id="jar-box-2" class="jar-box"><span id="jar-tokens-2" class="jar-token-count">0</span></div></div>
+            <div class="jar-day-col"><span id="jar-day-label-3" class="jar-day-label">WED</span><div id="jar-box-3" class="jar-box"><span id="jar-tokens-3" class="jar-token-count">0</span></div></div>
+            <div class="jar-day-col"><span id="jar-day-label-4" class="jar-day-label">THU</span><div id="jar-box-4" class="jar-box"><span id="jar-tokens-4" class="jar-token-count">0</span></div></div>
+            <div class="jar-day-col"><span id="jar-day-label-5" class="jar-day-label">FRI</span><div id="jar-box-5" class="jar-box"><span id="jar-tokens-5" class="jar-token-count">0</span></div></div>
+            <div class="jar-day-col"><span id="jar-day-label-6" class="jar-day-label">SAT</span><div id="jar-box-6" class="jar-box"><span id="jar-tokens-6" class="jar-token-count">0</span></div></div>
+            <div class="jar-day-col"><span id="jar-day-label-7" class="jar-day-label">SUN</span><div id="jar-box-7" class="jar-box"><span id="jar-tokens-7" class="jar-token-count">0</span></div></div>
+          </div>
         </div>
-      </div>
-      <div class="insight-card">
-        <div class="jar-header-row">
-          <span class="insight-heading">WEEKLY FOCUS JAR</span>
-          <span id="today-jar-badge" class="jar-badge">0 / 4 TOKENS</span>
+        <div class="insight-card">
+          <span class="insight-heading">7-DAY MOMENTUM</span>
+          <div class="analytics-bars">
+            <div class="analytics-day"><span id="analytics-day-label-1" class="analytics-day-label">MON</span><span id="analytics-bar-1" class="analytics-bar"></span><span id="analytics-day-count-1" class="analytics-day-count">0</span></div>
+            <div class="analytics-day"><span id="analytics-day-label-2" class="analytics-day-label">TUE</span><span id="analytics-bar-2" class="analytics-bar"></span><span id="analytics-day-count-2" class="analytics-day-count">0</span></div>
+            <div class="analytics-day"><span id="analytics-day-label-3" class="analytics-day-label">WED</span><span id="analytics-bar-3" class="analytics-bar"></span><span id="analytics-day-count-3" class="analytics-day-count">0</span></div>
+            <div class="analytics-day"><span id="analytics-day-label-4" class="analytics-day-label">THU</span><span id="analytics-bar-4" class="analytics-bar"></span><span id="analytics-day-count-4" class="analytics-day-count">0</span></div>
+            <div class="analytics-day"><span id="analytics-day-label-5" class="analytics-day-label">FRI</span><span id="analytics-bar-5" class="analytics-bar"></span><span id="analytics-day-count-5" class="analytics-day-count">0</span></div>
+            <div class="analytics-day"><span id="analytics-day-label-6" class="analytics-day-label">SAT</span><span id="analytics-bar-6" class="analytics-bar"></span><span id="analytics-day-count-6" class="analytics-day-count">0</span></div>
+            <div class="analytics-day"><span id="analytics-day-label-7" class="analytics-day-label">SUN</span><span id="analytics-bar-7" class="analytics-bar"></span><span id="analytics-day-count-7" class="analytics-day-count">0</span></div>
+          </div>
+          <span id="analytics-summary" class="analytics-summary">0 tasks / 0m focus / 0% complete</span>
         </div>
-        <span id="today-jar-status" class="jar-status">Today: 0 tokens in jar. Sprints &amp; breaks fill it!</span>
-        <div class="jar-week-display">
-          <div class="jar-day-col"><span id="jar-day-label-1" class="jar-day-label">MON</span><div id="jar-box-1" class="jar-box"><span id="jar-tokens-1" class="jar-token-count">0</span></div></div>
-          <div class="jar-day-col"><span id="jar-day-label-2" class="jar-day-label">TUE</span><div id="jar-box-2" class="jar-box"><span id="jar-tokens-2" class="jar-token-count">0</span></div></div>
-          <div class="jar-day-col"><span id="jar-day-label-3" class="jar-day-label">WED</span><div id="jar-box-3" class="jar-box"><span id="jar-tokens-3" class="jar-token-count">0</span></div></div>
-          <div class="jar-day-col"><span id="jar-day-label-4" class="jar-day-label">THU</span><div id="jar-box-4" class="jar-box"><span id="jar-tokens-4" class="jar-token-count">0</span></div></div>
-          <div class="jar-day-col"><span id="jar-day-label-5" class="jar-day-label">FRI</span><div id="jar-box-5" class="jar-box"><span id="jar-tokens-5" class="jar-token-count">0</span></div></div>
-          <div class="jar-day-col"><span id="jar-day-label-6" class="jar-day-label">SAT</span><div id="jar-box-6" class="jar-box"><span id="jar-tokens-6" class="jar-token-count">0</span></div></div>
-          <div class="jar-day-col"><span id="jar-day-label-7" class="jar-day-label">SUN</span><div id="jar-box-7" class="jar-box"><span id="jar-tokens-7" class="jar-token-count">0</span></div></div>
-        </div>
-      </div>
-      <div class="insight-card">
-        <span class="insight-heading">7-DAY MOMENTUM</span>
-        <div class="analytics-bars">
-          <div class="analytics-day"><span id="analytics-day-label-1" class="analytics-day-label">MON</span><span id="analytics-bar-1" class="analytics-bar"></span><span id="analytics-day-count-1" class="analytics-day-count">0</span></div>
-          <div class="analytics-day"><span id="analytics-day-label-2" class="analytics-day-label">TUE</span><span id="analytics-bar-2" class="analytics-bar"></span><span id="analytics-day-count-2" class="analytics-day-count">0</span></div>
-          <div class="analytics-day"><span id="analytics-day-label-3" class="analytics-day-label">WED</span><span id="analytics-bar-3" class="analytics-bar"></span><span id="analytics-day-count-3" class="analytics-day-count">0</span></div>
-          <div class="analytics-day"><span id="analytics-day-label-4" class="analytics-day-label">THU</span><span id="analytics-bar-4" class="analytics-bar"></span><span id="analytics-day-count-4" class="analytics-day-count">0</span></div>
-          <div class="analytics-day"><span id="analytics-day-label-5" class="analytics-day-label">FRI</span><span id="analytics-bar-5" class="analytics-bar"></span><span id="analytics-day-count-5" class="analytics-day-count">0</span></div>
-          <div class="analytics-day"><span id="analytics-day-label-6" class="analytics-day-label">SAT</span><span id="analytics-bar-6" class="analytics-bar"></span><span id="analytics-day-count-6" class="analytics-day-count">0</span></div>
-          <div class="analytics-day"><span id="analytics-day-label-7" class="analytics-day-label">SUN</span><span id="analytics-bar-7" class="analytics-bar"></span><span id="analytics-day-count-7" class="analytics-day-count">0</span></div>
-        </div>
-        <span id="analytics-summary" class="analytics-summary">0 tasks / 0m focus / 0% complete</span>
       </div>
     </div>
     <div class="task-actions">

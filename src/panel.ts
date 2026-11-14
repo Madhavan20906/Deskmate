@@ -151,8 +151,8 @@ interface TimelineSlotElements {
   content: NonNullable<ReturnType<UIKitMLAsset['getElementById']>>;
 }
 
-const STORAGE_KEY = 'deskmate.tasks.v1';
-const FOCUS_STORAGE_KEY = 'deskmate.focus.v1';
+const STORAGE_KEY = 'deskmate.tasks.v3';
+const FOCUS_STORAGE_KEY = 'deskmate.focus.v3';
 const MAX_TASKS = 6;
 const DEFAULT_FOCUS_MINUTES = 25;
 const MIN_FOCUS_MINUTES = 5;
@@ -388,7 +388,7 @@ function readTasks(): TaskLoadResult {
     let invalidCount = Math.max(0, records.length - MAX_TASKS);
     for (const candidate of records) {
       const task = parseTask(candidate);
-      if (task === null || seenIds.has(task.id)) {
+      if (task === null || seenIds.has(task.id) || task.title.toLowerCase().includes('(copy)')) {
         invalidCount += 1;
         continue;
       }
@@ -768,12 +768,12 @@ export class PanelSystem extends createSystem({
   private cardWasGrabbed: boolean[] = [false, false, false, false, false, false];
   private cardIsHovered: boolean[] = [false, false, false, false, false, false];
   private cardHomePositions: Vector3[] = [
-    new Vector3(-0.36, 1.00, -0.80),
-    new Vector3(0.00, 1.00, -0.80),
-    new Vector3(0.36, 1.00, -0.80),
-    new Vector3(-0.36, 0.65, -0.80),
-    new Vector3(0.00, 0.65, -0.80),
-    new Vector3(0.36, 0.65, -0.80),
+    new Vector3(-0.42, 1.06, -0.75),
+    new Vector3(0.00, 1.06, -0.75),
+    new Vector3(0.42, 1.06, -0.75),
+    new Vector3(-0.42, 0.72, -0.75),
+    new Vector3(0.00, 0.72, -0.75),
+    new Vector3(0.42, 0.72, -0.75),
   ];
   private cardHomeRotations: Quaternion[] = [
     new Quaternion(),
@@ -1129,6 +1129,25 @@ export class PanelSystem extends createSystem({
       };
       this.ghostAudioButton.addEventListener('click', toggleGhostAudio);
       this.cleanupFuncs.push(() => this.ghostAudioButton?.removeEventListener('click', toggleGhostAudio));
+    }
+
+    const toggleAnalyticsBtn = dashboard?.getElementById('toggle-analytics') ?? null;
+    const toggleAnalyticsLabel = dashboard?.getElementById('toggle-analytics-label') ?? null;
+    const analyticsDrawer = dashboard?.getElementById('analytics-drawer') ?? null;
+    if (toggleAnalyticsBtn !== null && analyticsDrawer !== null) {
+      let isExpanded = false;
+      const toggleAnalytics = () => {
+        isExpanded = !isExpanded;
+        analyticsDrawer.setProperties({
+          display: isExpanded ? 'flex' : 'none',
+        });
+        toggleAnalyticsLabel?.setProperties({
+          text: isExpanded ? 'Insights & History (Hide)' : 'Insights & History (Show)',
+        });
+        this.ghostAudio.playPinchTick();
+      };
+      toggleAnalyticsBtn.addEventListener('click', toggleAnalytics);
+      this.cleanupFuncs.push(() => toggleAnalyticsBtn.removeEventListener('click', toggleAnalytics));
     }
 
     if (this.pipMorningRitualButton !== null) {
