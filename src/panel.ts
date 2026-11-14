@@ -850,7 +850,9 @@ export class PanelSystem extends createSystem({
   private pipHopStartPos = new Vector3(0.00, 0.76, -0.55);
   private pipHopTargetPos = new Vector3(0.00, 0.76, -0.55);
   private pipRestingPos = new Vector3(0.00, 0.76, -0.55);
+  private pipIdleTimer = 0;
   private pipLookTarget = new Vector3();
+  private tableObject: Object3D | null = null;
 
   // Sprint Dial 3D
   private dialObject: Object3D | null = null;
@@ -1205,6 +1207,20 @@ export class PanelSystem extends createSystem({
       };
       this.ghostAudioButton.addEventListener('click', toggleGhostAudio);
       this.cleanupFuncs.push(() => this.ghostAudioButton?.removeEventListener('click', toggleGhostAudio));
+    }
+
+    this.tableObject = this.world.getSceneObject('workspace-desk') ?? null;
+    if (this.tableObject) {
+      const onTableClick = (e: { point?: Vector3 }) => {
+        if (!this.actionDebouncer.canExecute()) return;
+        if (this.pipObject && !this.pipWasGrabbed) {
+          const targetX = e?.point ? Math.max(-0.65, Math.min(0.65, e.point.x)) : 0.0;
+          const targetZ = e?.point ? Math.max(-0.95, Math.min(-0.45, e.point.z)) : -0.55;
+          this.startPipHop(targetX, targetZ);
+        }
+      };
+      this.tableObject.addEventListener('click', onTableClick as never);
+      this.cleanupFuncs.push(() => this.tableObject?.removeEventListener('click', onTableClick as never));
     }
 
     const toggleAnalyticsBtn = dashboard?.getElementById('toggle-analytics') ?? null;
@@ -1636,6 +1652,10 @@ export class PanelSystem extends createSystem({
         this.dismissedSuggestionFor = null;
         this.schedulerMessage = '';
         this.ghostAudio.playPinchTick();
+        if (this.pipObject && !this.pipWasGrabbed && this.cardHomePositions[slot]) {
+          const targetCardX = this.cardHomePositions[slot].x * 0.65;
+          this.startPipHop(targetCardX, -0.60);
+        }
         this.renderTasks();
       };
       const advanceStatus = () => {
@@ -2076,6 +2096,9 @@ export class PanelSystem extends createSystem({
     this.ghostAudio.ensureRunning();
     this.ghostAudio.setFocusing(true);
     this.setPipEmote('encouragement');
+    if (this.pipObject && !this.pipWasGrabbed) {
+      this.startPipHop(0.24, -0.56);
+    }
     this.recordUserInteraction();
     this.renderTasks();
     this.updateFocusClock(true);
@@ -2117,6 +2140,9 @@ export class PanelSystem extends createSystem({
     this.ghostAudio.ensureRunning();
     this.ghostAudio.setFocusing(true);
     this.setPipEmote('encouragement');
+    if (this.pipObject && !this.pipWasGrabbed) {
+      this.startPipHop(0.24, -0.56);
+    }
     this.recordUserInteraction();
     this.updateFocusClock(true);
   }
@@ -3929,12 +3955,13 @@ export class PanelSystem extends createSystem({
     this.recordUserInteraction();
   }
 
-  private startPipHop(targetX: number, targetZ: number): void {
+  private startPipHop(targetX: number, targetZ: number, targetY = 0.76): void {
     if (!this.pipObject) return;
     this.pipHopStartPos.copy(this.pipObject.position);
-    this.pipHopTargetPos.set(targetX, 0.74, targetZ);
+    this.pipHopTargetPos.set(targetX, targetY, targetZ);
     this.pipRestingPos.copy(this.pipHopTargetPos);
     this.pipHopTimer = 0;
+    this.pipIdleTimer = 0;
     this.setPipEmote('celebration');
     this.ghostAudio.playPinchTick();
   }
@@ -3949,6 +3976,7 @@ export class PanelSystem extends createSystem({
       if (!this.pipWasGrabbed) {
         this.pipWasGrabbed = true;
         this.pipHopTimer = 1;
+        this.pipIdleTimer = 0;
         this.ghostAudio.playPinchTick();
         this.setPipEmote('greeting');
         this.recordUserInteraction();
@@ -3956,9 +3984,27 @@ export class PanelSystem extends createSystem({
     } else if (this.pipWasGrabbed) {
       this.pipWasGrabbed = false;
       this.recordUserInteraction();
-      const clampedX = Math.max(-0.62, Math.min(0.62, this.pipObject.position.x));
-      const clampedZ = Math.max(-0.95, Math.min(-0.45, this.pipObject.position.z));
-      this.startPipHop(clampedX, clampedZ);
+      // Pip stays wherever the user placed him in 3D space!
+      this.pipRestingPos.copy(this.pipObject.position);
+      this.pipHopStartPos.copy(this.pipObject.position);
+      this.pipHopTargetPos.copy(this.pipObject.position);
+      this.pipHopTimer = 1;
+      this.pipIdleTimer = 0;
+      this.ghostAudio.playPipChirp();
+      this.setPipEmote('celebration');
+    }
+
+    if (!isGrabbed && this.pipHopTimer >= 1) {
+      this.pipIdleTimer += delta;
+      if (this.pipIdleTimer > 15) {
+        this.pipIdleTimer = 0;
+        // Autonomous wander hop: Pip hops softly around nearby to stay lively
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 0.06 + Math.random() * 0.10;
+        const targetX = Math.max(-0.55, Math.min(0.55, this.pipRestingPos.x + Math.cos(angle) * dist));
+        const targetZ = Math.max(-0.85, Math.min(-0.48, this.pipRestingPos.z + Math.sin(angle) * dist));
+        this.startPipHop(targetX, targetZ, this.pipRestingPos.y);
+      }
     }
 
     if (this.pipHopTimer < 1) {
@@ -3968,7 +4014,7 @@ export class PanelSystem extends createSystem({
       this.pipObject.position.x = this.pipHopStartPos.x + (this.pipHopTargetPos.x - this.pipHopStartPos.x) * ease;
       this.pipObject.position.z = this.pipHopStartPos.z + (this.pipHopTargetPos.z - this.pipHopStartPos.z) * ease;
       const jumpArc = Math.sin(t * Math.PI) * 0.06;
-      this.pipObject.position.y = 0.74 + jumpArc;
+      this.pipObject.position.y = (this.pipHopStartPos.y + (this.pipHopTargetPos.y - this.pipHopStartPos.y) * ease) + jumpArc;
       if (this.pipBodyMesh) {
         this.pipBodyMesh.scale.y = 1 + jumpArc * 2.2;
         this.pipBodyMesh.scale.x = 1 - jumpArc * 1.1;
