@@ -807,6 +807,161 @@
     flex-direction: column;
     gap: 12px;
   }
+
+  .quick-capture-panel {
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 14px;
+    background-color: #172d34;
+    border-width: 1px;
+    border-color: #53cbb5;
+    margin-top: 8px;
+  }
+
+  .capture-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .capture-heading {
+    color: #8ce2d2;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .capture-close-button {
+    background-color: #213a44;
+    border-color: #3e6875;
+  }
+
+  .capture-section-label {
+    color: #9eb4bf;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .capture-chip-row {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .capture-chip {
+    flex-grow: 1;
+    background-color: #1d3640;
+    border-color: #3b5f6d;
+  }
+
+  .capture-details-row {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .capture-col {
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+  }
+
+  .capture-priority-row {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .capture-pri-button {
+    flex-grow: 1;
+    background-color: #1d3640;
+    border-color: #3b5f6d;
+  }
+
+  .capture-duration-row {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .capture-dur-button {
+    background-color: #1d3640;
+    border-color: #3b5f6d;
+  }
+
+  .capture-stepper {
+    background-color: #213a44;
+    border-color: #3e6875;
+  }
+
+  .capture-dur-display {
+    color: #f3f6f7;
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  .capture-footer {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 6px;
+  }
+
+  .capture-save-button {
+    background-color: #248277;
+    border-color: #53cbb5;
+  }
+
+  .backlog-drawer {
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 12px;
+    background-color: #16242c;
+    border-width: 1px;
+    border-color: #3e6875;
+    margin-top: 8px;
+  }
+
+  .backlog-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .backlog-title {
+    color: #f2bf7b;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .backlog-list {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .backlog-item {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 6px;
+    background-color: #1e333e;
+  }
+
+  .backlog-item-text {
+    color: #e8eef0;
+    font-size: 12px;
+  }
 </style>
 <Panel class="dashboard">
   <div class="content">
@@ -838,6 +993,12 @@
         <Button id="workspace-pin">
           <ButtonLabel>Pin to desk</ButtonLabel>
         </Button>
+        <Button id="workspace-nudge-up">
+          <ButtonLabel>+5cm</ButtonLabel>
+        </Button>
+        <Button id="workspace-nudge-down">
+          <ButtonLabel>-5cm</ButtonLabel>
+        </Button>
         <Button id="workspace-reset">
           <ButtonLabel>Reset</ButtonLabel>
         </Button>
@@ -864,11 +1025,14 @@
       <span id="pip-transcript" class="pip-transcript">No request yet.</span>
       <span class="pip-disclosure">No AI provider is connected. Tap Listen only when ready; your browser may use its speech service to transcribe audio. Pip parses requests locally and sends no task data to an AI service.</span>
       <div class="pip-controls">
+        <Button id="pip-what-next" class="pip-control-button">
+          <ButtonLabel>What next?</ButtonLabel>
+        </Button>
+        <Button id="pip-plan-day" class="pip-control-button">
+          <ButtonLabel>Plan day</ButtonLabel>
+        </Button>
         <Button id="pip-listen" class="pip-control-button">
           <ButtonLabel id="pip-listen-label">Listen</ButtonLabel>
-        </Button>
-        <Button id="pip-text" class="pip-control-button">
-          <ButtonLabel>Type request</ButtonLabel>
         </Button>
         <Button id="pip-recap" class="pip-control-button">
           <ButtonLabel>Daily recap</ButtonLabel>
@@ -992,6 +1156,9 @@
       <Button id="schedule-apply-suggestion" class="schedule-button">
         <ButtonLabel>Apply suggestion</ButtonLabel>
       </Button>
+      <Button id="schedule-fix-overlaps" class="schedule-button" style="display: none">
+        <ButtonLabel>Fix Overlaps</ButtonLabel>
+      </Button>
       <Button id="schedule-dismiss-suggestion" class="schedule-button">
         <ButtonLabel>Dismiss</ButtonLabel>
       </Button>
@@ -1087,6 +1254,9 @@
     </div>
     <div class="task-actions">
       <span id="task-summary" class="task-summary">3 / 6 tasks</span>
+      <Button id="backlog-toggle" class="focus-duration-button" style="display: none">
+        <ButtonLabel id="backlog-toggle-label">Backlog (0)</ButtonLabel>
+      </Button>
       <div class="focus-duration-controls">
         <Button id="focus-duration-down" class="focus-duration-button">
           <ButtonLabel>-5</ButtonLabel>
@@ -1097,8 +1267,71 @@
         </Button>
       </div>
       <Button id="task-create" class="create-button">
-        <ButtonLabel>Create task</ButtonLabel>
+        <ButtonLabel>+ Add Task</ButtonLabel>
       </Button>
+    </div>
+
+    <div id="quick-capture-panel" class="quick-capture-panel" style="display: none">
+      <div class="capture-header">
+        <span id="capture-header-title" class="capture-heading">QUICK CAPTURE (HANDS-ONLY)</span>
+        <Button id="capture-close" class="capture-close-button">
+          <ButtonLabel>Cancel</ButtonLabel>
+        </Button>
+      </div>
+
+      <span class="capture-section-label">CHOOSE TITLE TEMPLATE (1 PINCH)</span>
+      <div class="capture-chip-row">
+        <Button id="chip-title-1" class="capture-chip"><ButtonLabel>Write report</ButtonLabel></Button>
+        <Button id="chip-title-2" class="capture-chip"><ButtonLabel>Review brief</ButtonLabel></Button>
+        <Button id="chip-title-3" class="capture-chip"><ButtonLabel>Team sync</ButtonLabel></Button>
+        <Button id="chip-title-4" class="capture-chip"><ButtonLabel>Clear inbox</ButtonLabel></Button>
+      </div>
+      <div class="capture-chip-row">
+        <Button id="chip-title-5" class="capture-chip"><ButtonLabel>Deep study</ButtonLabel></Button>
+        <Button id="chip-title-6" class="capture-chip"><ButtonLabel>Plan roadmap</ButtonLabel></Button>
+        <Button id="chip-title-7" class="capture-chip"><ButtonLabel>Design sprint</ButtonLabel></Button>
+        <Button id="chip-title-8" class="capture-chip"><ButtonLabel>Admin tasks</ButtonLabel></Button>
+      </div>
+
+      <div class="capture-details-row">
+        <div class="capture-col">
+          <span class="capture-section-label">PRIORITY</span>
+          <div class="capture-priority-row">
+            <Button id="capture-pri-low" class="capture-pri-button"><ButtonLabel>LOW</ButtonLabel></Button>
+            <Button id="capture-pri-med" class="capture-pri-button"><ButtonLabel>MEDIUM</ButtonLabel></Button>
+            <Button id="capture-pri-high" class="capture-pri-button"><ButtonLabel>HIGH</ButtonLabel></Button>
+          </div>
+        </div>
+        <div class="capture-col">
+          <span class="capture-section-label">DURATION</span>
+          <div class="capture-duration-row">
+            <Button id="capture-dur-15" class="capture-dur-button"><ButtonLabel>15m</ButtonLabel></Button>
+            <Button id="capture-dur-25" class="capture-dur-button"><ButtonLabel>25m</ButtonLabel></Button>
+            <Button id="capture-dur-45" class="capture-dur-button"><ButtonLabel>45m</ButtonLabel></Button>
+            <Button id="capture-dur-60" class="capture-dur-button"><ButtonLabel>60m</ButtonLabel></Button>
+            <Button id="capture-dur-down" class="capture-stepper"><ButtonLabel>-5</ButtonLabel></Button>
+            <span id="capture-duration-display" class="capture-dur-display">25 MIN</span>
+            <Button id="capture-dur-up" class="capture-stepper"><ButtonLabel>+15</ButtonLabel></Button>
+          </div>
+        </div>
+      </div>
+
+      <div class="capture-footer">
+        <Button id="capture-save" class="capture-save-button">
+          <ButtonLabel id="capture-save-label">Confirm &amp; Place on Desk</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+
+    <div id="backlog-drawer" class="backlog-drawer" style="display: none">
+      <div class="backlog-header">
+        <span class="backlog-title">TASK BACKLOG (OVERFLOW STORAGE)</span>
+        <Button id="backlog-close" class="capture-close-button">
+          <ButtonLabel>Close</ButtonLabel>
+        </Button>
+      </div>
+      <span class="capture-section-label">Tap any backlog item to swap onto desk</span>
+      <div id="backlog-list" class="backlog-list"></div>
     </div>
   </div>
 </Panel>

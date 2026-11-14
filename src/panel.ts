@@ -23,6 +23,14 @@ import { TaskData } from './components.js';
 import { parsePipCommand, validatePipCommand, type PipCommand } from './pip.js';
 import { calculateProductivityInsights } from './productivity.js';
 import { analyzeWorkload } from './workload.js';
+import {
+  recommendWhatNext,
+  planDaySchedule,
+  detectOverlaps,
+  fixScheduleOverlaps,
+  formatMinuteTime,
+  type TaskItem,
+} from './productivity-engine.js';
 
 type TaskStatus = 'todo' | 'in-progress' | 'completed';
 type TaskPriority = 'low' | 'medium' | 'high';
@@ -712,9 +720,40 @@ export class PanelSystem extends createSystem({
   private pipListenLabel!: NonNullable<
     ReturnType<UIKitMLAsset['getElementById']>
   >;
-  private pipTextButton!: NonNullable<
-    ReturnType<UIKitMLAsset['getElementById']>
-  >;
+  private pipWhatNextButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private pipPlanDayButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private scheduleFixOverlapsButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+
+  // Quick Capture hands-only drawer
+  private quickCapturePanel: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private captureCloseButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private captureHeaderTitle: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private capturePriLowButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private capturePriMedButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private capturePriHighButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private captureDurDownButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private captureDurUpButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private captureDurationDisplay: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private captureSaveButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private captureSaveLabel: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private quickCaptureOpen = false;
+  private quickCaptureSlot: number | null = null;
+  private quickCaptureTitle = 'Write report';
+  private quickCapturePriority: TaskPriority = 'medium';
+  private quickCaptureDuration = 25;
+
+  // Backlog
+  private backlogToggle: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private backlogToggleLabel: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private backlogDrawer: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private backlogCloseButton: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private backlogList: NonNullable<ReturnType<UIKitMLAsset['getElementById']>> | null = null;
+  private backlog: TaskRecord[] = [];
+
+  // Two-tap inline delete state
+  private pendingDeleteSlot: number | null = null;
+  private pendingDeleteTimeout: number | null = null;
+
   private pipRecapButton!: NonNullable<
     ReturnType<UIKitMLAsset['getElementById']>
   >;
@@ -924,7 +963,9 @@ export class PanelSystem extends createSystem({
     const pipTranscript = dashboard?.getElementById('pip-transcript');
     const pipListenButton = dashboard?.getElementById('pip-listen');
     const pipListenLabel = dashboard?.getElementById('pip-listen-label');
-    const pipTextButton = dashboard?.getElementById('pip-text');
+    const pipWhatNextButton = dashboard?.getElementById('pip-what-next');
+    const pipPlanDayButton = dashboard?.getElementById('pip-plan-day');
+    const scheduleFixOverlapsButton = dashboard?.getElementById('schedule-fix-overlaps');
     const pipRecapButton = dashboard?.getElementById('pip-recap');
     const pipDismissButton = dashboard?.getElementById('pip-dismiss');
     const pipConfirmationRow = dashboard?.getElementById('pip-confirmation-row');
@@ -961,7 +1002,6 @@ export class PanelSystem extends createSystem({
       pipToggleButton == null || pipPanelRoot == null || pipOrb == null ||
       pipLauncherOrb == null || pipStateLabel == null || pipResponse == null ||
       pipTranscript == null || pipListenButton == null || pipListenLabel == null ||
-      pipTextButton == null ||
       pipRecapButton == null || pipDismissButton == null ||
       pipConfirmationRow == null || pipConfirmScheduleButton == null ||
       pipCancelScheduleButton == null ||
@@ -1006,7 +1046,9 @@ export class PanelSystem extends createSystem({
     this.pipTranscript = pipTranscript;
     this.pipListenButton = pipListenButton;
     this.pipListenLabel = pipListenLabel;
-    this.pipTextButton = pipTextButton;
+    this.pipWhatNextButton = pipWhatNextButton ?? null;
+    this.pipPlanDayButton = pipPlanDayButton ?? null;
+    this.scheduleFixOverlapsButton = scheduleFixOverlapsButton ?? null;
     this.pipRecapButton = pipRecapButton;
     this.pipDismissButton = pipDismissButton;
     this.pipConfirmationRow = pipConfirmationRow;
@@ -1265,21 +1307,18 @@ export class PanelSystem extends createSystem({
     const togglePip = () => this.setPipPanelVisible(!this.pipPanelVisible);
     const hidePip = () => this.setPipPanelVisible(false);
     const listenWithPip = () => this.togglePipListening();
-    const typeToPip = () => this.requestPipText();
     const showPipRecap = () => this.respondToPipRecap();
     const confirmPipSchedule = () => this.confirmPipSchedule();
     const cancelPipSchedule = () => this.cancelPipSchedule();
     this.pipToggleButton.name = 'Open or close Pip assistant';
     this.pipDismissButton.name = 'Dismiss Pip assistant';
     this.pipListenButton.name = 'Start voice input; browser speech service may transcribe audio';
-    this.pipTextButton.name = 'Type a request for Pip';
     this.pipRecapButton.name = 'Ask Pip for a daily productivity recap';
     this.pipConfirmScheduleButton.name = 'Confirm Pip schedule suggestion';
     this.pipCancelScheduleButton.name = 'Cancel Pip schedule suggestion';
     this.pipToggleButton.addEventListener('click', togglePip);
     this.pipDismissButton.addEventListener('click', hidePip);
     this.pipListenButton.addEventListener('click', listenWithPip);
-    this.pipTextButton.addEventListener('click', typeToPip);
     this.pipRecapButton.addEventListener('click', showPipRecap);
     this.pipConfirmScheduleButton.addEventListener('click', confirmPipSchedule);
     this.pipCancelScheduleButton.addEventListener('click', cancelPipSchedule);
@@ -1287,7 +1326,6 @@ export class PanelSystem extends createSystem({
       () => this.pipToggleButton.removeEventListener('click', togglePip),
       () => this.pipDismissButton.removeEventListener('click', hidePip),
       () => this.pipListenButton.removeEventListener('click', listenWithPip),
-      () => this.pipTextButton.removeEventListener('click', typeToPip),
       () => this.pipRecapButton.removeEventListener('click', showPipRecap),
       () => this.pipConfirmScheduleButton.removeEventListener('click', confirmPipSchedule),
       () => this.pipCancelScheduleButton.removeEventListener('click', cancelPipSchedule),
@@ -1299,6 +1337,142 @@ export class PanelSystem extends createSystem({
         }
       },
     );
+
+    if (this.pipWhatNextButton != null) {
+      const runWhatNext = () => this.executeWhatNext();
+      this.pipWhatNextButton.name = 'Ask Pip what task to do next';
+      this.pipWhatNextButton.addEventListener('click', runWhatNext);
+      this.cleanupFuncs.push(() => this.pipWhatNextButton?.removeEventListener('click', runWhatNext));
+    }
+    if (this.pipPlanDayButton != null) {
+      const runPlanDay = () => this.executePlanDay();
+      this.pipPlanDayButton.name = 'Ask Pip to pack and plan today\'s schedule';
+      this.pipPlanDayButton.addEventListener('click', runPlanDay);
+      this.cleanupFuncs.push(() => this.pipPlanDayButton?.removeEventListener('click', runPlanDay));
+    }
+    if (this.scheduleFixOverlapsButton != null) {
+      const runFixOverlaps = () => this.executeFixOverlaps();
+      this.scheduleFixOverlapsButton.name = 'Fix overlapping schedule conflicts';
+      this.scheduleFixOverlapsButton.addEventListener('click', runFixOverlaps);
+      this.cleanupFuncs.push(() => this.scheduleFixOverlapsButton?.removeEventListener('click', runFixOverlaps));
+    }
+
+    this.quickCapturePanel = dashboard?.getElementById('quick-capture-panel') ?? null;
+    this.captureCloseButton = dashboard?.getElementById('capture-close') ?? null;
+    this.captureHeaderTitle = dashboard?.getElementById('capture-header-title') ?? null;
+    this.captureSaveButton = dashboard?.getElementById('capture-save') ?? null;
+    this.captureSaveLabel = dashboard?.getElementById('capture-save-label') ?? null;
+    this.capturePriLowButton = dashboard?.getElementById('capture-pri-low') ?? null;
+    this.capturePriMedButton = dashboard?.getElementById('capture-pri-med') ?? null;
+    this.capturePriHighButton = dashboard?.getElementById('capture-pri-high') ?? null;
+    this.captureDurDownButton = dashboard?.getElementById('capture-dur-down') ?? null;
+    this.captureDurUpButton = dashboard?.getElementById('capture-dur-up') ?? null;
+    this.captureDurationDisplay = dashboard?.getElementById('capture-duration-display') ?? null;
+
+    if (this.captureCloseButton != null) {
+      const close = () => this.closeQuickCapture();
+      this.captureCloseButton.addEventListener('click', close);
+      this.cleanupFuncs.push(() => this.captureCloseButton?.removeEventListener('click', close));
+    }
+    if (this.captureSaveButton != null) {
+      const save = () => this.saveQuickCapture();
+      this.captureSaveButton.addEventListener('click', save);
+      this.cleanupFuncs.push(() => this.captureSaveButton?.removeEventListener('click', save));
+    }
+
+    const TEMPLATE_TITLES = [
+      'Write report', 'Review brief', 'Team sync', 'Clear inbox',
+      'Deep study', 'Plan roadmap', 'Design sprint', 'Admin tasks'
+    ];
+    for (let i = 0; i < 8; i++) {
+      const chip = dashboard?.getElementById(`chip-title-${i + 1}`);
+      if (chip != null) {
+        const title = TEMPLATE_TITLES[i];
+        const selectChip = () => {
+          this.quickCaptureTitle = title;
+          this.ghostAudio.playPinchTick();
+          this.captureHeaderTitle?.setProperties({ text: `TEMPLATE: ${title.toUpperCase()}` });
+        };
+        chip.addEventListener('click', selectChip);
+        this.cleanupFuncs.push(() => chip.removeEventListener('click', selectChip));
+      }
+    }
+
+    if (this.capturePriLowButton != null) {
+      const setLow = () => {
+        this.quickCapturePriority = 'low';
+        this.updateQuickCaptureUI();
+      };
+      this.capturePriLowButton.addEventListener('click', setLow);
+      this.cleanupFuncs.push(() => this.capturePriLowButton?.removeEventListener('click', setLow));
+    }
+    if (this.capturePriMedButton != null) {
+      const setMed = () => {
+        this.quickCapturePriority = 'medium';
+        this.updateQuickCaptureUI();
+      };
+      this.capturePriMedButton.addEventListener('click', setMed);
+      this.cleanupFuncs.push(() => this.capturePriMedButton?.removeEventListener('click', setMed));
+    }
+    if (this.capturePriHighButton != null) {
+      const setHigh = () => {
+        this.quickCapturePriority = 'high';
+        this.updateQuickCaptureUI();
+      };
+      this.capturePriHighButton.addEventListener('click', setHigh);
+      this.cleanupFuncs.push(() => this.capturePriHighButton?.removeEventListener('click', setHigh));
+    }
+
+    const DURATIONS = [15, 25, 45, 60];
+    for (const d of DURATIONS) {
+      const durBtn = dashboard?.getElementById(`capture-dur-${d}`);
+      if (durBtn != null) {
+        const setDur = () => {
+          this.quickCaptureDuration = d;
+          this.updateQuickCaptureUI();
+        };
+        durBtn.addEventListener('click', setDur);
+        this.cleanupFuncs.push(() => durBtn.removeEventListener('click', setDur));
+      }
+    }
+    if (this.captureDurDownButton != null) {
+      const stepDown = () => {
+        this.quickCaptureDuration = Math.max(5, this.quickCaptureDuration - 5);
+        this.updateQuickCaptureUI();
+      };
+      this.captureDurDownButton.addEventListener('click', stepDown);
+      this.cleanupFuncs.push(() => this.captureDurDownButton?.removeEventListener('click', stepDown));
+    }
+    if (this.captureDurUpButton != null) {
+      const stepUp = () => {
+        this.quickCaptureDuration = Math.min(480, this.quickCaptureDuration + 15);
+        this.updateQuickCaptureUI();
+      };
+      this.captureDurUpButton.addEventListener('click', stepUp);
+      this.cleanupFuncs.push(() => this.captureDurUpButton?.removeEventListener('click', stepUp));
+    }
+
+    this.backlogToggle = dashboard?.getElementById('backlog-toggle') ?? null;
+    this.backlogToggleLabel = dashboard?.getElementById('backlog-toggle-label') ?? null;
+    this.backlogDrawer = dashboard?.getElementById('backlog-drawer') ?? null;
+    this.backlogCloseButton = dashboard?.getElementById('backlog-close') ?? null;
+    this.backlogList = dashboard?.getElementById('backlog-list') ?? null;
+
+    if (this.backlogCloseButton != null) {
+      const closeBacklog = () => this.backlogDrawer?.setProperties({ display: 'none' });
+      this.backlogCloseButton.addEventListener('click', closeBacklog);
+      this.cleanupFuncs.push(() => this.backlogCloseButton?.removeEventListener('click', closeBacklog));
+    }
+    if (this.backlogToggle != null) {
+      let backlogVisible = false;
+      const toggleBacklog = () => {
+        backlogVisible = !backlogVisible;
+        this.backlogDrawer?.setProperties({ display: backlogVisible ? 'flex' : 'none' });
+        this.renderBacklog();
+      };
+      this.backlogToggle.addEventListener('click', toggleBacklog);
+      this.cleanupFuncs.push(() => this.backlogToggle?.removeEventListener('click', toggleBacklog));
+    }
     this.renderPip();
 
     const onDocumentVisibilityChange = () => this.updateFocusClock(true);
@@ -2146,7 +2320,7 @@ export class PanelSystem extends createSystem({
     } catch {
       this.stopPipRecognition();
       this.setPipMessage(
-        'The browser could not access speech recognition. Use Type request instead.',
+        'The browser could not access speech recognition. Tap "What next?", "Plan day", or any action button below!',
         'idle',
       );
     }
@@ -2170,20 +2344,7 @@ export class PanelSystem extends createSystem({
   }
 
   private requestPipText(): void {
-    this.setPipPanelVisible(true);
-    let request: string | null;
-    try {
-      request = window.prompt(
-        'Type a request for Pip. Task commands are processed locally; Pip does not send task data to an AI service.',
-        '',
-      );
-    } catch {
-      this.setPipMessage('This browser does not allow text prompts here. Use Listen if available, or open Deskmate in its normal browser window.');
-      return;
-    }
-    if (request === null || request.trim().length === 0) return;
-    this.pipTranscript.setProperties({ text: `Typed: ${request.trim()}` });
-    this.processPipInput(request.trim());
+    this.executeWhatNext();
   }
 
   private processPipInput(input: string): void {
@@ -2206,6 +2367,15 @@ export class PanelSystem extends createSystem({
       return;
     }
     switch (command.intent) {
+      case 'what-next':
+        this.executeWhatNext();
+        return;
+      case 'plan-day':
+        this.executePlanDay();
+        return;
+      case 'fix-overlaps':
+        this.executeFixOverlaps();
+        return;
       case 'create-task':
         this.createTaskFromPip(command);
         return;
@@ -2602,24 +2772,7 @@ export class PanelSystem extends createSystem({
   }
 
   private createTask(): void {
-    const emptySlot = this.tasks.findIndex((task) => task === null);
-    if (emptySlot < 0) {
-      this.dashboardSummary.setProperties({
-        text: `Board full (${MAX_TASKS} tasks). Delete one to make room.`,
-      });
-      return;
-    }
-
-    const task = this.promptTask();
-    if (task === null) return;
-    this.tasks[emptySlot] = {
-      ...task,
-      id: createTaskId(),
-      status: 'todo',
-      createdAt: Date.now(),
-      completedAt: null,
-    };
-    this.persistTasks();
+    this.openQuickCapture(null);
   }
 
   private editTask(slot: number): void {
@@ -2630,28 +2783,7 @@ export class PanelSystem extends createSystem({
       this.renderTasks();
       return;
     }
-    const updatedTask = this.promptTask(currentTask);
-    if (updatedTask === null) return;
-    if (
-      updatedTask.scheduledStartMinute !== null &&
-      !isValidSchedule(
-        updatedTask.scheduledStartMinute,
-        updatedTask.estimatedMinutes,
-      )
-    ) {
-      this.dashboardSummary.setProperties({
-        text: 'Duration would end after 18:00. Schedule was not changed.',
-      });
-      return;
-    }
-    this.tasks[slot] = {
-      ...updatedTask,
-      id: currentTask.id,
-      status: currentTask.status,
-      createdAt: currentTask.createdAt,
-      completedAt: currentTask.completedAt,
-    };
-    this.persistTasks();
+    this.openQuickCapture(slot);
   }
 
   private duplicateTask(slot: number): void {
@@ -2679,76 +2811,212 @@ export class PanelSystem extends createSystem({
     this.persistTasks();
   }
 
-  private promptTask(
-    current?: TaskRecord,
-  ): Omit<TaskRecord, 'id' | 'status' | 'createdAt' | 'completedAt'> | null {
-    const title = window.prompt('Task title (required, up to 80 characters)', current?.title ?? '');
-    if (title === null) return null;
-    const trimmedTitle = title.trim();
-    if (trimmedTitle.length === 0) {
-      this.dashboardSummary.setProperties({ text: 'Task title cannot be empty.' });
-      return null;
+  private openQuickCapture(slot: number | null): void {
+    this.quickCaptureOpen = true;
+    this.quickCaptureSlot = slot;
+    if (slot !== null && this.tasks[slot] !== null) {
+      const existing = this.tasks[slot]!;
+      this.quickCaptureTitle = existing.title;
+      this.quickCapturePriority = existing.priority;
+      this.quickCaptureDuration = existing.estimatedMinutes;
+      this.captureHeaderTitle?.setProperties({ text: `EDIT TASK (SLOT ${slot + 1})` });
+      this.captureSaveLabel?.setProperties({ text: 'Save Changes' });
+    } else {
+      this.quickCaptureTitle = 'Write report';
+      this.quickCapturePriority = 'medium';
+      this.quickCaptureDuration = 25;
+      this.captureHeaderTitle?.setProperties({ text: 'QUICK CAPTURE (HANDS-ONLY)' });
+      this.captureSaveLabel?.setProperties({ text: 'Confirm & Place on Desk' });
+    }
+    this.quickCapturePanel?.setProperties({ display: 'flex' });
+    this.updateQuickCaptureUI();
+  }
+
+  private closeQuickCapture(): void {
+    this.quickCaptureOpen = false;
+    this.quickCaptureSlot = null;
+    this.quickCapturePanel?.setProperties({ display: 'none' });
+  }
+
+  private updateQuickCaptureUI(): void {
+    this.captureDurationDisplay?.setProperties({ text: `${this.quickCaptureDuration} MIN` });
+    this.capturePriLowButton?.setProperties({
+      borderColor: this.quickCapturePriority === 'low' ? '#53cbb5' : '#3b5f6d',
+      borderWidth: this.quickCapturePriority === 'low' ? 2 : 1,
+    });
+    this.capturePriMedButton?.setProperties({
+      borderColor: this.quickCapturePriority === 'medium' ? '#53cbb5' : '#3b5f6d',
+      borderWidth: this.quickCapturePriority === 'medium' ? 2 : 1,
+    });
+    this.capturePriHighButton?.setProperties({
+      borderColor: this.quickCapturePriority === 'high' ? '#53cbb5' : '#3b5f6d',
+      borderWidth: this.quickCapturePriority === 'high' ? 2 : 1,
+    });
+  }
+
+  private saveQuickCapture(): void {
+    if (this.quickCaptureSlot !== null) {
+      const existing = this.tasks[this.quickCaptureSlot];
+      if (existing !== null) {
+        existing.title = this.quickCaptureTitle;
+        existing.priority = this.quickCapturePriority;
+        existing.estimatedMinutes = this.quickCaptureDuration;
+        this.persistTasks();
+        this.setPipMessage(`Updated task "${existing.title}".`);
+      }
+    } else {
+      const emptySlot = this.tasks.findIndex((t) => t === null);
+      if (emptySlot >= 0) {
+        this.tasks[emptySlot] = {
+          id: createTaskId(),
+          title: this.quickCaptureTitle,
+          description: '',
+          category: '',
+          priority: this.quickCapturePriority,
+          estimatedMinutes: this.quickCaptureDuration,
+          scheduledStartMinute: null,
+          status: 'todo',
+          createdAt: Date.now(),
+          completedAt: null,
+        };
+        this.persistTasks();
+        this.setPipEmote('encouragement');
+        this.setPipMessage(`Added "${this.quickCaptureTitle}" to desk!`);
+      } else {
+        this.backlog.push({
+          id: createTaskId(),
+          title: this.quickCaptureTitle,
+          description: '',
+          category: '',
+          priority: this.quickCapturePriority,
+          estimatedMinutes: this.quickCaptureDuration,
+          scheduledStartMinute: null,
+          status: 'todo',
+          createdAt: Date.now(),
+          completedAt: null,
+        });
+        this.renderBacklog();
+        this.setPipMessage(`Desk slots full (6 tasks). Added "${this.quickCaptureTitle}" to Backlog!`);
+      }
+    }
+    this.closeQuickCapture();
+    this.renderTasks();
+  }
+
+  private renderBacklog(): void {
+    if (this.backlog.length > 0) {
+      this.backlogToggle?.setProperties({ display: 'flex' });
+      this.backlogToggleLabel?.setProperties({ text: `Backlog (${this.backlog.length})` });
+    } else {
+      this.backlogToggle?.setProperties({ display: 'none' });
+    }
+  }
+
+  public executeWhatNext(): void {
+    this.recordUserInteraction();
+    const tasks: TaskItem[] = this.tasks
+      .filter((t): t is TaskRecord => t !== null)
+      .map((t) => ({
+        id: t.id,
+        title: t.title,
+        priority: t.priority,
+        estimatedMinutes: t.estimatedMinutes,
+        scheduledStartMinute: t.scheduledStartMinute,
+        status: t.status,
+        createdAt: t.createdAt,
+        completedAt: t.completedAt,
+      }));
+
+    const now = new Date();
+    const currentMinuteOfDay = now.getHours() * 60 + now.getMinutes();
+    const result = recommendWhatNext(tasks, currentMinuteOfDay);
+
+    if (result.task === null) {
+      this.setPipEmote('celebration');
+      this.setPipMessage(result.rationale, 'responding');
+      return;
     }
 
-    const description = window.prompt(
-      'Description (optional, up to 220 characters)',
-      current?.description ?? '',
+    this.selectedTask = result.task.id;
+    this.setPipEmote('encouragement');
+    this.setPipMessage(
+      `Pip recommends: "${result.task.title}". ${result.rationale}!`,
+      'responding',
     );
-    if (description === null) return null;
+    this.renderTasks();
+  }
 
-    const category = window.prompt(
-      'Category (optional, up to 32 characters)',
-      current?.category ?? '',
-    );
-    if (category === null) return null;
+  public executePlanDay(): void {
+    this.recordUserInteraction();
+    const tasks: TaskItem[] = this.tasks
+      .filter((t): t is TaskRecord => t !== null)
+      .map((t) => ({
+        id: t.id,
+        title: t.title,
+        priority: t.priority,
+        estimatedMinutes: t.estimatedMinutes,
+        scheduledStartMinute: t.scheduledStartMinute,
+        status: t.status,
+        createdAt: t.createdAt,
+        completedAt: t.completedAt,
+      }));
 
-    const priorityText = window.prompt(
-      'Priority: low, medium, or high',
-      current?.priority ?? 'medium',
-    );
-    if (priorityText === null) return null;
-    const priority = priorityText.trim().toLowerCase();
-    if (!isPriority(priority)) {
-      this.dashboardSummary.setProperties({ text: 'Priority must be low, medium, or high.' });
-      return null;
+    const plan = planDaySchedule(tasks);
+    if (plan.assignments.length === 0) {
+      this.setPipMessage('No pending tasks to plan. Add a task first!', 'responding');
+      return;
     }
 
-    const durationText = window.prompt(
-      'Estimated duration in minutes (5 to 480)',
-      String(current?.estimatedMinutes ?? 30),
+    for (const assignment of plan.assignments) {
+      const task = this.tasks.find((t) => t?.id === assignment.taskId);
+      if (task) {
+        task.scheduledStartMinute = assignment.startMinute;
+      }
+    }
+    this.persistTasks();
+    this.setPipEmote('celebration');
+    this.setPipMessage(
+      `Day plan locked in! ${plan.assignments.length} tasks scheduled with 10m recovery breaks.${plan.overflowCount > 0 ? ` (${plan.overflowCount} exceeded daily 18:00 cutoff)` : ''}`,
+      'responding',
     );
-    if (durationText === null) return null;
-    const estimatedMinutes = Number(durationText);
-    if (
-      !Number.isFinite(estimatedMinutes) ||
-      estimatedMinutes < 5 ||
-      estimatedMinutes > 480
-    ) {
-      this.dashboardSummary.setProperties({ text: 'Duration must be between 5 and 480 minutes.' });
-      return null;
+    this.renderTasks();
+  }
+
+  public executeFixOverlaps(): void {
+    this.recordUserInteraction();
+    const tasks: TaskItem[] = this.tasks
+      .filter((t): t is TaskRecord => t !== null)
+      .map((t) => ({
+        id: t.id,
+        title: t.title,
+        priority: t.priority,
+        estimatedMinutes: t.estimatedMinutes,
+        scheduledStartMinute: t.scheduledStartMinute,
+        status: t.status,
+        createdAt: t.createdAt,
+        completedAt: t.completedAt,
+      }));
+
+    const adjustments = fixScheduleOverlaps(tasks);
+    if (adjustments.length === 0) {
+      this.schedulerMessage = 'No overlapping time conflicts found.';
+      this.renderTasks();
+      return;
     }
 
-    const roundedDuration = Math.round(estimatedMinutes);
-    const scheduledStartMinute = current?.scheduledStartMinute ?? null;
-    if (
-      scheduledStartMinute !== null &&
-      !isValidSchedule(scheduledStartMinute, roundedDuration)
-    ) {
-      this.dashboardSummary.setProperties({
-        text: 'That duration would end after 18:00. Choose a shorter duration or reschedule first.',
-      });
-      return null;
+    for (const adj of adjustments) {
+      const task = this.tasks.find((t) => t?.id === adj.taskId);
+      if (task) {
+        task.scheduledStartMinute = adj.startMinute;
+      }
     }
-
-    return {
-      title: trimmedTitle.slice(0, 80),
-      description: description.trim().slice(0, 220),
-      category: category.trim().slice(0, 32),
-      priority,
-      estimatedMinutes: roundedDuration,
-      scheduledStartMinute,
-      scheduleNeedsReview: false,
-    };
+    this.persistTasks();
+    this.setPipEmote('encouragement');
+    this.setPipMessage(
+      `Resolved ${adjustments.length} schedule conflict${adjustments.length === 1 ? '' : 's'}! Overlapping tasks shifted forward.`,
+      'responding',
+    );
+    this.renderTasks();
   }
 
   private getSelectedTask(): TaskRecord | null {
@@ -2845,7 +3113,28 @@ export class PanelSystem extends createSystem({
       this.renderTasks();
       return;
     }
-    if (task === null || !window.confirm(`Delete "${task.title}"?`)) return;
+    if (task === null) return;
+
+    if (this.pendingDeleteSlot !== slot) {
+      this.pendingDeleteSlot = slot;
+      this.dashboardSummary.setProperties({
+        text: `Pinch Delete again to confirm deleting "${task.title}".`,
+      });
+      if (this.pendingDeleteTimeout !== null) {
+        window.clearTimeout(this.pendingDeleteTimeout);
+      }
+      this.pendingDeleteTimeout = window.setTimeout(() => {
+        this.pendingDeleteSlot = null;
+        this.renderTasks();
+      }, 3500);
+      return;
+    }
+
+    if (this.pendingDeleteTimeout !== null) {
+      window.clearTimeout(this.pendingDeleteTimeout);
+      this.pendingDeleteTimeout = null;
+    }
+    this.pendingDeleteSlot = null;
     if (this.selectedTask === task.id) this.selectedTask = null;
     this.tasks[slot] = null;
     this.persistTasks();

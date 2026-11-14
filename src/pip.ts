@@ -10,6 +10,9 @@ export type PipCommand =
   | { intent: 'complete-task'; taskQuery: string }
   | { intent: 'list-tasks'; filter: 'all' | 'pending' }
   | { intent: 'start-focus'; taskQuery?: string }
+  | { intent: 'what-next' }
+  | { intent: 'plan-day' }
+  | { intent: 'fix-overlaps' }
   | { intent: 'morning-ritual' }
   | { intent: 'evening-ritual' }
   | { intent: 'start-break' }
@@ -84,6 +87,9 @@ function isIntent(value: unknown): value is PipIntent {
     value === 'complete-task' ||
     value === 'list-tasks' ||
     value === 'start-focus' ||
+    value === 'what-next' ||
+    value === 'plan-day' ||
+    value === 'fix-overlaps' ||
     value === 'morning-ritual' ||
     value === 'evening-ritual' ||
     value === 'start-break' ||
@@ -147,6 +153,9 @@ export function validatePipCommand(value: unknown): PipCommand | null {
         record.taskQuery.trim().length > 0 && record.taskQuery.trim().length <= 80
         ? { intent: 'complete-task', taskQuery: record.taskQuery.trim() }
         : null;
+    case 'what-next':
+    case 'plan-day':
+    case 'fix-overlaps':
     case 'morning-ritual':
     case 'evening-ritual':
     case 'start-break':
@@ -180,7 +189,13 @@ export function parsePipCommand(input: string): PipCommand {
   const lower = text.toLowerCase();
 
   let candidate: unknown;
-  if (/\b(?:morning\s+ritual|good\s+morning|plan\s+(?:the\s+|my\s+)?day|start\s+(?:the\s+)?day)\b/.test(lower)) {
+  if (/\b(?:what\s+next|recommend(?:\s+task)?|what\s+should\s+i\s+do|next\s+task)\b/.test(lower)) {
+    candidate = { intent: 'what-next' };
+  } else if (/\b(?:plan\s+(?:the\s+|my\s+)?day|pack\s+schedule|auto\s+plan)\b/.test(lower)) {
+    candidate = { intent: 'plan-day' };
+  } else if (/\b(?:fix\s+overlaps?|resolve\s+conflicts?|fix\s+conflicts?)\b/.test(lower)) {
+    candidate = { intent: 'fix-overlaps' };
+  } else if (/\b(?:morning\s+ritual|good\s+morning|start\s+(?:the\s+)?day)\b/.test(lower)) {
     candidate = { intent: 'morning-ritual' };
   } else if (/\b(?:evening\s+ritual|wind\s*down|evening\s+review|good\s+evening|wrap\s+up)\b/.test(lower)) {
     candidate = { intent: 'evening-ritual' };
