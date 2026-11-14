@@ -9,7 +9,7 @@ import { World } from '@iwsdk/core';
 import projectOptions from 'virtual:iwsdk-project';
 import { PanelSystem } from './panel.js';
 import { WorkspaceSystem } from './workspace.js';
-import { initDesktopPreviewIfNeeded } from './desktop-preview.js';
+import { initDesktopPreviewIfNeeded, isQuestOrNativeXR } from './desktop-preview.js';
 
 async function bootstrap() {
   const isPreview = await initDesktopPreviewIfNeeded();
@@ -61,11 +61,11 @@ async function bootstrap() {
         if (supported) world.launchXR();
       })
       .catch(() => {});
-  } else if (isPreview) {
-    // In desktop preview, launch the emulated XR session so the visitor immediately sees the sunlit living room and 3D desk
+  } else if (!isQuestOrNativeXR()) {
+    // In desktop preview & local dev, automatically enter the emulated XR session so the user immediately sees the sunlit living room and 3D desk
     setTimeout(() => {
       world.launchXR();
-    }, 150);
+    }, 200);
   }
 
   world.renderer.xr.addEventListener('sessionstart', updateSessionUI);

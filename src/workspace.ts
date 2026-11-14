@@ -195,8 +195,11 @@ export class WorkspaceSystem extends createSystem({
       this.wasInXR = inXR;
       const desk = this.world.getSceneObject('workspace-desk');
       if (desk !== undefined) {
-        // In real XR passthrough, hide virtual table so physical desk shows through
-        desk.visible = !inXR;
+        // In real XR passthrough on physical Quest, hide virtual table so physical desk shows through
+        const isPhysicalQuest =
+          typeof navigator !== 'undefined' &&
+          /OculusBrowser/i.test(navigator.userAgent);
+        desk.visible = !inXR || !isPhysicalQuest;
       }
     }
 
