@@ -130,6 +130,8 @@ export class WorkspaceSystem extends createSystem({
       'workspace-dashboard',
     );
     const pinButton = dashboard.getElementById('workspace-pin');
+    const nudgeUpButton = dashboard.getElementById('workspace-nudge-up');
+    const nudgeDownButton = dashboard.getElementById('workspace-nudge-down');
     const resetButton = dashboard.getElementById('workspace-reset');
     const statusLabel = dashboard.getElementById('workspace-anchor-status');
     if (pinButton == null || resetButton == null || statusLabel == null) {
@@ -170,9 +172,34 @@ export class WorkspaceSystem extends createSystem({
       () => pinButton.removeEventListener('click', pinWorkspace),
       () => resetButton.removeEventListener('click', resetWorkspace),
     );
+
+    if (nudgeUpButton != null) {
+      const nudgeUp = () => this.nudgeWorkspace(0.05);
+      nudgeUpButton.name = 'Calibrate desk height up 5cm';
+      nudgeUpButton.addEventListener('click', nudgeUp);
+      this.cleanupFuncs.push(() => nudgeUpButton.removeEventListener('click', nudgeUp));
+    }
+    if (nudgeDownButton != null) {
+      const nudgeDown = () => this.nudgeWorkspace(-0.05);
+      nudgeDownButton.name = 'Calibrate desk height down 5cm';
+      nudgeDownButton.addEventListener('click', nudgeDown);
+      this.cleanupFuncs.push(() => nudgeDownButton.removeEventListener('click', nudgeDown));
+    }
   }
 
+  private wasInXR = false;
+
   update(): void {
+    const inXR = this.xrManager.getSession() !== null;
+    if (inXR !== this.wasInXR) {
+      this.wasInXR = inXR;
+      const desk = this.world.getSceneObject('workspace-desk');
+      if (desk !== undefined) {
+        // In real XR passthrough, hide virtual table so physical desk shows through
+        desk.visible = !inXR;
+      }
+    }
+
     if (
       this.savedPlacement !== null &&
       this.workspaceEntity.getValue(XRAnchor, 'attached')
@@ -182,6 +209,12 @@ export class WorkspaceSystem extends createSystem({
       this.savedPlacement = null;
       this.setStatus('Workspace restored to its saved room position.');
     }
+  }
+
+  private nudgeWorkspace(deltaY: number): void {
+    this.workspaceRoot.position.y += deltaY;
+    const sign = deltaY > 0 ? '+5cm' : '-5cm';
+    this.persistWorkspacePosition(`Desk height calibrated by ${sign} (${this.workspaceRoot.position.y.toFixed(2)}m).`);
   }
 
   private pinToDesk(): void {
