@@ -209,10 +209,18 @@ export class WorkspaceSystem extends createSystem({
       this.savedPlacement !== null &&
       this.workspaceEntity.getValue(XRAnchor, 'attached')
     ) {
-      this.workspaceRoot.position.fromArray(this.savedPlacement.position);
-      this.workspaceRoot.quaternion.fromArray(this.savedPlacement.quaternion);
+      const [x, y, z] = this.savedPlacement.position;
+      // Safeguard against corrupted or out-of-bounds coordinates
+      if (Math.abs(x) < 2.5 && y > 0.2 && y < 1.6 && Math.abs(z) < 2.5) {
+        this.workspaceRoot.position.fromArray(this.savedPlacement.position);
+        this.workspaceRoot.quaternion.fromArray(this.savedPlacement.quaternion);
+        this.setStatus('Workspace restored to its saved room position.');
+      } else {
+        this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
+        this.workspaceRoot.quaternion.identity();
+        this.setStatus('Workspace aligned to your desk.');
+      }
       this.savedPlacement = null;
-      this.setStatus('Workspace restored to its saved room position.');
     }
   }
 

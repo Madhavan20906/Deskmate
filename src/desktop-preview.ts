@@ -125,25 +125,40 @@ function applyCameraPose(device: any, z: number) {
   device.quaternion.set(Math.sin(pitchRad / 2), 0, 0, Math.cos(pitchRad / 2));
 }
 
+export function enforceSeatedXRPose() {
+  const win = window as any;
+  const device = win.IWER_DEVICE;
+  if (device) {
+    const restore = () => {
+      applyCameraPose(device, currentZ);
+      positionHandsOnDesk(device);
+    };
+    restore();
+    setTimeout(restore, 50);
+    setTimeout(restore, 150);
+    setTimeout(restore, 350);
+    setTimeout(restore, 700);
+  }
+}
+
 export function switchEnvironment(env: EnvironmentId) {
   currentEnv = env;
   const win = window as any;
+
+  // Clicking an environment button is a user gesture: automatically enter XR so the 3D room renders immediately!
+  const launch = win.__launchXR;
+  if (typeof launch === 'function') {
+    try {
+      launch();
+    } catch {
+      // Ignored if session already active or pending
+    }
+  }
+
   const sem = win.IWER_DEVICE?.sem;
   if (sem && typeof sem.loadDefaultEnvironment === 'function') {
     sem.loadDefaultEnvironment(env).then(() => {
-      // Re-apply seated camera pose & hands with resilient retries so the user is ALWAYS seated facing their desk in EVERY room!
-      const device = win.IWER_DEVICE;
-      if (device) {
-        const restorePose = () => {
-          applyCameraPose(device, currentZ);
-          positionHandsOnDesk(device);
-        };
-        restorePose();
-        setTimeout(restorePose, 50);
-        setTimeout(restorePose, 150);
-        setTimeout(restorePose, 350);
-        setTimeout(restorePose, 700);
-      }
+      enforceSeatedXRPose();
     }).catch((err: unknown) => {
       console.warn('[DeskMate] Could not switch environment to ' + env, err);
     });
@@ -282,6 +297,9 @@ function setupPreviewToolbar() {
     const launch = (window as any).__launchXR;
     if (typeof launch === 'function') {
       launch();
+      setTimeout(enforceSeatedXRPose, 100);
+      setTimeout(enforceSeatedXRPose, 300);
+      setTimeout(enforceSeatedXRPose, 600);
     }
   });
 
@@ -303,6 +321,6 @@ function setupPreviewToolbar() {
   tip.style.color = '#94a3b8';
   tip.style.pointerEvents = 'none';
   tip.style.userSelect = 'none';
-  tip.textContent = '💡 On Meta Quest? Click "Enter Quest XR" to place DeskMate directly into your physical room.';
+  tip.textContent = '💡 Tip: Click any room above (🛋️ Living Room, 🛏️ Bedroom...) or "Enter Quest XR" to step inside your room in full 3D!';
   document.body.appendChild(tip);
 }
