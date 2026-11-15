@@ -71,8 +71,18 @@ async function bootstrap() {
       })
       .catch(() => {});
   } else if (!isQuestOrNativeXR()) {
-    // In desktop preview, users can explore in 2D with the pointer cursor,
-    // or click "Enter Quest XR" anytime to enter the immersive WebXR session.
+    // In desktop preview & local dev, entering XR brings the 3D room environment and hands alive
+    setTimeout(() => {
+      world.launchXR();
+    }, 200);
+
+    // Any first click on the scene container also immediately launches XR if blocked by user-gesture policy
+    const container = document.getElementById('scene-container');
+    container?.addEventListener('click', () => {
+      if (!world.session && !world.sessionRequestPending) {
+        world.launchXR();
+      }
+    }, { once: true });
   }
 
   world.renderer.xr.addEventListener('sessionstart', () => {
