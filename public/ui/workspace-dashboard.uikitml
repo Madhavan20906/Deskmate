@@ -295,6 +295,32 @@
     background-color: #53cbb5;
   }
 
+  .ruler-dashboard-badge {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: #2dd4bf;
+    background-color: #12232c;
+  }
+
+  .ruler-badge-title {
+    color: #2dd4bf;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .ruler-badge-status {
+    color: #94a3b8;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
   .timeline-heading {
     flex-direction: row;
     align-items: center;
@@ -1098,75 +1124,9 @@
         <span id="workload-detail" class="workload-detail">8h free / 0m complete / 0m pending</span>
       </div>
     </div>
-    <div class="timeline-heading">
-      <span class="timeline-title">TODAY'S TIMELINE</span>
-      <span class="timeline-note">WORKING HOURS / 08:00 - 18:00</span>
-    </div>
-    <div class="timeline-zones">
-      <Button id="timeline-zone-morning" class="timeline-zone">
-        <ButtonLabel id="timeline-zone-morning-label">Morning (08:00 - 11:30)</ButtonLabel>
-      </Button>
-      <Button id="timeline-zone-midday" class="timeline-zone">
-        <ButtonLabel id="timeline-zone-midday-label">Midday (11:30 - 14:30)</ButtonLabel>
-      </Button>
-      <Button id="timeline-zone-evening" class="timeline-zone">
-        <ButtonLabel id="timeline-zone-evening-label">Evening (14:30 - 18:00)</ButtonLabel>
-      </Button>
-    </div>
-    <div class="time-markers">
-      <span class="time-marker">08:00</span>
-      <span class="time-marker">10:00</span>
-      <span class="time-marker">12:00</span>
-      <span class="time-marker">14:00</span>
-      <span class="time-marker">16:00</span>
-      <span class="time-marker">18:00</span>
-    </div>
-    <div class="timeline">
-      <Button id="timeline-slot-480" class="time-slot">
-        <ButtonLabel id="timeline-slot-label-480" class="slot-time">08:00 - 10:00</ButtonLabel>
-        <span id="timeline-slot-content-480" class="slot-content">No tasks scheduled</span>
-      </Button>
-      <Button id="timeline-slot-600" class="time-slot">
-        <ButtonLabel id="timeline-slot-label-600" class="slot-time">10:00 - 12:00</ButtonLabel>
-        <span id="timeline-slot-content-600" class="slot-content">No tasks scheduled</span>
-      </Button>
-      <Button id="timeline-slot-720" class="time-slot">
-        <ButtonLabel id="timeline-slot-label-720" class="slot-time">12:00 - 14:00</ButtonLabel>
-        <span id="timeline-slot-content-720" class="slot-content">No tasks scheduled</span>
-      </Button>
-      <Button id="timeline-slot-840" class="time-slot">
-        <ButtonLabel id="timeline-slot-label-840" class="slot-time">14:00 - 16:00</ButtonLabel>
-        <span id="timeline-slot-content-840" class="slot-content">No tasks scheduled</span>
-      </Button>
-      <Button id="timeline-slot-960" class="time-slot">
-        <ButtonLabel id="timeline-slot-label-960" class="slot-time">16:00 - 18:00</ButtonLabel>
-        <span id="timeline-slot-content-960" class="slot-content">No tasks scheduled</span>
-      </Button>
-    </div>
-    <span id="schedule-status" class="schedule-status">Select a task, then pick a timeline block.</span>
-    <div class="smart-status-row">
-      <span id="smart-status" class="smart-status">Checking today's plan...</span>
-      <span id="schedule-suggestion" class="schedule-suggestion">Select a task for a slot suggestion</span>
-    </div>
-    <div class="schedule-controls">
-      <Button id="schedule-earlier" class="schedule-button">
-        <ButtonLabel>Earlier 30m</ButtonLabel>
-      </Button>
-      <Button id="schedule-later" class="schedule-button">
-        <ButtonLabel>Later 30m</ButtonLabel>
-      </Button>
-      <Button id="schedule-apply-suggestion" class="schedule-button">
-        <ButtonLabel>Apply suggestion</ButtonLabel>
-      </Button>
-      <Button id="schedule-fix-overlaps" class="schedule-button" style="display: none">
-        <ButtonLabel>Fix Overlaps</ButtonLabel>
-      </Button>
-      <Button id="schedule-dismiss-suggestion" class="schedule-button">
-        <ButtonLabel>Dismiss</ButtonLabel>
-      </Button>
-      <Button id="schedule-clear" class="schedule-button">
-        <ButtonLabel>Clear time</ButtonLabel>
-      </Button>
+    <div class="ruler-dashboard-badge">
+      <span class="ruler-badge-title">THE DESK RULER</span>
+      <span id="ruler-badge-status" class="ruler-badge-status">Physical 3D schedule on desk - Pinch and slide tiles</span>
     </div>
     <div class="selection-row">
       <span class="selection-label">SELECTED TASK</span>

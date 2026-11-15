@@ -14,6 +14,7 @@
 
 A user puts on their Meta Quest headset, looks at their real desk, and pins the spatial workspace. Within 60 seconds:
 - **Spatial Task Management:** Interactive 3D cards hover comfortably in reach without occluding the dashboard or physical workspace.
+- **The Desk Ruler (Physical Tabletop Timeline):** A physical 3D time ruler spanning 08:00 to 18:00 that rests right on your real desk surface in passthrough. Pinch and slide 3D task tiles with 15-minute magnetic snapping, snap tick audio, translucent landing ghosts, and true duration scaling with 4.5cm minimum width grip padding.
 - **Hands-Only Quick Capture:** Fast 3-pinch task creation using spatial title chips, priority toggles, and duration steppers — zero typing, zero browser dialogs.
 - **Deterministic Productivity Engine:** "What Next?" recommendation algorithm surfaces the highest-impact task with a one-line rationale; "Plan My Day" automatically packs tasks into working hours (09:00–18:00) with 10-minute recovery breaks; "Fix Overlaps" auto-shifts conflicting slots.
 - **Gentle Co-Working Presence:** **Ghost Deskmate** sits across your desk providing ambient spatial keyboard clicks and companionship; **Pip** (an on-device rule-based assistant) wiggles, gives feedback, and celebrates wins.
@@ -68,12 +69,14 @@ All pure business logic, scheduling algorithms, and recommendation heuristics ar
 npm test
 ```
 
-### Test Suite Coverage:
+### Test Suite Coverage (44 Passing Automated Tests):
 - `formatMinuteTime`: verifies time formatting (09:00, 14:30, 00:00).
 - `recommendWhatNext`: verifies completion state, active in-progress prioritization, current-hour schedule matching, and priority/momentum ranking.
 - `planDaySchedule`: verifies contiguous packing, break insertion, and 18:00 capacity cutoff.
 - `detectOverlaps`: identifies timeline collisions.
 - `fixScheduleOverlaps`: resolves overlaps with safety buffers.
+- `schedule-ruler`: verifies minute-to-ruler coordinate roundtrips, 15-minute magnetic snapping, 4.5cm minimum width padding for short tasks, full 480m capacity, resize clamping, overlap resolution, free slot calculations, overflow partitioning, summary capsule formatting, Sun Now marker tracking, zone wash slices, and seated reach validation (<= 0.65m).
+- `Hands-Only Walkthrough Harness`: comprehensive 18-step full product loop covering zero-controller session entry, plane calibration, Pip interaction, Quick Capture, schedule packing, focus sprint, pause/resume, completion reward, breathing recovery, marble drop into jar, evening shutdown recap, rehydration, tile drag & snap, tile resize, conflict resolution, overflow partitioning, Plan My Day confirm/cancel gate, and mid-drag/mid-sprint reload persistence.
 
 ---
 

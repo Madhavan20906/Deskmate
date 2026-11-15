@@ -385,6 +385,86 @@ export class GhostDeskmateAudio {
     });
   }
 
+  public playDropThunk(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(45, now + 0.08);
+
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+
+    osc.connect(gain);
+    gain.connect(this.gainNode);
+
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }
+
+  public playConflictCue(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc1.type = 'sawtooth';
+    osc2.type = 'triangle';
+    osc1.frequency.setValueAtTime(330, now); // E4
+    osc2.frequency.setValueAtTime(311.13, now); // D#4 (minor 2nd dissonance)
+
+    gain.gain.setValueAtTime(0.10, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(this.gainNode);
+
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.18);
+    osc2.stop(now + 0.18);
+  }
+
+  public playPreviewWhoosh(): void {
+    if (!this.ctx || !this.gainNode || !this.enabled) return;
+    this.ensureRunning();
+    const now = this.ctx.currentTime;
+    const bufferSize = Math.floor(this.ctx.sampleRate * 0.25);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+    }
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(400, now);
+    filter.frequency.exponentialRampToValueAtTime(2200, now + 0.15);
+    filter.frequency.exponentialRampToValueAtTime(600, now + 0.25);
+    filter.Q.value = 3.0;
+
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.01, now);
+    noiseGain.gain.linearRampToValueAtTime(0.12, now + 0.08);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.gainNode);
+
+    noise.start(now);
+  }
+
   public dispose(): void {
     if (this.timer !== null) {
       window.clearTimeout(this.timer);
