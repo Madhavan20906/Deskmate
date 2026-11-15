@@ -19,17 +19,19 @@ export type EnvironmentId =
   | 'home_office';
 
 // Default comfortable readable seated viewing pose:
-// Desk is at [0, 0, -0.80], tabletop at y = 0.74, cards at y = 1.05, dashboard at z = -0.92.
-// Camera at z = 0.38, y = 1.22 with -12.6° pitch brings the Dashboard, 3 Task Cards, AND the Desk Ruler all into view!
+// Desk is at [0, 0, -0.75], tabletop at y = 0.74, cards at y = 1.00, dashboard at y = 1.28.
+// Camera at z = 0.38, y = 1.18 with -10.3° pitch frames the Dashboard, 3 Task Cards, AND Desk Ruler all into view!
 const DEFAULT_POSE = {
   x: 0,
-  y: 1.22,
+  y: 1.18,
   z: 0.38,
-  pitchRad: -0.22,
+  pitchRad: -0.18,
   fovyRad: (56 * Math.PI) / 180,
 };
 
 let currentZ = DEFAULT_POSE.z;
+let currentYaw = 0;
+let currentPitch = DEFAULT_POSE.pitchRad;
 let currentEnv: EnvironmentId = 'sunlit_living_room';
 let handsEnabled = true;
 
@@ -114,15 +116,27 @@ export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
   }
 }
 
+function applyCameraOrientation(device: any, yaw: number, pitch: number) {
+  const cy = Math.cos(yaw / 2);
+  const sy = Math.sin(yaw / 2);
+  const cp = Math.cos(pitch / 2);
+  const sp = Math.sin(pitch / 2);
+
+  const qx = sp * cy;
+  const qy = cp * sy;
+  const qz = -sp * sy;
+  const qw = cp * cy;
+
+  device.quaternion.set(qx, qy, qz, qw);
+}
+
 function applyCameraPose(device: any, z: number) {
   device.fovy = DEFAULT_POSE.fovyRad;
-  // Calculate y and pitch proportionally to keep the desk and dashboard centered as you zoom
   const deltaZ = z - DEFAULT_POSE.z;
   const targetY = DEFAULT_POSE.y + deltaZ * 0.08;
-  const pitchRad = DEFAULT_POSE.pitchRad - deltaZ * 0.03;
 
   device.position.set(0, targetY, z);
-  device.quaternion.set(Math.sin(pitchRad / 2), 0, 0, Math.cos(pitchRad / 2));
+  applyCameraOrientation(device, currentYaw, currentPitch);
 }
 
 export function enforceSeatedXRPose() {
@@ -144,16 +158,6 @@ export function enforceSeatedXRPose() {
 export function switchEnvironment(env: EnvironmentId) {
   currentEnv = env;
   const win = window as any;
-
-  // Clicking an environment button is a user gesture: automatically enter XR so the 3D room renders immediately!
-  const launch = win.__launchXR;
-  if (typeof launch === 'function') {
-    try {
-      launch();
-    } catch {
-      // Ignored if session already active or pending
-    }
-  }
 
   const sem = win.IWER_DEVICE?.sem;
   if (sem && typeof sem.loadDefaultEnvironment === 'function') {
@@ -200,6 +204,8 @@ function resetZoom() {
   if (!device) return;
 
   currentZ = DEFAULT_POSE.z;
+  currentYaw = 0;
+  currentPitch = DEFAULT_POSE.pitchRad;
   applyCameraPose(device, currentZ);
 }
 
@@ -248,7 +254,7 @@ function setupPreviewToolbar() {
     <div style="display: flex; align-items: center; gap: 4px; border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 10px;">
       <span style="font-size: 11px; color: #94a3b8; font-weight: 500; margin-right: 2px;">View:</span>
       <button id="dm-btn-zoom-out" title="Zoom Out" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 15px; font-weight: bold; cursor: pointer; display: grid; place-items: center;">-</button>
-      <button id="dm-btn-zoom-reset" title="Reset Distance" style="padding: 2px 8px; height: 26px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #cbd5e1; font-size: 11px; font-weight: 500; cursor: pointer;">Reset</button>
+      <button id="dm-btn-zoom-reset" title="Reset View & Recenter Desk" style="padding: 2px 8px; height: 26px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #cbd5e1; font-size: 11px; font-weight: 500; cursor: pointer;">Reset</button>
       <button id="dm-btn-zoom-in" title="Zoom In" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 15px; font-weight: bold; cursor: pointer; display: grid; place-items: center;">+</button>
     </div>
 
@@ -256,14 +262,6 @@ function setupPreviewToolbar() {
     <div style="border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 10px;">
       <button id="dm-btn-toggle-hands" title="Toggle Hands Wireframe (Useful for recording clean video without emulator lines)" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #34d399; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
         ✋ Hands: ON
-      </button>
-    </div>
-
-    <!-- Enter Quest XR Button -->
-    <div style="border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 10px;">
-      <button id="dm-btn-enter-xr" style="border: 0; background: linear-gradient(135deg, #0082fb 0%, #00d2ff 100%); color: #ffffff; padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 7px; box-shadow: 0 0 16px rgba(0, 130, 251, 0.55); letter-spacing: 0.3px;">
-        <span style="font-size: 15px;">🥽</span>
-        <span>Enter Quest XR</span>
       </button>
     </div>
   `;
@@ -293,14 +291,40 @@ function setupPreviewToolbar() {
     }
   });
 
-  document.getElementById('dm-btn-enter-xr')?.addEventListener('click', () => {
-    const launch = (window as any).__launchXR;
-    if (typeof launch === 'function') {
-      launch();
-      setTimeout(enforceSeatedXRPose, 100);
-      setTimeout(enforceSeatedXRPose, 300);
-      setTimeout(enforceSeatedXRPose, 600);
+  // Attach 360-degree pointer drag look controls so user can pan around the whole room freely!
+  let isDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+
+  window.addEventListener('pointerdown', (e: PointerEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (target && (target.closest('#deskmate-preview-hud') || target.tagName === 'BUTTON')) {
+      return;
     }
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+  });
+
+  window.addEventListener('pointermove', (e: PointerEvent) => {
+    if (!isDragging) return;
+    const deltaX = e.clientX - dragStartX;
+    const deltaY = e.clientY - dragStartY;
+    if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      currentYaw -= deltaX * 0.0035;
+      currentPitch = Math.max(-0.65, Math.min(0.65, currentPitch - deltaY * 0.0035));
+      const win = window as any;
+      const device = win.IWER_DEVICE;
+      if (device) {
+        applyCameraOrientation(device, currentYaw, currentPitch);
+      }
+    }
+  });
+
+  window.addEventListener('pointerup', () => {
+    isDragging = false;
   });
 
   // Also attach bottom helper tip
@@ -321,6 +345,6 @@ function setupPreviewToolbar() {
   tip.style.color = '#94a3b8';
   tip.style.pointerEvents = 'none';
   tip.style.userSelect = 'none';
-  tip.textContent = '💡 Tip: Click any room above (🛋️ Living Room, 🛏️ Bedroom...) or "Enter Quest XR" to step inside your room in full 3D!';
+  tip.textContent = '💡 Tip: Drag anywhere with mouse/touch to look 360° around the room | Click Bedroom, Kitchen, Office above to explore!';
   document.body.appendChild(tip);
 }

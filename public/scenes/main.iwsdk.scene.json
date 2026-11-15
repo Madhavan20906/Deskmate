@@ -74,7 +74,7 @@
         "position": [
           0,
           0,
-          -0.80
+          -0.75
         ],
         "scale": 1
       }
@@ -94,8 +94,8 @@
       "transform": {
         "position": [
           0,
-          0.74,
-          -0.48
+          0.745,
+          -0.52
         ],
         "scale": 1
       }
@@ -240,8 +240,8 @@
       "transform": {
         "position": [
           0,
-          1.36,
-          -0.92
+          1.28,
+          -0.88
         ],
         "scale": 0.105
       }
@@ -270,8 +270,8 @@
       "name": "Roadmap Task Card",
       "transform": {
         "position": [
-          -0.36,
-          1.05,
+          -0.38,
+          1.00,
           -0.75
         ],
         "rotationDeg": [
@@ -307,7 +307,7 @@
       "transform": {
         "position": [
           0,
-          1.05,
+          1.00,
           -0.75
         ],
         "scale": 0.11
@@ -337,8 +337,8 @@
       "name": "Inbox Task Card",
       "transform": {
         "position": [
-          0.36,
-          1.05,
+          0.38,
+          1.00,
           -0.75
         ],
         "scale": 0.11
@@ -451,15 +451,15 @@
       "transform": {
         "position": [
           0,
-          1.76,
-          -1.40
+          -50,
+          0
         ],
         "rotationDeg": [
-          -3,
+          0,
           0,
           0
         ],
-        "scale": 0.11
+        "scale": 0.0001
       }
     },
     {
