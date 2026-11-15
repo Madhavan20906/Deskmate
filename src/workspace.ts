@@ -1,13 +1,7 @@
 import {
   Entity,
   Group,
-  Mesh,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-  PlaneGeometry,
   Quaternion,
-  SRGBColorSpace,
-  TextureLoader,
   UIKitMLAsset,
   Vector3,
   XRAnchor,
@@ -34,7 +28,7 @@ type PlacementLoadResult = {
 };
 
 const PLACEMENT_STORAGE_KEY = 'deskmate.workspace-placement.v1';
-const DEFAULT_WORKSPACE_POSITION = [0, 0, 0] as const;
+const DEFAULT_WORKSPACE_POSITION = [0, 0.75, -0.85] as const;
 const WORKSPACE_NODE_IDS = [
   'workspace-desk',
   'desk-ruler',
@@ -85,16 +79,6 @@ function readWorkspacePlacement(): PlacementLoadResult {
         placement: null,
         writable: false,
         message: 'Saved desk position is invalid. Existing data is protected.',
-      };
-    }
-    const [x, y, z] = parsed.position;
-    // Purge legacy coffee-table coordinates (y < 0.65 or z < -1.1 or x > 1.8)
-    if (y < 0.65 || z < -1.1 || Math.abs(x) > 1.8) {
-      window.localStorage.removeItem(PLACEMENT_STORAGE_KEY);
-      return {
-        placement: null,
-        writable: true,
-        message: 'Workspace centered on your executive desk in the living room.',
       };
     }
     return {
@@ -166,7 +150,7 @@ export class WorkspaceSystem extends createSystem({
 
     this.workspaceRoot = new Group();
     this.workspaceRoot.name = 'Deskmate Workspace Anchor';
-    this.workspaceRoot.position.set(0, 0, 0);
+    this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
     this.workspaceEntity = this.world.createTransformEntity(this.workspaceRoot);
 
     for (const nodeId of WORKSPACE_NODE_IDS) {
@@ -175,56 +159,10 @@ export class WorkspaceSystem extends createSystem({
         console.warn(`[DeskMate] Workspace scene node "${nodeId}" could not be found.`);
         continue;
       }
+      object.position.sub(this.workspaceRoot.position);
       this.workspaceRoot.add(object);
     }
-
-    // ------------------------------------------------------------------
-    // Living Room 3D Backdrop (Image 2 as the background for the scene)
-    // ------------------------------------------------------------------
-    try {
-      const textureUrl = `${import.meta.env.BASE_URL}textures/living-room-clean.jpg`.replace(/\/\//g, '/');
-      const textureLoader = new TextureLoader();
-      const bgTexture = textureLoader.load(textureUrl);
-      bgTexture.colorSpace = SRGBColorSpace;
-
-      // 1. Panoramic Living Room backdrop wall behind the desk
-      const backdropGeo = new PlaneGeometry(7.2, 3.0);
-      const backdropMat = new MeshBasicMaterial({
-        map: bgTexture,
-        depthWrite: false,
-      });
-      const backdrop = new Mesh(backdropGeo, backdropMat);
-      backdrop.name = 'LivingRoomBackdrop';
-      backdrop.position.set(0, 1.35, -2.35);
-      this.world.createTransformEntity(backdrop);
-
-      // 2. Matching warm hardwood floor under the desk
-      const floorGeo = new PlaneGeometry(8, 8);
-      const floorMat = new MeshStandardMaterial({
-        color: 0xc89d66, // Warm natural oak
-        roughness: 0.55,
-        metalness: 0.05,
-      });
-      const floor = new Mesh(floorGeo, floorMat);
-      floor.name = 'LivingRoomFloor';
-      floor.rotation.x = -Math.PI / 2;
-      floor.position.set(0, 0, 0);
-      this.world.createTransformEntity(floor);
-
-      // 3. Area rug under the desk matching Image 2
-      const rugGeo = new PlaneGeometry(2.8, 2.0);
-      const rugMat = new MeshStandardMaterial({
-        color: 0xdcd3c4, // Warm woven wool
-        roughness: 0.9,
-      });
-      const rug = new Mesh(rugGeo, rugMat);
-      rug.name = 'LivingRoomRug';
-      rug.rotation.x = -Math.PI / 2;
-      rug.position.set(0, 0.002, -0.70);
-      this.world.createTransformEntity(rug);
-    } catch (bgErr) {
-      console.warn('[DeskMate] Could not load living room backdrop:', bgErr);
-    }
+    this.workspaceEntity.addComponent(XRAnchor);
 
     pinButton.name = 'Pin the workspace above the tabletop in view';
     resetButton.name = 'Reset the workspace to its default position';
@@ -259,21 +197,28 @@ export class WorkspaceSystem extends createSystem({
       this.wasInXR = inXR;
       const desk = this.world.getSceneObject('workspace-desk');
       if (desk !== undefined) {
-        desk.visible = true;
+        // In real XR passthrough on physical Quest, hide virtual table so physical desk shows through
+        const isPhysicalQuest =
+          typeof navigator !== 'undefined' &&
+          /OculusBrowser/i.test(navigator.userAgent);
+        desk.visible = !inXR || !isPhysicalQuest;
       }
     }
 
-    if (this.savedPlacement !== null) {
+    if (
+      this.savedPlacement !== null &&
+      this.workspaceEntity.getValue(XRAnchor, 'attached')
+    ) {
       const [x, y, z] = this.savedPlacement.position;
-      // Safeguard against legacy coffee-table or out-of-bounds coordinates
-      if (Math.abs(x) < 1.8 && y >= 0.65 && z >= -1.1) {
+      // Safeguard against corrupted or out-of-bounds coordinates
+      if (Math.abs(x) < 2.5 && y > 0.2 && y < 1.6 && Math.abs(z) < 2.5) {
         this.workspaceRoot.position.fromArray(this.savedPlacement.position);
         this.workspaceRoot.quaternion.fromArray(this.savedPlacement.quaternion);
-        this.setStatus('Workspace restored to your saved desk position.');
+        this.setStatus('Workspace restored to its saved room position.');
       } else {
-        this.workspaceRoot.position.set(0, 0, 0);
+        this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
         this.workspaceRoot.quaternion.identity();
-        this.setStatus('Workspace aligned to your executive desk in the living room.');
+        this.setStatus('Workspace aligned to your desk.');
       }
       this.savedPlacement = null;
     }
@@ -288,6 +233,10 @@ export class WorkspaceSystem extends createSystem({
   private pinToDesk(): void {
     if (this.xrManager.getSession() === null) {
       this.setStatus('Enter XR to scan your room and pin the workspace to a desk.');
+      return;
+    }
+    if (!this.workspaceEntity.getValue(XRAnchor, 'attached')) {
+      this.setStatus('Room anchor is still settling. Try again in a moment.');
       return;
     }
 
