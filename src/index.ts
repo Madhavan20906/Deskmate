@@ -9,7 +9,7 @@ import { World } from '@iwsdk/core';
 import projectOptions from 'virtual:iwsdk-project';
 import { PanelSystem } from './panel.js';
 import { WorkspaceSystem } from './workspace.js';
-import { initDesktopPreviewIfNeeded, isQuestOrNativeXR } from './desktop-preview.js';
+import { initDesktopPreviewIfNeeded, isQuestOrNativeXR, enforceSeatedXRPose } from './desktop-preview.js';
 
 async function bootstrap() {
   const isPreview = await initDesktopPreviewIfNeeded();
@@ -71,14 +71,31 @@ async function bootstrap() {
       })
       .catch(() => {});
   } else if (!isQuestOrNativeXR()) {
-    // In desktop preview & local dev, automatically enter the emulated XR session so the user immediately sees the sunlit living room and 3D desk
+    // In desktop preview & local dev, entering XR brings the 3D room environment and hands alive
     setTimeout(() => {
       world.launchXR();
     }, 200);
+
+    // Any first click on the scene container also immediately launches XR if blocked by user-gesture policy
+    const container = document.getElementById('scene-container');
+    container?.addEventListener('click', () => {
+      if (!world.session && !world.sessionRequestPending) {
+        world.launchXR();
+      }
+    }, { once: true });
   }
 
-  world.renderer.xr.addEventListener('sessionstart', updateSessionUI);
-  world.renderer.xr.addEventListener('sessionend', updateSessionUI);
+  world.renderer.xr.addEventListener('sessionstart', () => {
+    updateSessionUI();
+    enforceSeatedXRPose();
+    const welcomeObj = world.getSceneObject('welcome-panel');
+    if (welcomeObj) welcomeObj.visible = false;
+  });
+  world.renderer.xr.addEventListener('sessionend', () => {
+    updateSessionUI();
+    const welcomeObj = world.getSceneObject('welcome-panel');
+    if (welcomeObj) welcomeObj.visible = true;
+  });
   updateSessionUI();
 
   world.registerSystem(PanelSystem);
