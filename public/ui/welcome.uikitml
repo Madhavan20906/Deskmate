@@ -55,13 +55,7 @@
   }
 
   .button-label {
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 700;
     transform-translate-y: 1px;
-  }
-  .button-label:dark {
-    color: #ffffff;
   }
 </style>
 <Panel class="panel-root">

@@ -47,41 +47,32 @@
 
   .action-btn {
     flex-grow: 1;
-    background-color: #1e293b;
+    background-color: #111827;
     border-radius: 999px;
     border-width: 1px;
-    border-color: #475569;
+    border-color: #374151;
     padding-top: 6px;
     padding-bottom: 6px;
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 700;
   }
 
   .status-button {
     flex-grow: 1;
-    background-color: #1e293b;
+    background-color: #111827;
     border-radius: 999px;
     border-width: 1px;
-    border-color: #475569;
+    border-color: #374151;
     padding-top: 6px;
     padding-bottom: 6px;
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 700;
   }
 
   .focus-start-button {
     flex-grow: 1;
-    background-color: #064e3b;
+    background-color: #111827;
     border-radius: 999px;
     border-width: 1px;
-    border-color: #10b981;
+    border-color: #374151;
     padding-top: 6px;
     padding-bottom: 6px;
-    color: #34d399;
-    font-size: 14px;
-    font-weight: 700;
   }
 
   .focus-panel {
@@ -155,10 +146,10 @@
   </div>
   <div class="card-btn-row">
     <Button id="task-status" class="status-button">
-      <ButtonLabel id="task-status-label" style="color: #ffffff; font-size: 14px; font-weight: 700">Start</ButtonLabel>
+      <ButtonLabel id="task-status-label">Start</ButtonLabel>
     </Button>
     <Button id="task-focus-start" class="focus-start-button">
-      <ButtonLabel style="color: #34d399; font-size: 14px; font-weight: 700">Focus</ButtonLabel>
+      <ButtonLabel>Focus</ButtonLabel>
     </Button>
   </div>
   <div id="task-focus-panel" class="focus-panel" style="display: none">
@@ -166,13 +157,13 @@
     <span id="task-focus-timer" class="focus-session-timer">25:00</span>
     <div class="focus-session-controls">
       <Button id="task-focus-pause" class="focus-session-button">
-        <ButtonLabel style="color: #ffffff; font-size: 14px; font-weight: 700">Pause</ButtonLabel>
+        <ButtonLabel>Pause</ButtonLabel>
       </Button>
       <Button id="task-focus-resume" class="focus-session-button" style="display: none">
-        <ButtonLabel style="color: #34d399; font-size: 14px; font-weight: 700">Resume</ButtonLabel>
+        <ButtonLabel>Resume</ButtonLabel>
       </Button>
       <Button id="task-focus-stop" class="focus-session-button">
-        <ButtonLabel style="color: #f87171; font-size: 14px; font-weight: 700">Stop</ButtonLabel>
+        <ButtonLabel>Stop</ButtonLabel>
       </Button>
     </div>
     <div class="focus-session-controls">

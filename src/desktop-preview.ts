@@ -19,14 +19,14 @@ export type EnvironmentId =
   | 'home_office';
 
 // Default comfortable readable seated viewing pose:
-// Desk is at [0, 0, -0.70], tabletop at y = 0.745, cards at y = 0.94, dashboard at y = 1.25, z = -0.78.
-// Camera at z = 0.32, y = 1.18 with -12° pitch brings the Dashboard, 3 Task Cards, AND the Desk Ruler all into view!
+// Desk is at [0, 0, -0.80], tabletop at y = 0.74, cards at y = 1.05, dashboard at z = -0.92.
+// Camera at z = 0.38, y = 1.22 with -12.6° pitch brings the Dashboard, 3 Task Cards, AND the Desk Ruler all into view!
 const DEFAULT_POSE = {
   x: 0,
-  y: 1.18,
-  z: 0.32,
-  pitchRad: -0.21,
-  fovyRad: (54 * Math.PI) / 180,
+  y: 1.22,
+  z: 0.38,
+  pitchRad: -0.22,
+  fovyRad: (56 * Math.PI) / 180,
 };
 
 let currentZ = DEFAULT_POSE.z;
@@ -43,76 +43,12 @@ function positionHandsOnDesk(device: any) {
   // Position hands resting naturally on tabletop surface near the Desk Ruler
   if (device.hands.left?.position) {
     device.hands.left.connected = true;
-    device.hands.left.position.set(-0.24, 0.745, -0.38);
+    device.hands.left.position.set(-0.25, 0.74, -0.42);
   }
   if (device.hands.right?.position) {
     device.hands.right.connected = true;
-    device.hands.right.position.set(0.24, 0.745, -0.38);
+    device.hands.right.position.set(0.25, 0.74, -0.42);
   }
-}
-
-function setupHandTrackingAndCursor(device: any) {
-  if (typeof window === 'undefined') return;
-
-  // Visual 2D/3D cursor dot element that follows mouse pointer and highlights hovered targets
-  let cursorDot = document.getElementById('deskmate-hand-cursor');
-  if (!cursorDot) {
-    cursorDot = document.createElement('div');
-    cursorDot.id = 'deskmate-hand-cursor';
-    cursorDot.style.position = 'fixed';
-    cursorDot.style.width = '18px';
-    cursorDot.style.height = '18px';
-    cursorDot.style.borderRadius = '50%';
-    cursorDot.style.border = '2px solid #53cbb5';
-    cursorDot.style.backgroundColor = 'rgba(83, 203, 181, 0.35)';
-    cursorDot.style.boxShadow = '0 0 12px #53cbb5';
-    cursorDot.style.pointerEvents = 'none';
-    cursorDot.style.zIndex = '99999';
-    cursorDot.style.transform = 'translate(-50%, -50%)';
-    cursorDot.style.transition = 'width 0.1s ease, height 0.1s ease, background-color 0.1s ease, border-color 0.1s ease';
-    document.body.appendChild(cursorDot);
-  }
-
-  window.addEventListener('pointermove', (e: MouseEvent) => {
-    if (cursorDot) {
-      cursorDot.style.left = `${e.clientX}px`;
-      cursorDot.style.top = `${e.clientY}px`;
-    }
-
-    if (!handsEnabled || !device.hands?.right?.position) return;
-
-    // Convert screen coordinates to tabletop reach bounds
-    const ndcX = (e.clientX / window.innerWidth) * 2 - 1;
-    const ndcY = -(e.clientY / window.innerHeight) * 2 + 1;
-
-    // Map to tabletop bounds: x [-0.55, 0.55], y [0.745, 1.25], z [-0.72, -0.38]
-    const targetX = ndcX * 0.52;
-    const targetY = Math.max(0.745, Math.min(1.28, 0.88 + ndcY * 0.36));
-    const targetZ = Math.max(-0.72, Math.min(-0.38, -0.52 - ndcY * 0.18));
-
-    // Smoothly glide right hand toward mouse hover target
-    device.hands.right.position.set(targetX, targetY, targetZ);
-  });
-
-  window.addEventListener('pointerdown', () => {
-    if (cursorDot) {
-      cursorDot.style.width = '12px';
-      cursorDot.style.height = '12px';
-      cursorDot.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
-      cursorDot.style.borderColor = '#ffffff';
-      cursorDot.style.boxShadow = '0 0 16px #00d2ff';
-    }
-  });
-
-  window.addEventListener('pointerup', () => {
-    if (cursorDot) {
-      cursorDot.style.width = '18px';
-      cursorDot.style.height = '18px';
-      cursorDot.style.backgroundColor = 'rgba(83, 203, 181, 0.35)';
-      cursorDot.style.borderColor = '#53cbb5';
-      cursorDot.style.boxShadow = '0 0 12px #53cbb5';
-    }
-  });
 }
 
 export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
@@ -123,31 +59,28 @@ export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
 
   try {
     const win = window as any;
-    if (import.meta.env.DEV && !win.IWER_DEVICE) {
-      try {
-        const devRuntimePath = '../node_modules/@iwsdk/vite-plugin-dev/dist/injection/runtime.js';
-        const { startIwsdkDevRuntime } = await import(
-          /* @vite-ignore */ devRuntimePath
-        );
+    if (!win.IWER_DEVICE) {
+      // Dynamic import of the IWSDK Dev / IWER runtime
+      const { startIwsdkDevRuntime } = await (
+        // @ts-expect-error Dev runtime import
+        import('../node_modules/@iwsdk/vite-plugin-dev/dist/injection/runtime.js')
+      );
 
-        win.__IWER_MCP_MANAGED = true;
-        try {
-          startIwsdkDevRuntime({
-            device: 'metaQuest3',
-            activation: 'always',
-            verbose: false,
-            sem: { defaultScene: 'sunlit_living_room' },
-            ai: { devUI: false },
-            workspace: null,
-            userAgentException: '/OculusBrowser/',
-            iwer: true,
-            nativeXRControl: false,
-          });
-        } finally {
-          delete win.__IWER_MCP_MANAGED;
-        }
-      } catch (devErr) {
-        console.warn('[DeskMate] Dev runtime could not be loaded:', devErr);
+      win.__IWER_MCP_MANAGED = true;
+      try {
+        startIwsdkDevRuntime({
+          device: 'metaQuest3',
+          activation: 'always',
+          verbose: false,
+          sem: { defaultScene: 'sunlit_living_room' },
+          ai: { devUI: false },
+          workspace: null,
+          userAgentException: '/OculusBrowser/',
+          iwer: true,
+          nativeXRControl: false,
+        });
+      } finally {
+        delete win.__IWER_MCP_MANAGED;
       }
     }
 
@@ -157,9 +90,18 @@ export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
       device.stereoEnabled = false;
       positionHandsOnDesk(device);
       applyCameraPose(device, currentZ);
-      setupHandTrackingAndCursor(device);
-    } else {
-      setupHandTrackingAndCursor({});
+
+      // Interactive hand tap response: when clicking, right hand pinches toward the tabletop
+      if (typeof window !== 'undefined') {
+        window.addEventListener('pointerdown', () => {
+          if (device.hands?.right?.position) {
+            device.hands.right.position.set(0.12, 0.73, -0.44);
+            setTimeout(() => {
+              device.hands?.right?.position?.set(0.25, 0.74, -0.42);
+            }, 250);
+          }
+        });
+      }
     }
 
     // Attach floating control toolbar
