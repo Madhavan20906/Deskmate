@@ -1,20 +1,20 @@
 <style>
   .dashboard {
     flex-direction: column;
-    width: 900px;
-    border-radius: 24px;
+    width: 720px;
+    border-radius: 20px;
     border-width: 1px;
-    border-color: #3b5664;
-    background-color: #111a22;
+    border-color: #273842;
+    background-color: #111a20;
   }
 
   .content {
     flex-direction: column;
-    gap: 16px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    padding-left: 24px;
-    padding-right: 24px;
+    gap: 12px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    padding-left: 18px;
+    padding-right: 18px;
   }
 
   .topline {
@@ -29,8 +29,37 @@
     gap: 8px;
   }
 
-  .xr-button {
-    background-color: #0082fb;
+  .header-pill {
+    background-color: #1e293b;
+    border-width: 1px;
+    border-color: #334155;
+    border-radius: 999px;
+  }
+
+  .day-chip {
+    align-items: center;
+    justify-content: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 999px;
+    background-color: #064e3b;
+    border-width: 1px;
+    border-color: #10b981;
+  }
+
+  .day-chip-text {
+    color: #34d399;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .desk-btn {
+    background-color: #1e293b;
+    border-width: 1px;
+    border-color: #334155;
+    border-radius: 999px;
   }
 
   .workspace-setup {
@@ -38,18 +67,18 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-left: 12px;
-    padding-right: 12px;
-    border-radius: 10px;
-    background-color: #203039;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 12px;
+    background-color: #16242c;
   }
 
   .workspace-anchor-status {
-    color: #8ce2d2;
-    font-size: 14px;
-    font-weight: 700;
+    color: #94a3b8;
+    font-size: 15px;
+    font-weight: 600;
   }
 
   .workspace-setup-actions {
@@ -190,47 +219,30 @@
 
   .brand-group {
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
   }
 
   .brand {
-    color: #f3f6f7;
-    font-size: 30px;
+    color: #ffffff;
+    font-size: 26px;
     font-weight: 700;
   }
 
   .date {
-    color: #9eb4bf;
-    font-size: 16px;
-    font-weight: 600;
-  }
-
-  .day-chip {
-    align-items: center;
-    justify-content: center;
-    padding-top: 7px;
-    padding-bottom: 7px;
-    padding-left: 14px;
-    padding-right: 14px;
-    border-radius: 16px;
-    background-color: #183942;
-  }
-
-  .day-chip-text {
-    color: #8ce2d2;
-    font-size: 14px;
-    font-weight: 700;
+    color: #94a3b8;
+    font-size: 15px;
+    font-weight: 500;
   }
 
   .workload {
     flex-direction: column;
-    gap: 9px;
-    padding-top: 13px;
-    padding-bottom: 13px;
-    padding-left: 16px;
-    padding-right: 16px;
-    border-radius: 14px;
-    background-color: #18242d;
+    gap: 8px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+    border-radius: 12px;
+    background-color: #141f26;
   }
 
   .workload-heading {
@@ -998,39 +1010,41 @@
   <div class="content">
     <div class="topline">
       <div class="brand-group">
-        <span class="brand">DESKMATE</span>
-        <span id="day-date" class="date">TODAY</span>
+        <span class="brand">DeskMate</span>
+        <span id="day-date" class="date">Sunday, November 15</span>
       </div>
       <div class="header-actions">
-        <div class="day-chip"><span class="day-chip-text">YOUR DAY</span></div>
-        <Button id="ghost-audio-toggle" class="ghost-audio-button">
+        <div class="day-chip"><span class="day-chip-text">Your day</span></div>
+        <Button id="toggle-analytics" class="header-pill">
+          <ButtonLabel id="toggle-analytics-label">Insights</ButtonLabel>
+        </Button>
+        <Button id="pip-toggle" class="header-pill">
+          <ButtonLabel>Pip</ButtonLabel>
+        </Button>
+        <Button id="ghost-audio-toggle" style="display: none">
           <ButtonLabel id="ghost-audio-label">Sound: ON</ButtonLabel>
         </Button>
-        <Button id="demo-60s-btn" class="ghost-audio-button">
+        <Button id="demo-60s-btn" style="display: none">
           <ButtonLabel>60s Demo</ButtonLabel>
-        </Button>
-        <Button id="pip-toggle" class="pip-toggle">
-          <span id="pip-launcher-orb" class="pip-launcher-orb"></span>
-          <ButtonLabel>Pip</ButtonLabel>
         </Button>
       </div>
     </div>
     <div class="workspace-setup">
-      <span id="workspace-anchor-status" class="workspace-anchor-status">Workspace ready. Enter XR, look at a tabletop, then pin your desk.</span>
       <div class="workspace-setup-actions">
-        <Button id="workspace-pin">
+        <Button id="workspace-pin" class="desk-btn">
           <ButtonLabel>Pin to desk</ButtonLabel>
         </Button>
-        <Button id="workspace-nudge-up">
-          <ButtonLabel>+5cm</ButtonLabel>
+        <Button id="workspace-nudge-up" class="desk-btn">
+          <ButtonLabel>+5 cm</ButtonLabel>
         </Button>
-        <Button id="workspace-nudge-down">
-          <ButtonLabel>-5cm</ButtonLabel>
+        <Button id="workspace-nudge-down" class="desk-btn">
+          <ButtonLabel>-5 cm</ButtonLabel>
         </Button>
-        <Button id="workspace-reset">
+        <Button id="workspace-reset" style="display: none">
           <ButtonLabel>Reset</ButtonLabel>
         </Button>
       </div>
+      <span id="workspace-anchor-status" class="workspace-anchor-status">Desk position saved</span>
     </div>
     <div id="pip-panel" class="pip-panel" style="display: none">
       <div class="pip-heading">
@@ -1119,23 +1133,14 @@
         <div id="load-segment-7" class="load-segment"></div>
         <div id="load-segment-8" class="load-segment"></div>
       </div>
-      <div class="smart-status-row">
-        <span id="workload-state" class="workload-state">UNDERLOADED</span>
-        <span id="workload-detail" class="workload-detail">8h free / 0m complete / 0m pending</span>
+      <div class="workload-summary-row">
+        <span id="workload-value" class="workload-value">4h planned of 8h. Balanced.</span>
+        <span id="workload-state" class="workload-state" style="display: none">UNDERLOADED</span>
+        <span id="workload-detail" class="workload-detail" style="display: none">8h free / 0m complete / 0m pending</span>
       </div>
     </div>
-    <div class="ruler-dashboard-badge">
-      <span class="ruler-badge-title">THE DESK RULER</span>
-      <span id="ruler-badge-status" class="ruler-badge-status">Physical 3D schedule on desk - Pinch and slide tiles</span>
-    </div>
-    <div class="selection-row">
-      <span class="selection-label">SELECTED TASK</span>
-      <span id="selected-task" class="selection-value">Choose a task card</span>
-    </div>
-    <div class="analytics-toggle-bar">
-      <Button id="toggle-analytics" class="analytics-toggle-button">
-        <ButtonLabel id="toggle-analytics-label">Insights &amp; History (Show)</ButtonLabel>
-      </Button>
+    <div id="task-selection-hidden" style="display: none">
+      <span id="selected-task">Choose a task card</span>
     </div>
     <div id="analytics-drawer" class="analytics-drawer" style="display: none">
       <div class="focus-stats">
@@ -1214,7 +1219,7 @@
         </div>
       </div>
     </div>
-    <div class="task-actions">
+    <div class="task-actions" style="display: none">
       <span id="task-summary" class="task-summary">3 / 6 tasks</span>
       <Button id="backlog-toggle" class="focus-duration-button" style="display: none">
         <ButtonLabel id="backlog-toggle-label">Backlog (0)</ButtonLabel>

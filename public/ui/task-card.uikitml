@@ -1,21 +1,22 @@
 <style>
   .task-root {
     flex-direction: column;
-    gap: 8px;
-    width: 320px;
-    border-radius: 18px;
+    gap: 6px;
+    width: 250px;
+    border-radius: 16px;
     border-width: 2px;
     border-color: #3b6470;
     background-color: #15232b;
+    padding-bottom: 8px;
   }
 
   .content {
     flex-direction: column;
-    gap: 5px;
-    padding-top: 12px;
+    gap: 3px;
+    padding-top: 10px;
     padding-bottom: 4px;
-    padding-left: 14px;
-    padding-right: 14px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
 
   .eyebrow {
@@ -26,24 +27,52 @@
 
   .title {
     color: #ffffff;
-    font-size: 21px;
+    font-size: 18px;
     font-weight: 700;
   }
 
   .description {
     color: #e2e8f0;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
   }
 
+  .card-btn-row {
+    flex-direction: row;
+    gap: 8px;
+    margin-left: 12px;
+    margin-right: 12px;
+    margin-top: 2px;
+  }
+
+  .action-btn {
+    flex-grow: 1;
+    background-color: #111827;
+    border-radius: 999px;
+    border-width: 1px;
+    border-color: #374151;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
   .status-button {
-    margin-left: 14px;
-    margin-right: 14px;
+    flex-grow: 1;
+    background-color: #111827;
+    border-radius: 999px;
+    border-width: 1px;
+    border-color: #374151;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 
   .focus-start-button {
-    margin-left: 14px;
-    margin-right: 14px;
+    flex-grow: 1;
+    background-color: #111827;
+    border-radius: 999px;
+    border-width: 1px;
+    border-color: #374151;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 
   .focus-panel {
@@ -113,14 +142,16 @@
   <div class="content">
     <span id="task-priority" class="eyebrow">MEDIUM PRIORITY / 30 MIN</span>
     <span id="task-title" class="title">New task</span>
-    <span id="task-description" class="description">Add a short description.</span>
+    <span id="task-description" class="description" style="display: none">Add a short description.</span>
   </div>
-  <Button id="task-status" class="status-button">
-    <ButtonLabel id="task-status-label">Start task</ButtonLabel>
-  </Button>
-  <Button id="task-focus-start" class="focus-start-button">
-    <ButtonLabel>Start focus</ButtonLabel>
-  </Button>
+  <div class="card-btn-row">
+    <Button id="task-status" class="status-button">
+      <ButtonLabel id="task-status-label">Start</ButtonLabel>
+    </Button>
+    <Button id="task-focus-start" class="focus-start-button">
+      <ButtonLabel>Focus</ButtonLabel>
+    </Button>
+  </div>
   <div id="task-focus-panel" class="focus-panel" style="display: none">
     <span id="task-focus-state" class="focus-session-state">FOCUS SESSION</span>
     <span id="task-focus-timer" class="focus-session-timer">25:00</span>
@@ -147,7 +178,7 @@
       </Button>
     </div>
   </div>
-  <div class="secondary-actions">
+  <div class="secondary-actions" style="display: none">
     <Button id="task-select" class="small-button">
       <ButtonLabel>Select</ButtonLabel>
     </Button>
