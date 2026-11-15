@@ -28,7 +28,7 @@ type PlacementLoadResult = {
 };
 
 const PLACEMENT_STORAGE_KEY = 'deskmate.workspace-placement.v1';
-const DEFAULT_WORKSPACE_POSITION = [0, 0.75, -0.85] as const;
+const DEFAULT_WORKSPACE_POSITION = [0, 0, 0] as const;
 const WORKSPACE_NODE_IDS = [
   'workspace-desk',
   'desk-ruler',
@@ -79,6 +79,16 @@ function readWorkspacePlacement(): PlacementLoadResult {
         placement: null,
         writable: false,
         message: 'Saved desk position is invalid. Existing data is protected.',
+      };
+    }
+    const [x, y, z] = parsed.position;
+    // Reject legacy coffee-table or out-of-bounds coordinates (y < 0.65 or z < -1.1)
+    if (y < 0.65 || z < -1.1 || Math.abs(x) > 1.8) {
+      window.localStorage.removeItem(PLACEMENT_STORAGE_KEY);
+      return {
+        placement: null,
+        writable: true,
+        message: 'Workspace centered on your executive desk workstation.',
       };
     }
     return {
@@ -159,10 +169,8 @@ export class WorkspaceSystem extends createSystem({
         console.warn(`[DeskMate] Workspace scene node "${nodeId}" could not be found.`);
         continue;
       }
-      object.position.sub(this.workspaceRoot.position);
       this.workspaceRoot.add(object);
     }
-    this.workspaceEntity.addComponent(XRAnchor);
 
     pinButton.name = 'Pin the workspace above the tabletop in view';
     resetButton.name = 'Reset the workspace to its default position';
@@ -197,28 +205,21 @@ export class WorkspaceSystem extends createSystem({
       this.wasInXR = inXR;
       const desk = this.world.getSceneObject('workspace-desk');
       if (desk !== undefined) {
-        // In real XR passthrough on physical Quest, hide virtual table so physical desk shows through
-        const isPhysicalQuest =
-          typeof navigator !== 'undefined' &&
-          /OculusBrowser/i.test(navigator.userAgent);
-        desk.visible = !inXR || !isPhysicalQuest;
+        desk.visible = true;
       }
     }
 
-    if (
-      this.savedPlacement !== null &&
-      this.workspaceEntity.getValue(XRAnchor, 'attached')
-    ) {
+    if (this.savedPlacement !== null) {
       const [x, y, z] = this.savedPlacement.position;
-      // Safeguard against corrupted or out-of-bounds coordinates
-      if (Math.abs(x) < 2.5 && y > 0.2 && y < 1.6 && Math.abs(z) < 2.5) {
+      // Safeguard against legacy coffee-table or out-of-bounds coordinates
+      if (Math.abs(x) < 1.8 && y >= 0.65 && z >= -1.1) {
         this.workspaceRoot.position.fromArray(this.savedPlacement.position);
         this.workspaceRoot.quaternion.fromArray(this.savedPlacement.quaternion);
-        this.setStatus('Workspace restored to its saved room position.');
+        this.setStatus('Workspace restored to your saved desk position.');
       } else {
-        this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
+        this.workspaceRoot.position.set(0, 0, 0);
         this.workspaceRoot.quaternion.identity();
-        this.setStatus('Workspace aligned to your desk.');
+        this.setStatus('Workspace aligned to your executive desk.');
       }
       this.savedPlacement = null;
     }
@@ -233,10 +234,6 @@ export class WorkspaceSystem extends createSystem({
   private pinToDesk(): void {
     if (this.xrManager.getSession() === null) {
       this.setStatus('Enter XR to scan your room and pin the workspace to a desk.');
-      return;
-    }
-    if (!this.workspaceEntity.getValue(XRAnchor, 'attached')) {
-      this.setStatus('Room anchor is still settling. Try again in a moment.');
       return;
     }
 
