@@ -35,6 +35,15 @@ import {
   ActionDebouncer,
   HandTrackingMonitor,
 } from './hand-interaction-engine.js';
+import { DeskRulerScene } from './desk-ruler-scene.js';
+import {
+  partitionSchedule,
+  snapTo15Minutes,
+  minuteToRulerX,
+  rulerXToMinute,
+  checkOverlapAndResolve,
+  DEFAULT_SCALE_PER_HOUR,
+} from './schedule-ruler.js';
 
 type TaskStatus = 'todo' | 'in-progress' | 'completed';
 type TaskPriority = 'low' | 'medium' | 'high';
@@ -664,22 +673,15 @@ export class PanelSystem extends createSystem({
   private workloadDetail!: NonNullable<
     ReturnType<UIKitMLAsset['getElementById']>
   >;
-  private smartStatus!: NonNullable<
-    ReturnType<UIKitMLAsset['getElementById']>
-  >;
-  private scheduleStatus!: NonNullable<
-    ReturnType<UIKitMLAsset['getElementById']>
-  >;
-  private scheduleSuggestion!: NonNullable<
-    ReturnType<UIKitMLAsset['getElementById']>
-  >;
-  private scheduleSuggestionButton!: NonNullable<
-    ReturnType<UIKitMLAsset['getElementById']>
-  >;
-  private scheduleDismissSuggestionButton!: NonNullable<
-    ReturnType<UIKitMLAsset['getElementById']>
-  >;
-  private timelineSlots!: TimelineSlotElements[];
+  private smartStatus: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private scheduleStatus: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private scheduleSuggestion: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private scheduleSuggestionButton: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private scheduleDismissSuggestionButton: ReturnType<UIKitMLAsset['getElementById']> | null = null;
+  private timelineSlots: TimelineSlotElements[] = [];
+  public deskRulerScene: DeskRulerScene | null = null;
+  private lastSnapMinute: number[] = Array.from({ length: MAX_TASKS }, () => -1);
+  private currentConflictTaskId: string | null = null;
   private loadSegments!: Array<NonNullable<
     ReturnType<UIKitMLAsset['getElementById']>
   > | null>;
@@ -969,11 +971,11 @@ export class PanelSystem extends createSystem({
     const workloadValue = dashboard?.getElementById('workload-value');
     const workloadState = dashboard?.getElementById('workload-state');
     const workloadDetail = dashboard?.getElementById('workload-detail');
-    const smartStatus = dashboard?.getElementById('smart-status');
-    const scheduleStatus = dashboard?.getElementById('schedule-status');
-    const scheduleSuggestion = dashboard?.getElementById('schedule-suggestion');
-    const scheduleSuggestionButton = dashboard?.getElementById('schedule-apply-suggestion');
-    const scheduleDismissSuggestionButton = dashboard?.getElementById('schedule-dismiss-suggestion');
+    const smartStatus = dashboard?.getElementById('smart-status') ?? null;
+    const scheduleStatus = dashboard?.getElementById('schedule-status') ?? null;
+    const scheduleSuggestion = dashboard?.getElementById('schedule-suggestion') ?? null;
+    const scheduleSuggestionButton = dashboard?.getElementById('schedule-apply-suggestion') ?? null;
+    const scheduleDismissSuggestionButton = dashboard?.getElementById('schedule-dismiss-suggestion') ?? null;
     const focusDurationValue = dashboard?.getElementById('focus-duration-value');
     const focusDurationDown = dashboard?.getElementById('focus-duration-down');
     const focusDurationUp = dashboard?.getElementById('focus-duration-up');
@@ -1020,9 +1022,9 @@ export class PanelSystem extends createSystem({
     const pipConfirmationRow = dashboard?.getElementById('pip-confirmation-row');
     const pipConfirmScheduleButton = dashboard?.getElementById('pip-confirm-schedule');
     const pipCancelScheduleButton = dashboard?.getElementById('pip-cancel-schedule');
-    const earlierButton = dashboard?.getElementById('schedule-earlier');
-    const laterButton = dashboard?.getElementById('schedule-later');
-    const clearScheduleButton = dashboard?.getElementById('schedule-clear');
+    const earlierButton = dashboard?.getElementById('schedule-earlier') ?? null;
+    const laterButton = dashboard?.getElementById('schedule-later') ?? null;
+    const clearScheduleButton = dashboard?.getElementById('schedule-clear') ?? null;
     const timelineSlots = TIMELINE_STARTS.map((startMinute) => {
       const button = dashboard?.getElementById(`timeline-slot-${startMinute}`);
       const label = dashboard?.getElementById(`timeline-slot-label-${startMinute}`);
@@ -1037,8 +1039,6 @@ export class PanelSystem extends createSystem({
     if (
       summary == null || selectedLabel == null || workloadValue == null ||
       workloadState == null || workloadDetail == null ||
-      smartStatus == null || scheduleStatus == null || scheduleSuggestion == null ||
-      scheduleSuggestionButton == null || scheduleDismissSuggestionButton == null ||
       focusDurationValue == null || focusDurationDown == null || focusDurationUp == null ||
       focusStatistics == null || focusHistoryLabel == null ||
       focusProgressSegments.some((segment) => segment === null) ||
@@ -1054,8 +1054,6 @@ export class PanelSystem extends createSystem({
       pipRecapButton == null || pipDismissButton == null ||
       pipConfirmationRow == null || pipConfirmScheduleButton == null ||
       pipCancelScheduleButton == null ||
-      earlierButton == null || laterButton == null ||
-      clearScheduleButton == null || timelineSlots.some((slot) => slot === null) ||
       loadSegments.some((segment) => segment === null)
     ) return;
 
@@ -1103,7 +1101,7 @@ export class PanelSystem extends createSystem({
     this.pipConfirmationRow = pipConfirmationRow;
     this.pipConfirmScheduleButton = pipConfirmScheduleButton;
     this.pipCancelScheduleButton = pipCancelScheduleButton;
-    this.timelineSlots = timelineSlots as TimelineSlotElements[];
+    this.timelineSlots = timelineSlots.filter((slot): slot is TimelineSlotElements => slot !== null);
     this.loadSegments = loadSegments;
 
     this.ghostAudioButton = dashboard?.getElementById('ghost-audio-toggle') ?? null;
@@ -1249,6 +1247,11 @@ export class PanelSystem extends createSystem({
 
     this.tableObject = this.world.getSceneObject('workspace-desk') ?? null;
     if (this.tableObject) {
+      this.deskRulerScene = new DeskRulerScene();
+      this.tableObject.add(this.deskRulerScene.root);
+      this.deskRulerScene.root.position.set(0, 0.74, 0.33);
+      this.setupDeskRulerInteractions();
+
       const onTableClick = (e: { point?: Vector3 }) => {
         if (!this.actionDebouncer.canExecute()) return;
         if (this.pipObject && !this.pipWasGrabbed) {
@@ -1605,23 +1608,25 @@ export class PanelSystem extends createSystem({
     const applySuggestion = () => this.applySuggestedSlot();
     const dismissSuggestion = () => this.dismissSuggestedSlots();
     const clearSchedule = () => this.clearSelectedSchedule();
-    earlierButton.name = 'Move selected task 30 minutes earlier';
-    laterButton.name = 'Move selected task 30 minutes later';
-    scheduleSuggestionButton.name = 'Apply suggested time to selected task';
-    scheduleDismissSuggestionButton.name = 'Dismiss suggested time slots';
-    clearScheduleButton.name = 'Clear selected task schedule';
-    earlierButton.addEventListener('click', moveEarlier);
-    laterButton.addEventListener('click', moveLater);
-    scheduleSuggestionButton.addEventListener('click', applySuggestion);
-    scheduleDismissSuggestionButton.addEventListener('click', dismissSuggestion);
-    clearScheduleButton.addEventListener('click', clearSchedule);
-    this.cleanupFuncs.push(
-      () => earlierButton.removeEventListener('click', moveEarlier),
-      () => laterButton.removeEventListener('click', moveLater),
-      () => scheduleSuggestionButton.removeEventListener('click', applySuggestion),
-      () => scheduleDismissSuggestionButton.removeEventListener('click', dismissSuggestion),
-      () => clearScheduleButton.removeEventListener('click', clearSchedule),
-    );
+    if (earlierButton != null && laterButton != null && clearScheduleButton != null) {
+      earlierButton.name = 'Move selected task 30 minutes earlier';
+      laterButton.name = 'Move selected task 30 minutes later';
+      if (scheduleSuggestionButton) scheduleSuggestionButton.name = 'Apply suggested time to selected task';
+      if (scheduleDismissSuggestionButton) scheduleDismissSuggestionButton.name = 'Dismiss suggested time slots';
+      clearScheduleButton.name = 'Clear selected task schedule';
+      earlierButton.addEventListener('click', moveEarlier);
+      laterButton.addEventListener('click', moveLater);
+      if (scheduleSuggestionButton) scheduleSuggestionButton.addEventListener('click', applySuggestion);
+      if (scheduleDismissSuggestionButton) scheduleDismissSuggestionButton.addEventListener('click', dismissSuggestion);
+      clearScheduleButton.addEventListener('click', clearSchedule);
+      this.cleanupFuncs.push(
+        () => earlierButton.removeEventListener('click', moveEarlier),
+        () => laterButton.removeEventListener('click', moveLater),
+        () => scheduleSuggestionButton?.removeEventListener('click', applySuggestion),
+        () => scheduleDismissSuggestionButton?.removeEventListener('click', dismissSuggestion),
+        () => clearScheduleButton.removeEventListener('click', clearSchedule),
+      );
+    }
 
     for (let slot = 0; slot < MAX_TASKS; slot += 1) {
       const card = this.world.getSceneObject<UIKitMLAsset>(TASK_NODE_IDS[slot]);
@@ -3576,42 +3581,179 @@ export class PanelSystem extends createSystem({
     const capacityLabel = capacityExceeded
       ? `OVER CAPACITY BY ${formatDuration(workload.overloadMinutes)} (${formatDuration(plannedMinutes)} SCHEDULED / ${formatDuration(WORKLOAD_CAPACITY_MINUTES)} AVAILABLE)`
       : `${formatDuration(workload.remainingCapacityMinutes)} FREE / ${formatDuration(WORKLOAD_CAPACITY_MINUTES)} CAPACITY`;
-    this.smartStatus.setProperties({
-      text: `${conflictLabel} / ${capacityLabel} / ${unscheduledCount} UNSCHEDULED${reviewCount > 0 ? ` / ${reviewCount} SCHEDULE REVIEW` : ''}`,
-      color: overloaded || reviewCount > 0 ? '#ef756d' : '#8ce2d2',
-    });
+    if (this.smartStatus) {
+      this.smartStatus.setProperties({
+        text: `${conflictLabel} / ${capacityLabel} / ${unscheduledCount} UNSCHEDULED${reviewCount > 0 ? ` / ${reviewCount} SCHEDULE REVIEW` : ''}`,
+        color: overloaded || reviewCount > 0 ? '#ef756d' : '#8ce2d2',
+      });
+    }
 
-    if (this.schedulerMessage.length > 0) {
-      this.scheduleStatus.setProperties({ text: this.schedulerMessage });
-    } else if (selected === null) {
-      this.scheduleStatus.setProperties({
-        text: 'Select a task, then tap a time block or move it by 30 minutes.',
-      });
-    } else if (selected.scheduledStartMinute === null) {
-      this.scheduleStatus.setProperties({ text: `${selected.title} is unscheduled.` });
-    } else {
-      this.scheduleStatus.setProperties({
-        text: `${selected.title}: ${formatTime(selected.scheduledStartMinute)} - ${formatTime(selected.scheduledStartMinute + selected.estimatedMinutes)}.`,
-      });
+    if (this.scheduleStatus) {
+      if (this.schedulerMessage.length > 0) {
+        this.scheduleStatus.setProperties({ text: this.schedulerMessage });
+      } else if (selected === null) {
+        this.scheduleStatus.setProperties({
+          text: 'Select a task, then tap a time block or move it by 30 minutes.',
+        });
+      } else if (selected.scheduledStartMinute === null) {
+        this.scheduleStatus.setProperties({ text: `${selected.title} is unscheduled.` });
+      } else {
+        this.scheduleStatus.setProperties({
+          text: `${selected.title}: ${formatTime(selected.scheduledStartMinute)} - ${formatTime(selected.scheduledStartMinute + selected.estimatedMinutes)}.`,
+        });
+      }
     }
 
     const suggestedStarts = selected === null ? [] : this.findSuggestedStarts(selected);
     const suggestionDismissed = selected !== null && this.dismissedSuggestionFor === selected.id;
     const hasSuggestions = selected !== null && suggestedStarts.length > 0 && !suggestionDismissed;
-    this.scheduleSuggestion.setProperties({
-      text: selected === null
-        ? 'Select a task for a slot suggestion'
-        : suggestionDismissed
-          ? 'SUGGESTIONS DISMISSED / NO SCHEDULE CHANGE'
-          : suggestedStarts.length === 0
-            ? 'NO OPEN SLOT FITS THIS DURATION'
-            : `${selected.priority.toUpperCase()} SUGGESTIONS ${suggestedStarts.map(formatTime).join(' / ')}`,
-    });
-    this.scheduleSuggestionButton.setProperties({ display: hasSuggestions ? 'flex' : 'none' });
-    this.scheduleDismissSuggestionButton.setProperties({ display: hasSuggestions ? 'flex' : 'none' });
-    this.scheduleSuggestionButton.name = hasSuggestions
-      ? `Apply suggested time ${formatTime(suggestedStarts[0])} for ${selected.title}`
-      : 'No suggested time available';
+    if (this.scheduleSuggestion) {
+      this.scheduleSuggestion.setProperties({
+        text: selected === null
+          ? 'Select a task for a slot suggestion'
+          : suggestionDismissed
+            ? 'SUGGESTIONS DISMISSED / NO SCHEDULE CHANGE'
+            : suggestedStarts.length === 0
+              ? 'NO OPEN SLOT FITS THIS DURATION'
+              : `${selected.priority.toUpperCase()} SUGGESTIONS ${suggestedStarts.map(formatTime).join(' / ')}`,
+      });
+    }
+    this.scheduleSuggestionButton?.setProperties({ display: hasSuggestions ? 'flex' : 'none' });
+    this.scheduleDismissSuggestionButton?.setProperties({ display: hasSuggestions ? 'flex' : 'none' });
+    if (this.scheduleSuggestionButton) {
+      this.scheduleSuggestionButton.name = hasSuggestions
+        ? `Apply suggested time ${formatTime(suggestedStarts[0])} for ${selected.title}`
+        : 'No suggested time available';
+    }
+
+    this.updateDeskRuler();
+  }
+
+  private updateDeskRuler(): void {
+    if (!this.deskRulerScene) return;
+    const validTasks = this.tasks.filter((t): t is TaskRecord => t !== null);
+    const partition = partitionSchedule(validTasks, 480, 480, 1080);
+    this.deskRulerScene.updateSchedule(
+      partition,
+      this.focusStorage.active?.taskId ?? null,
+      this.currentConflictTaskId,
+    );
+
+    // Hop Pip beside the active/selected task on the desk
+    const activeTask = this.tasks.find((t) => t?.id === this.focusStorage.active?.taskId) || this.getSelectedTask();
+    if (activeTask && activeTask.scheduledStartMinute !== null && this.pipObject && !this.pipWasGrabbed) {
+      const taskX = minuteToRulerX(activeTask.scheduledStartMinute, 0, DEFAULT_SCALE_PER_HOUR);
+      this.startPipHop(taskX, -0.70);
+    }
+  }
+
+  private setupDeskRulerInteractions(): void {
+    if (!this.deskRulerScene) return;
+
+    this.deskRulerScene.onTileSelect = (taskId: string) => {
+      if (!this.actionDebouncer.canExecute()) return;
+      this.recordUserInteraction();
+      this.ghostAudio.ensureRunning();
+      const slot = this.tasks.findIndex((t) => t?.id === taskId);
+      if (slot !== -1) {
+        this.selectedTask = taskId;
+        this.dismissedSuggestionFor = null;
+        this.schedulerMessage = '';
+        const task = this.tasks[slot]!;
+        this.deskRulerScene?.showDetailCard(task);
+        this.ghostAudio.playHoverHum();
+        this.setPipMessage(`Selected "${task.title}". Tap Start Focus to sprint or pinch to drag.`);
+        this.renderTasks();
+      }
+    };
+
+    this.deskRulerScene.onTileResize = (taskId: string) => {
+      if (!this.actionDebouncer.canExecute()) return;
+      this.recordUserInteraction();
+      this.ghostAudio.ensureRunning();
+      const slot = this.tasks.findIndex((t) => t?.id === taskId);
+      if (slot !== -1) {
+        const task = this.tasks[slot]!;
+        let newDur = task.estimatedMinutes + 15;
+        if (newDur > 180) newDur = 15;
+        task.estimatedMinutes = newDur;
+        this.persistTasks();
+        this.ghostAudio.playPinchTick();
+        this.setPipMessage(`Resized "${task.title}" to ${newDur}m.`);
+        this.renderTasks();
+      }
+    };
+
+    this.deskRulerScene.onFreeSlotClick = (freeMinute: number) => {
+      if (!this.actionDebouncer.canExecute()) return;
+      this.recordUserInteraction();
+      this.ghostAudio.ensureRunning();
+      const valid = this.tasks.filter((t): t is TaskRecord => t !== null && t.status !== 'completed');
+      const unscheduled = valid.filter((t) => t.scheduledStartMinute === null);
+      if (unscheduled.length > 0) {
+        const best = unscheduled[0];
+        best.scheduledStartMinute = freeMinute;
+        this.persistTasks();
+        this.ghostAudio.playDropThunk();
+        this.setPipEmote('celebration');
+        this.setPipMessage(`Pip filled the gap! Scheduled "${best.title}" at ${formatMinuteTime(freeMinute)}.`);
+        this.renderTasks();
+      } else {
+        this.setPipMessage(`Free time gap at ${formatMinuteTime(freeMinute)}. Add a task with Quick Capture to fill it!`);
+      }
+    };
+
+    this.deskRulerScene.onFixItClick = () => {
+      if (!this.actionDebouncer.canExecute()) return;
+      this.recordUserInteraction();
+      this.ghostAudio.ensureRunning();
+      this.ghostAudio.playPreviewWhoosh();
+      this.executePlanDay();
+    };
+
+    this.deskRulerScene.onDetailAction = (action, taskId) => {
+      if (!this.actionDebouncer.canExecute()) return;
+      this.recordUserInteraction();
+      const slot = this.tasks.findIndex((t) => t?.id === taskId);
+      if (slot === -1) return;
+
+      if (action === 'startFocus') {
+        this.deskRulerScene?.hideDetailCard();
+        this.startFocusSession(slot);
+      } else if (action === 'edit') {
+        this.deskRulerScene?.hideDetailCard();
+        this.editTask(slot);
+      } else if (action === 'complete') {
+        const task = this.tasks[slot]!;
+        task.status = task.status === 'completed' ? 'todo' : 'completed';
+        task.completedAt = task.status === 'completed' ? Date.now() : null;
+        this.persistTasks();
+        this.ghostAudio.playMarbleClink();
+        this.triggerPlantPerkUp();
+        this.setPipEmote('celebration');
+        this.setPipMessage(`Marked "${task.title}" as ${task.status}!`);
+        this.renderTasks();
+        this.deskRulerScene?.hideDetailCard();
+      } else if (action === 'delete') {
+        this.deleteTask(slot);
+        this.deskRulerScene?.hideDetailCard();
+      }
+    };
+
+    this.deskRulerScene.onConfirmPlan = () => {
+      this.recordUserInteraction();
+      this.persistTasks();
+      this.ghostAudio.playDropThunk();
+      this.setPipEmote('celebration');
+      this.setPipMessage('Day plan confirmed and applied to the Desk Ruler!');
+      this.renderTasks();
+    };
+
+    this.deskRulerScene.onCancelPlan = () => {
+      this.recordUserInteraction();
+      this.setPipMessage('Day plan cancelled. Original schedule retained.');
+      this.renderTasks();
+    };
   }
 
   private respondToJarHistory(): void {
@@ -3808,15 +3950,6 @@ export class PanelSystem extends createSystem({
   }
 
   private checkPinchDragTimelineDrop(delta: number): void {
-    const morningZoneX = -0.25;
-    const middayZoneX = 0.0;
-    const eveningZoneX = 0.25;
-    const zoneCenterY = 1.45;
-    const zoneCenterZ = -0.90;
-    const snapRadius = 0.22;
-
-    let hoveredZone: 'morning' | 'midday' | 'evening' | null = null;
-
     for (let slot = 0; slot < MAX_TASKS; slot += 1) {
       const entity = this.taskEntities[slot];
       const task = this.tasks[slot];
@@ -3844,103 +3977,84 @@ export class PanelSystem extends createSystem({
         this.cardVelocity[slot].subVectors(obj.position, this.cardPrevPos[slot]).divideScalar(dt);
         this.cardPrevPos[slot].copy(obj.position);
 
-        // Dynamic tilt based on hand movement
         const tiltRoll = Math.max(-0.4, Math.min(0.4, -this.cardVelocity[slot].x * 0.35));
         const tiltPitch = Math.max(-0.35, Math.min(0.35, this.cardVelocity[slot].y * -0.3));
         obj.rotation.z += (tiltRoll - obj.rotation.z) * Math.min(1.0, delta * 12.0);
         obj.rotation.x += (tiltPitch - obj.rotation.x) * Math.min(1.0, delta * 12.0);
 
-        // 2. Magnetic snap & glow to timeline zones
+        // 2. Magnetic snap & ghost outline along Desk Ruler
         const pos = obj.position;
-        const distMorning = Math.hypot(pos.x - morningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
-        const distMidday = Math.hypot(pos.x - middayZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
-        const distEvening = Math.hypot(pos.x - eveningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+        const isNearDeskRuler = pos.y < 1.05 && pos.z > -0.75;
 
-        if (distMorning < snapRadius) {
-          hoveredZone = 'morning';
-          obj.position.x += (morningZoneX - obj.position.x) * 0.12;
-          obj.position.y += (zoneCenterY - obj.position.y) * 0.12;
-          card?.root.setProperties({ borderColor: '#4ade80' });
-        } else if (distMidday < snapRadius) {
-          hoveredZone = 'midday';
-          obj.position.x += (middayZoneX - obj.position.x) * 0.12;
-          obj.position.y += (zoneCenterY - obj.position.y) * 0.12;
-          card?.root.setProperties({ borderColor: '#4ade80' });
-        } else if (distEvening < snapRadius) {
-          hoveredZone = 'evening';
-          obj.position.x += (eveningZoneX - obj.position.x) * 0.12;
-          obj.position.y += (zoneCenterY - obj.position.y) * 0.12;
-          card?.root.setProperties({ borderColor: '#4ade80' });
+        if (isNearDeskRuler) {
+          const approxMin = rulerXToMinute(pos.x, 0, DEFAULT_SCALE_PER_HOUR);
+          const snapped = snapTo15Minutes(approxMin);
+
+          if (snapped !== this.lastSnapMinute[slot]) {
+            this.ghostAudio.playPinchTick();
+            this.lastSnapMinute[slot] = snapped;
+          }
+
+          this.deskRulerScene?.showGhostLanding(snapped, task.estimatedMinutes);
+
+          // Check conflict
+          const otherScheduled = this.tasks
+            .filter((t): t is TaskRecord => t !== null && t.id !== task.id && t.scheduledStartMinute !== null)
+            .map((t) => ({ id: t.id, startMinute: t.scheduledStartMinute!, duration: t.estimatedMinutes }));
+          const conflict = checkOverlapAndResolve(task.id, snapped, task.estimatedMinutes, otherScheduled);
+
+          if (conflict.hasConflict) {
+            this.deskRulerScene?.showConflictOutline(snapped, task.estimatedMinutes);
+            card?.root.setProperties({ borderColor: '#ef4444' });
+          } else {
+            this.deskRulerScene?.hideConflictOutline();
+            card?.root.setProperties({ borderColor: '#2dd4bf' });
+          }
         }
       } else if (this.cardWasGrabbed[slot]) {
         this.cardWasGrabbed[slot] = false;
         this.recordUserInteraction();
+        this.deskRulerScene?.hideGhostLanding();
+        this.deskRulerScene?.hideConflictOutline();
 
-        const releaseSpeed = this.cardVelocity[slot].length();
         const pos = obj.position;
-        const distMorning = Math.hypot(pos.x - morningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
-        const distMidday = Math.hypot(pos.x - middayZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
-        const distEvening = Math.hypot(pos.x - eveningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
+        const isNearDeskRuler = pos.y < 1.05 && pos.z > -0.75;
 
-        if (distMorning < snapRadius) {
-          this.scheduleTaskToTimelineZone(slot, 9 * 60, 'Morning (09:00)');
-        } else if (distMidday < snapRadius) {
-          this.scheduleTaskToTimelineZone(slot, 12 * 60, 'Midday (12:00)');
-        } else if (distEvening < snapRadius) {
-          this.scheduleTaskToTimelineZone(slot, 15 * 60, 'Evening (15:00)');
-        } else if (releaseSpeed > 0.6) {
-          // Flick throw initiated!
-          this.cardFlickActive[slot] = true;
-          this.cardFlickVelocity[slot].copy(this.cardVelocity[slot]);
-          this.ghostAudio.playPlantRustle();
-        } else {
-          this.startCardReturnHome(slot);
+        if (isNearDeskRuler) {
+          if (pos.x < -0.34) {
+            // Dropped on Unscheduled Tray
+            task.scheduledStartMinute = null;
+            this.persistTasks();
+            this.ghostAudio.playDropThunk();
+            this.setPipMessage(`Moved "${task.title}" to the unscheduled tray.`);
+          } else {
+            // Dropped on Desk Ruler
+            const approxMin = rulerXToMinute(pos.x, 0, DEFAULT_SCALE_PER_HOUR);
+            const snapped = snapTo15Minutes(approxMin);
+
+            const otherScheduled = this.tasks
+              .filter((t): t is TaskRecord => t !== null && t.id !== task.id && t.scheduledStartMinute !== null)
+              .map((t) => ({ id: t.id, startMinute: t.scheduledStartMinute!, duration: t.estimatedMinutes }));
+            const conflict = checkOverlapAndResolve(task.id, snapped, task.estimatedMinutes, otherScheduled);
+
+            if (!conflict.hasConflict) {
+              task.scheduledStartMinute = snapped;
+              this.persistTasks();
+              this.ghostAudio.playDropThunk();
+              this.setPipEmote('celebration');
+              this.setPipMessage(`Scheduled "${task.title}" at ${formatMinuteTime(snapped)} on the desk ruler!`);
+            } else {
+              this.ghostAudio.playConflictCue();
+              this.currentConflictTaskId = conflict.conflictingTaskId;
+              this.setPipEmote('nudge');
+              this.setPipMessage(`Time overlap with another task! Pip can Swap or Shift later.`);
+            }
+          }
         }
-      } else if (this.cardFlickActive[slot]) {
-        // 3. Flick throw momentum simulation
-        obj.position.addScaledVector(this.cardFlickVelocity[slot], delta);
-        this.cardFlickVelocity[slot].multiplyScalar(Math.exp(-delta * 5.0));
 
-        // Check if captured by magnetic zone during flick
-        const pos = obj.position;
-        const distMorning = Math.hypot(pos.x - morningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
-        const distMidday = Math.hypot(pos.x - middayZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
-        const distEvening = Math.hypot(pos.x - eveningZoneX, pos.y - zoneCenterY, pos.z - zoneCenterZ);
-
-        if (distMorning < 0.18) {
-          this.cardFlickActive[slot] = false;
-          this.scheduleTaskToTimelineZone(slot, 9 * 60, 'Morning (09:00)');
-        } else if (distMidday < 0.18) {
-          this.cardFlickActive[slot] = false;
-          this.scheduleTaskToTimelineZone(slot, 12 * 60, 'Midday (12:00)');
-        } else if (distEvening < 0.18) {
-          this.cardFlickActive[slot] = false;
-          this.scheduleTaskToTimelineZone(slot, 15 * 60, 'Evening (15:00)');
-        } else if (this.cardFlickVelocity[slot].length() < 0.08) {
-          this.cardFlickActive[slot] = false;
-          this.startCardReturnHome(slot);
-        }
+        this.startCardReturnHome(slot);
+        this.renderTasks();
       }
-    }
-
-    // Update glowing highlights on timeline zone buttons
-    if (this.timelineZoneMorningButton) {
-      this.timelineZoneMorningButton.setProperties({
-        borderColor: hoveredZone === 'morning' ? '#4ade80' : '#2b414c',
-        backgroundColor: hoveredZone === 'morning' ? '#1c3e2e' : '#182833',
-      });
-    }
-    if (this.timelineZoneMiddayButton) {
-      this.timelineZoneMiddayButton.setProperties({
-        borderColor: hoveredZone === 'midday' ? '#4ade80' : '#2b414c',
-        backgroundColor: hoveredZone === 'midday' ? '#1c3e2e' : '#182833',
-      });
-    }
-    if (this.timelineZoneEveningButton) {
-      this.timelineZoneEveningButton.setProperties({
-        borderColor: hoveredZone === 'evening' ? '#4ade80' : '#2b414c',
-        backgroundColor: hoveredZone === 'evening' ? '#1c3e2e' : '#182833',
-      });
     }
   }
 
@@ -4447,6 +4561,11 @@ export class PanelSystem extends createSystem({
   }
 
   update(delta: number, _time: number): void {
+    if (this.deskRulerScene) {
+      const now = new Date();
+      const currentMin = now.getHours() * 60 + now.getMinutes();
+      this.deskRulerScene.updateNowMarker(currentMin, delta);
+    }
     this.checkHandTrackingLoss(delta);
     this.checkPinchDragTimelineDrop(delta);
     this.updateCardReturnAnimations(delta);
