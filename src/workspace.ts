@@ -1,15 +1,7 @@
 import {
   Entity,
   Group,
-  Mesh,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
-  PlaneGeometry,
   Quaternion,
-  SRGBColorSpace,
-  SphereGeometry,
-  Texture,
-  TextureLoader,
   UIKitMLAsset,
   Vector3,
   XRAnchor,
@@ -36,15 +28,7 @@ type PlacementLoadResult = {
 };
 
 const PLACEMENT_STORAGE_KEY = 'deskmate.workspace-placement.v1';
-const DEFAULT_WORKSPACE_POSITION = [0, 0, 0] as const;
-
-export const ROOM_360_TEXTURES: Record<string, string> = {
-  sunlit_living_room: 'textures/living-room-360.jpg',
-  bedroom: 'textures/bedroom-360.jpg',
-  kitchen: 'textures/kitchen-360.jpg',
-  home_office: 'textures/office-360.jpg',
-};
-
+const DEFAULT_WORKSPACE_POSITION = [0, 0.75, -0.85] as const;
 const WORKSPACE_NODE_IDS = [
   'workspace-desk',
   'desk-ruler',
@@ -97,16 +81,6 @@ function readWorkspacePlacement(): PlacementLoadResult {
         message: 'Saved desk position is invalid. Existing data is protected.',
       };
     }
-    const [x, y, z] = parsed.position;
-    // Purge legacy out-of-bounds coordinates
-    if (y < 0.65 || z < -1.1 || Math.abs(x) > 1.8) {
-      window.localStorage.removeItem(PLACEMENT_STORAGE_KEY);
-      return {
-        placement: null,
-        writable: true,
-        message: 'Workspace centered on your executive desk.',
-      };
-    }
     return {
       placement: parsed,
       writable: true,
@@ -151,9 +125,6 @@ export class WorkspaceSystem extends createSystem({
   private worldUp = new Vector3(0, 1, 0);
   private worldRotation = new Quaternion();
   private parentWorldRotation = new Quaternion();
-  private roomSphereMat!: MeshBasicMaterial;
-  private textureLoader = new TextureLoader();
-  private texturesCache = new Map<string, Texture>();
 
   init(): void {
     const dashboard = this.world.requireSceneObject<UIKitMLAsset>(
@@ -174,12 +145,12 @@ export class WorkspaceSystem extends createSystem({
     this.storageWritable = loadedPlacement.writable;
     this.setStatus(
       loadedPlacement.message ||
-        'DeskMate 360 Workspace active and ready.',
+        'Workspace ready. Enter XR, look at a tabletop, then pin your desk.',
     );
 
     this.workspaceRoot = new Group();
     this.workspaceRoot.name = 'Deskmate Workspace Anchor';
-    this.workspaceRoot.position.set(0, 0, 0);
+    this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
     this.workspaceEntity = this.world.createTransformEntity(this.workspaceRoot);
 
     for (const nodeId of WORKSPACE_NODE_IDS) {
@@ -188,81 +159,10 @@ export class WorkspaceSystem extends createSystem({
         console.warn(`[DeskMate] Workspace scene node "${nodeId}" could not be found.`);
         continue;
       }
+      object.position.sub(this.workspaceRoot.position);
       this.workspaceRoot.add(object);
     }
-
-    // ------------------------------------------------------------------
-    // 360-Degree Panoramic Room Environment & Architecture
-    // ------------------------------------------------------------------
-    try {
-      // 1. Warm hardwood floor under the desk
-      const floorGeo = new PlaneGeometry(16, 16);
-      const floorMat = new MeshStandardMaterial({
-        color: 0xb58b53, // Warm natural oak
-        roughness: 0.6,
-        metalness: 0.05,
-      });
-      const floor = new Mesh(floorGeo, floorMat);
-      floor.name = 'DeskmateHardwoodFloor';
-      floor.rotation.x = -Math.PI / 2;
-      floor.position.set(0, 0, 0);
-      this.world.createTransformEntity(floor);
-
-      // 2. Area rug under the desk
-      const rugGeo = new PlaneGeometry(3.2, 2.4);
-      const rugMat = new MeshStandardMaterial({
-        color: 0xded8cc, // Warm woven wool rug
-        roughness: 0.85,
-      });
-      const rug = new Mesh(rugGeo, rugMat);
-      rug.name = 'DeskmateAreaRug';
-      rug.rotation.x = -Math.PI / 2;
-      rug.position.set(0, 0.002, -0.70);
-      this.world.createTransformEntity(rug);
-
-      // 3. 360-degree Panoramic Sky Dome Sphere
-      const sphereGeo = new SphereGeometry(40, 60, 40);
-      sphereGeo.scale(-1, 1, 1); // Invert so faces point inward
-
-      const loadTexture = (relPath: string): Texture => {
-        const fullUrl = `${import.meta.env.BASE_URL}${relPath}`.replace(/\/\//g, '/');
-        if (this.texturesCache.has(fullUrl)) {
-          return this.texturesCache.get(fullUrl)!;
-        }
-        const tex = this.textureLoader.load(fullUrl);
-        tex.colorSpace = SRGBColorSpace;
-        this.texturesCache.set(fullUrl, tex);
-        return tex;
-      };
-
-      const initialTexture = loadTexture(ROOM_360_TEXTURES.sunlit_living_room);
-      this.roomSphereMat = new MeshBasicMaterial({
-        map: initialTexture,
-        depthWrite: false,
-      });
-
-      const roomSphere = new Mesh(sphereGeo, this.roomSphereMat);
-      roomSphere.name = 'DeskmateRoom360Sphere';
-      roomSphere.position.set(0, 1.2, 0);
-      this.world.createTransformEntity(roomSphere);
-
-      // Preload the other 3 rooms for instant switching
-      loadTexture(ROOM_360_TEXTURES.bedroom);
-      loadTexture(ROOM_360_TEXTURES.kitchen);
-      loadTexture(ROOM_360_TEXTURES.home_office);
-
-      // Expose global room switcher
-      (window as unknown as { __switchRoom360?: (envId: string) => void }).__switchRoom360 = (envId: string) => {
-        const texturePath = ROOM_360_TEXTURES[envId] || ROOM_360_TEXTURES.sunlit_living_room;
-        const newTexture = loadTexture(texturePath);
-        if (this.roomSphereMat) {
-          this.roomSphereMat.map = newTexture;
-          this.roomSphereMat.needsUpdate = true;
-        }
-      };
-    } catch (err) {
-      console.warn('[DeskMate] Could not initialize 360 room environment:', err);
-    }
+    this.workspaceEntity.addComponent(XRAnchor);
 
     pinButton.name = 'Pin the workspace above the tabletop in view';
     resetButton.name = 'Reset the workspace to its default position';
@@ -297,21 +197,28 @@ export class WorkspaceSystem extends createSystem({
       this.wasInXR = inXR;
       const desk = this.world.getSceneObject('workspace-desk');
       if (desk !== undefined) {
-        desk.visible = true;
+        // In real XR passthrough on physical Quest, hide virtual table so physical desk shows through
+        const isPhysicalQuest =
+          typeof navigator !== 'undefined' &&
+          /OculusBrowser/i.test(navigator.userAgent);
+        desk.visible = !inXR || !isPhysicalQuest;
       }
     }
 
-    if (this.savedPlacement !== null) {
+    if (
+      this.savedPlacement !== null &&
+      this.workspaceEntity.getValue(XRAnchor, 'attached')
+    ) {
       const [x, y, z] = this.savedPlacement.position;
       // Safeguard against corrupted or out-of-bounds coordinates
-      if (Math.abs(x) < 1.8 && y >= 0.65 && z >= -1.1) {
+      if (Math.abs(x) < 2.5 && y > 0.2 && y < 1.6 && Math.abs(z) < 2.5) {
         this.workspaceRoot.position.fromArray(this.savedPlacement.position);
         this.workspaceRoot.quaternion.fromArray(this.savedPlacement.quaternion);
-        this.setStatus('Workspace restored to your saved desk position.');
+        this.setStatus('Workspace restored to its saved room position.');
       } else {
-        this.workspaceRoot.position.set(0, 0, 0);
+        this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
         this.workspaceRoot.quaternion.identity();
-        this.setStatus('Workspace aligned to your executive desk.');
+        this.setStatus('Workspace aligned to your desk.');
       }
       this.savedPlacement = null;
     }

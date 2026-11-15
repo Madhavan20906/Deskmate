@@ -1942,7 +1942,7 @@ export class PanelSystem extends createSystem({
       const isFocusedTask = active?.taskId === task.id;
       const isAwaitingCompletion = isFocusedTask && active.status === 'awaiting-completion';
       card.focusStartButton.setProperties({
-        display: task.status !== 'completed' ? 'flex' : 'none',
+        display: active === null && task.status !== 'completed' ? 'flex' : 'none',
       });
       card.focusStartButton.name = `Start ${this.focusStorage.durationMinutes} minute focus on ${task.title}`;
       card.focusPauseButton.name = `Pause focus on ${task.title}`;
@@ -1993,8 +1993,8 @@ export class PanelSystem extends createSystem({
 
       if (active !== null) {
         card.root.setProperties({
-          borderColor: isFocusedTask ? '#38bdf8' : '#475569',
-          backgroundColor: isFocusedTask ? '#0f2d42' : '#1e293b',
+          borderColor: isFocusedTask ? '#53cbb5' : '#34434c',
+          backgroundColor: isFocusedTask ? '#183942' : '#10191f',
         });
       }
     }
@@ -3431,23 +3431,23 @@ export class PanelSystem extends createSystem({
       const isSelected = this.selectedTask === task.id;
       const isFocused = this.focusStorage.active !== null && this.focusStorage.active.taskId === task.id;
       const isOtherDuringFocus = this.focusStorage.active !== null && !isFocused;
+      const cardOpacity = isOtherDuringFocus ? '0.45' : '1.0';
       card.root.setProperties({
         display: 'flex',
-        opacity: '1.0',
-        borderWidth: isSelected ? 3 : 2,
+        opacity: cardOpacity,
+        borderWidth: isSelected ? 4 : 2,
         borderColor: isFocused
-          ? '#38bdf8'
+          ? '#ffd54f'
           : isSelected
-            ? '#38bdf8'
+            ? '#f5d90a'
             : conflictingIds.has(task.id)
-              ? '#ef4444'
+              ? '#ef756d'
               : priorityColor,
-        backgroundColor: isFocused ? '#0f2d42' : (task.priority === 'high' ? '#2e1c14' : task.priority === 'medium' ? '#142926' : '#1e293b'),
+        backgroundColor: isOtherDuringFocus ? '#0f171d' : (task.priority === 'high' ? '#451a03' : task.priority === 'medium' ? '#064e3b' : '#3b0764'),
       });
-      card.title.setProperties({ text: task.title, color: '#ffffff' });
+      card.title.setProperties({ text: task.title });
       card.description.setProperties({
         text: task.description || 'No description',
-        color: '#cbd5e1',
       });
       const durStr = task.estimatedMinutes >= 60 ? `${Math.round(task.estimatedMinutes / 60)}h` : `${task.estimatedMinutes}m`;
       const priStr = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
