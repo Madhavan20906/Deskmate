@@ -156,7 +156,8 @@ export class WorkspaceSystem extends createSystem({
     for (const nodeId of WORKSPACE_NODE_IDS) {
       const object = this.world.getSceneObject(nodeId);
       if (object === undefined) {
-        throw new Error(`Workspace scene node "${nodeId}" could not be found.`);
+        console.warn(`[DeskMate] Workspace scene node "${nodeId}" could not be found.`);
+        continue;
       }
       object.position.sub(this.workspaceRoot.position);
       this.workspaceRoot.add(object);

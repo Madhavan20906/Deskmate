@@ -31,9 +31,15 @@ const DEFAULT_POSE = {
 
 let currentZ = DEFAULT_POSE.z;
 let currentEnv: EnvironmentId = 'sunlit_living_room';
+let handsEnabled = true;
 
 function positionHandsOnDesk(device: any) {
   if (!device.hands) return;
+  if (!handsEnabled) {
+    if (device.hands.left) device.hands.left.connected = false;
+    if (device.hands.right) device.hands.right.connected = false;
+    return;
+  }
   // Position hands resting naturally on tabletop surface near the Desk Ruler
   if (device.hands.left?.position) {
     device.hands.left.connected = true;
@@ -125,11 +131,18 @@ export function switchEnvironment(env: EnvironmentId) {
   const sem = win.IWER_DEVICE?.sem;
   if (sem && typeof sem.loadDefaultEnvironment === 'function') {
     sem.loadDefaultEnvironment(env).then(() => {
-      // Re-apply seated camera pose & hands so the user is ALWAYS seated facing their desk in EVERY room!
+      // Re-apply seated camera pose & hands with resilient retries so the user is ALWAYS seated facing their desk in EVERY room!
       const device = win.IWER_DEVICE;
       if (device) {
-        applyCameraPose(device, currentZ);
-        positionHandsOnDesk(device);
+        const restorePose = () => {
+          applyCameraPose(device, currentZ);
+          positionHandsOnDesk(device);
+        };
+        restorePose();
+        setTimeout(restorePose, 50);
+        setTimeout(restorePose, 150);
+        setTimeout(restorePose, 350);
+        setTimeout(restorePose, 700);
       }
     }).catch((err: unknown) => {
       console.warn('[DeskMate] Could not switch environment to ' + env, err);
@@ -224,6 +237,13 @@ function setupPreviewToolbar() {
       <button id="dm-btn-zoom-in" title="Zoom In" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 15px; font-weight: bold; cursor: pointer; display: grid; place-items: center;">+</button>
     </div>
 
+    <!-- Hands Toggle -->
+    <div style="border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 10px;">
+      <button id="dm-btn-toggle-hands" title="Toggle Hands Wireframe (Useful for recording clean video without emulator lines)" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #34d399; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+        ✋ Hands: ON
+      </button>
+    </div>
+
     <!-- Enter Quest XR Button -->
     <div style="border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 10px;">
       <button id="dm-btn-enter-xr" style="border: 0; background: linear-gradient(135deg, #0082fb 0%, #00d2ff 100%); color: #ffffff; padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 7px; box-shadow: 0 0 16px rgba(0, 130, 251, 0.55); letter-spacing: 0.3px;">
@@ -243,6 +263,20 @@ function setupPreviewToolbar() {
   document.getElementById('dm-btn-zoom-in')?.addEventListener('click', () => adjustZoom(-0.12));
   document.getElementById('dm-btn-zoom-out')?.addEventListener('click', () => adjustZoom(0.12));
   document.getElementById('dm-btn-zoom-reset')?.addEventListener('click', () => resetZoom());
+
+  const toggleHandsBtn = document.getElementById('dm-btn-toggle-hands');
+  toggleHandsBtn?.addEventListener('click', () => {
+    handsEnabled = !handsEnabled;
+    const win = window as any;
+    const device = win.IWER_DEVICE;
+    if (device) {
+      positionHandsOnDesk(device);
+    }
+    if (toggleHandsBtn) {
+      toggleHandsBtn.textContent = handsEnabled ? '✋ Hands: ON' : '✋ Hands: OFF';
+      toggleHandsBtn.style.color = handsEnabled ? '#34d399' : '#94a3b8';
+    }
+  });
 
   document.getElementById('dm-btn-enter-xr')?.addEventListener('click', () => {
     const launch = (window as any).__launchXR;

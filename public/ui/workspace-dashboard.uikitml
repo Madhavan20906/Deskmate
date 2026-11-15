@@ -1019,6 +1019,7 @@
           <ButtonLabel id="toggle-analytics-label">Insights</ButtonLabel>
         </Button>
         <Button id="pip-toggle" class="header-pill">
+          <span id="pip-launcher-orb" class="pip-launcher-orb"></span>
           <ButtonLabel>Pip</ButtonLabel>
         </Button>
         <Button id="ghost-audio-toggle" style="display: none">

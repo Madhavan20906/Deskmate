@@ -744,9 +744,7 @@ export class PanelSystem extends createSystem({
     ReturnType<UIKitMLAsset['getElementById']>
   >;
   private pipOrb!: NonNullable<ReturnType<UIKitMLAsset['getElementById']>>;
-  private pipLauncherOrb!: NonNullable<
-    ReturnType<UIKitMLAsset['getElementById']>
-  >;
+  private pipLauncherOrb: ReturnType<UIKitMLAsset['getElementById']> | null = null;
   private pipStateLabel!: NonNullable<
     ReturnType<UIKitMLAsset['getElementById']>
   >;
@@ -1049,7 +1047,7 @@ export class PanelSystem extends createSystem({
       analyticsBars.some((bar) => bar === null) ||
       analyticsDayCounts.some((count) => count === null) ||
       pipToggleButton == null || pipPanelRoot == null || pipOrb == null ||
-      pipLauncherOrb == null || pipStateLabel == null || pipResponse == null ||
+      pipStateLabel == null || pipResponse == null ||
       pipTranscript == null || pipListenButton == null || pipListenLabel == null ||
       pipRecapButton == null || pipDismissButton == null ||
       pipConfirmationRow == null || pipConfirmScheduleButton == null ||
@@ -1087,7 +1085,7 @@ export class PanelSystem extends createSystem({
     this.pipToggleButton = pipToggleButton;
     this.pipPanelRoot = pipPanelRoot;
     this.pipOrb = pipOrb;
-    this.pipLauncherOrb = pipLauncherOrb;
+    this.pipLauncherOrb = pipLauncherOrb ?? null;
     this.pipStateLabel = pipStateLabel;
     this.pipResponse = pipResponse;
     this.pipTranscript = pipTranscript;
@@ -2321,7 +2319,7 @@ export class PanelSystem extends createSystem({
       ? emoteColors[this.currentPipEmote]
       : colors[this.pipInteractionState];
     this.pipOrb.setProperties({ backgroundColor: orbColor });
-    this.pipLauncherOrb.setProperties({ backgroundColor: orbColor });
+    this.pipLauncherOrb?.setProperties({ backgroundColor: orbColor });
     if (this.pipEmoteBadge !== null) {
       this.pipEmoteBadge.setProperties({ text: this.currentPipEmote.toUpperCase() });
     }
