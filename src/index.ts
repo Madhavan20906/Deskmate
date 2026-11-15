@@ -38,32 +38,17 @@ async function bootstrap() {
     });
   }
 
-  const overlay = document.querySelector('.xr-overlay') as HTMLElement | null;
-  const updateSessionUI = () => {
-    if (overlay) {
-      if (world.session) {
-        overlay.classList.add('xr-session-active');
-      } else {
-        overlay.classList.remove('xr-session-active');
-      }
-    }
-  };
+  const welcomeObj = world.getSceneObject('welcome-panel');
+  if (welcomeObj) welcomeObj.visible = false;
 
   (window as unknown as { __launchXR?: () => void }).__launchXR = () => {
     world.launchXR();
   };
 
-  const launchButton =
-    document.getElementById('xr-overlay-launch-btn') ??
-    document.querySelector('.xr-launch-button');
-  launchButton?.addEventListener('click', () => {
-    world.launchXR();
-  });
-
   const nav = navigator as Navigator & {
     xr?: { isSessionSupported?: (m: string) => Promise<boolean> };
   };
-  if ('getDigitalGoodsService' in window && nav.xr?.isSessionSupported) {
+  if (nav.xr?.isSessionSupported) {
     nav.xr
       .isSessionSupported('immersive-ar')
       .then((supported) => {
@@ -71,32 +56,22 @@ async function bootstrap() {
       })
       .catch(() => {});
   } else if (!isQuestOrNativeXR()) {
-    // In desktop preview & local dev, entering XR brings the 3D room environment and hands alive
     setTimeout(() => {
-      world.launchXR();
-    }, 200);
-
-    // Any first click on the scene container also immediately launches XR if blocked by user-gesture policy
-    const container = document.getElementById('scene-container');
-    container?.addEventListener('click', () => {
-      if (!world.session && !world.sessionRequestPending) {
+      try {
         world.launchXR();
-      }
-    }, { once: true });
+      } catch {}
+    }, 200);
   }
 
   world.renderer.xr.addEventListener('sessionstart', () => {
-    updateSessionUI();
     enforceSeatedXRPose();
-    const welcomeObj = world.getSceneObject('welcome-panel');
-    if (welcomeObj) welcomeObj.visible = false;
+    const w = world.getSceneObject('welcome-panel');
+    if (w) w.visible = false;
   });
   world.renderer.xr.addEventListener('sessionend', () => {
-    updateSessionUI();
-    const welcomeObj = world.getSceneObject('welcome-panel');
-    if (welcomeObj) welcomeObj.visible = true;
+    const w = world.getSceneObject('welcome-panel');
+    if (w) w.visible = false;
   });
-  updateSessionUI();
 
   world.registerSystem(PanelSystem);
   world.registerSystem(WorkspaceSystem);

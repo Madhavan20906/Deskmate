@@ -30,10 +30,20 @@
   }
 
   .header-pill {
-    background-color: #1e293b;
+    background-color: #1e3a5f;
     border-width: 1px;
-    border-color: #334155;
+    border-color: #38bdf8;
     border-radius: 999px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .header-pill-label {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
   }
 
   .day-chip {
@@ -56,10 +66,20 @@
   }
 
   .desk-btn {
-    background-color: #1e293b;
+    background-color: #0284c7;
     border-width: 1px;
-    border-color: #334155;
+    border-color: #38bdf8;
     border-radius: 999px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .desk-btn-label {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
   }
 
   .workspace-setup {
@@ -67,18 +87,20 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 14px;
+    padding-right: 14px;
     border-radius: 12px;
-    background-color: #16242c;
+    background-color: #0f1d24;
+    border-width: 1px;
+    border-color: #1e3a47;
   }
 
   .workspace-anchor-status {
-    color: #94a3b8;
-    font-size: 15px;
-    font-weight: 600;
+    color: #38bdf8;
+    font-size: 14px;
+    font-weight: 700;
   }
 
   .workspace-setup-actions {
@@ -1016,11 +1038,11 @@
       <div class="header-actions">
         <div class="day-chip"><span class="day-chip-text">Your day</span></div>
         <Button id="toggle-analytics" class="header-pill">
-          <ButtonLabel id="toggle-analytics-label">Insights</ButtonLabel>
+          <ButtonLabel id="toggle-analytics-label" class="header-pill-label">Insights</ButtonLabel>
         </Button>
         <Button id="pip-toggle" class="header-pill">
           <span id="pip-launcher-orb" class="pip-launcher-orb"></span>
-          <ButtonLabel>Pip</ButtonLabel>
+          <ButtonLabel class="header-pill-label">Pip</ButtonLabel>
         </Button>
         <Button id="ghost-audio-toggle" style="display: none">
           <ButtonLabel id="ghost-audio-label">Sound: ON</ButtonLabel>
@@ -1033,16 +1055,16 @@
     <div class="workspace-setup">
       <div class="workspace-setup-actions">
         <Button id="workspace-pin" class="desk-btn">
-          <ButtonLabel>Pin to desk</ButtonLabel>
+          <ButtonLabel class="desk-btn-label">Pin to desk</ButtonLabel>
         </Button>
         <Button id="workspace-nudge-up" class="desk-btn">
-          <ButtonLabel>+5 cm</ButtonLabel>
+          <ButtonLabel class="desk-btn-label">+5 cm</ButtonLabel>
         </Button>
         <Button id="workspace-nudge-down" class="desk-btn">
-          <ButtonLabel>-5 cm</ButtonLabel>
+          <ButtonLabel class="desk-btn-label">-5 cm</ButtonLabel>
         </Button>
         <Button id="workspace-reset" style="display: none">
-          <ButtonLabel>Reset</ButtonLabel>
+          <ButtonLabel class="desk-btn-label">Reset</ButtonLabel>
         </Button>
       </div>
       <span id="workspace-anchor-status" class="workspace-anchor-status">Desk position saved</span>
