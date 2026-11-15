@@ -74,7 +74,7 @@
         "position": [
           0,
           0,
-          -0.80
+          -0.70
         ],
         "scale": 1
       }
@@ -94,8 +94,8 @@
       "transform": {
         "position": [
           0,
-          0.74,
-          -0.48
+          0.745,
+          -0.46
         ],
         "scale": 1
       }
@@ -114,11 +114,11 @@
       "name": "Pip 3D Companion",
       "transform": {
         "position": [
-          -0.62,
-          0.75,
-          -0.52
+          -0.58,
+          0.745,
+          -0.48
         ],
-        "scale": 1.45
+        "scale": 1.25
       }
     },
     {
@@ -135,9 +135,9 @@
       "name": "Sprint 3D Dial",
       "transform": {
         "position": [
-          0.32,
-          0.74,
-          -0.56
+          0.28,
+          0.745,
+          -0.48
         ],
         "scale": 1
       }
@@ -156,9 +156,9 @@
       "name": "Desk Plant",
       "transform": {
         "position": [
-          0.58,
-          0.74,
-          -0.58
+          0.54,
+          0.745,
+          -0.52
         ],
         "scale": 1
       }
@@ -178,8 +178,8 @@
       "transform": {
         "position": [
           0.44,
-          0.74,
-          -0.68
+          0.745,
+          -0.66
         ],
         "scale": 1
       }
@@ -199,8 +199,8 @@
       "transform": {
         "position": [
           -0.52,
-          0.74,
-          -0.62
+          0.745,
+          -0.66
         ],
         "scale": 1
       }
@@ -219,9 +219,9 @@
       "name": "Ghost Deskmate Companion",
       "transform": {
         "position": [
-          -0.45,
-          1.02,
-          -0.62
+          -0.68,
+          0.98,
+          -0.66
         ],
         "scale": 1
       }
@@ -240,10 +240,15 @@
       "transform": {
         "position": [
           0,
-          1.36,
-          -0.92
+          1.25,
+          -0.78
         ],
-        "scale": 0.105
+        "rotationDeg": [
+          -4,
+          0,
+          0
+        ],
+        "scale": 0.10
       }
     },
     {
@@ -270,16 +275,16 @@
       "name": "Roadmap Task Card",
       "transform": {
         "position": [
-          -0.36,
-          1.05,
-          -0.75
+          -0.34,
+          0.94,
+          -0.64
         ],
         "rotationDeg": [
-          0,
+          -6,
           0,
           0
         ],
-        "scale": 0.11
+        "scale": 0.10
       }
     },
     {
@@ -307,10 +312,15 @@
       "transform": {
         "position": [
           0,
-          1.05,
-          -0.75
+          0.94,
+          -0.64
         ],
-        "scale": 0.11
+        "rotationDeg": [
+          -6,
+          0,
+          0
+        ],
+        "scale": 0.10
       }
     },
     {
@@ -337,11 +347,16 @@
       "name": "Inbox Task Card",
       "transform": {
         "position": [
-          0.36,
-          1.05,
-          -0.75
+          0.34,
+          0.94,
+          -0.64
         ],
-        "scale": 0.11
+        "rotationDeg": [
+          -6,
+          0,
+          0
+        ],
+        "scale": 0.10
       }
     },
     {
@@ -368,11 +383,11 @@
       "name": "Task Card 4",
       "transform": {
         "position": [
-          -0.48,
-          0.82,
-          -0.72
+          0,
+          -10,
+          0
         ],
-        "scale": 0.13
+        "scale": 0.10
       }
     },
     {
@@ -400,10 +415,10 @@
       "transform": {
         "position": [
           0,
-          0.82,
-          -0.72
+          -10,
+          0
         ],
-        "scale": 0.13
+        "scale": 0.10
       }
     },
     {
@@ -430,11 +445,11 @@
       "name": "Task Card 6",
       "transform": {
         "position": [
-          0.48,
-          0.82,
-          -0.72
+          0,
+          -10,
+          0
         ],
-        "scale": 0.13
+        "scale": 0.10
       }
     },
     {
@@ -451,15 +466,10 @@
       "transform": {
         "position": [
           0,
-          1.76,
-          -1.40
-        ],
-        "rotationDeg": [
-          -3,
-          0,
+          -20,
           0
         ],
-        "scale": 0.11
+        "scale": 0.0001
       }
     },
     {
