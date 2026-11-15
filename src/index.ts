@@ -60,6 +60,9 @@ async function bootstrap() {
     world.launchXR();
   });
 
+  const welcomeInit = world.getSceneObject('welcome-panel');
+  if (welcomeInit) welcomeInit.visible = false;
+
   const nav = navigator as Navigator & {
     xr?: { isSessionSupported?: (m: string) => Promise<boolean> };
   };
@@ -71,14 +74,15 @@ async function bootstrap() {
       })
       .catch(() => {});
   } else if (!isQuestOrNativeXR()) {
-    // In desktop preview & local dev, entering XR brings the 3D room environment and hands alive
-    setTimeout(() => {
+    // In desktop preview & Vercel, immediately step straight into the 3D room XR view
+    try {
       world.launchXR();
-    }, 200);
+    } catch {
+      // Ignored if user interaction needed
+    }
 
-    // Any first click on the scene container also immediately launches XR if blocked by user-gesture policy
-    const container = document.getElementById('scene-container');
-    container?.addEventListener('click', () => {
+    // Any first pointer interaction immediately enters XR if browser required user gesture
+    window.addEventListener('pointerdown', () => {
       if (!world.session && !world.sessionRequestPending) {
         world.launchXR();
       }
@@ -94,7 +98,7 @@ async function bootstrap() {
   world.renderer.xr.addEventListener('sessionend', () => {
     updateSessionUI();
     const welcomeObj = world.getSceneObject('welcome-panel');
-    if (welcomeObj) welcomeObj.visible = true;
+    if (welcomeObj) welcomeObj.visible = false;
   });
   updateSessionUI();
 

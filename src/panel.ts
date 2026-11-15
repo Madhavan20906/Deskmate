@@ -3431,7 +3431,7 @@ export class PanelSystem extends createSystem({
       const isSelected = this.selectedTask === task.id;
       const isFocused = this.focusStorage.active !== null && this.focusStorage.active.taskId === task.id;
       const isOtherDuringFocus = this.focusStorage.active !== null && !isFocused;
-      const cardOpacity = isOtherDuringFocus ? '0.45' : '1.0';
+      const cardOpacity = isOtherDuringFocus ? '0.85' : '1.0';
       card.root.setProperties({
         display: 'flex',
         opacity: cardOpacity,
@@ -3443,7 +3443,7 @@ export class PanelSystem extends createSystem({
             : conflictingIds.has(task.id)
               ? '#ef756d'
               : priorityColor,
-        backgroundColor: isOtherDuringFocus ? '#0f171d' : (task.priority === 'high' ? '#451a03' : task.priority === 'medium' ? '#064e3b' : '#3b0764'),
+        backgroundColor: task.priority === 'high' ? '#451a03' : task.priority === 'medium' ? '#064e3b' : '#1e293b',
       });
       card.title.setProperties({ text: task.title });
       card.description.setProperties({

@@ -56,10 +56,20 @@
   }
 
   .desk-btn {
-    background-color: #1e293b;
+    background-color: #0f172a;
     border-width: 1px;
-    border-color: #334155;
+    border-color: #38bdf8;
     border-radius: 999px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .desk-btn > * {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
   }
 
   .workspace-setup {
