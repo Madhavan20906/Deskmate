@@ -1246,17 +1246,27 @@ export class PanelSystem extends createSystem({
     }
 
     this.tableObject = this.world.getSceneObject('workspace-desk') ?? null;
-    if (this.tableObject) {
-      this.deskRulerScene = new DeskRulerScene();
+    const rulerNode = this.world.getSceneObject('desk-ruler') ?? null;
+    this.deskRulerScene = new DeskRulerScene();
+    if (rulerNode) {
+      rulerNode.add(this.deskRulerScene.root);
+      this.deskRulerScene.root.position.set(0, 0, 0);
+    } else if (this.tableObject) {
       this.tableObject.add(this.deskRulerScene.root);
       this.deskRulerScene.root.position.set(0, 0.74, 0.33);
-      this.setupDeskRulerInteractions();
+    } else {
+      this.world.scene.add(this.deskRulerScene.root);
+      this.deskRulerScene.root.position.set(0, 0.74, -0.48);
+    }
+    this.setupDeskRulerInteractions();
 
+    if (this.tableObject) {
       const onTableClick = (e: { point?: Vector3 }) => {
         if (!this.actionDebouncer.canExecute()) return;
         if (this.pipObject && !this.pipWasGrabbed) {
-          const targetX = e?.point ? Math.max(-0.65, Math.min(0.65, e.point.x)) : 0.0;
-          const targetZ = e?.point ? Math.max(-0.95, Math.min(-0.45, e.point.z)) : -0.55;
+          // Keep Pip strictly on the side of the desk with >= 20cm clearance from cards
+          const targetX = e?.point && e.point.x < 0 ? Math.max(-0.68, Math.min(-0.55, e.point.x)) : Math.max(0.55, Math.min(0.68, e?.point?.x ?? 0.60));
+          const targetZ = e?.point ? Math.max(-0.60, Math.min(-0.48, e.point.z)) : -0.52;
           this.startPipHop(targetX, targetZ);
         }
       };
@@ -1695,9 +1705,9 @@ export class PanelSystem extends createSystem({
         this.dismissedSuggestionFor = null;
         this.schedulerMessage = '';
         this.ghostAudio.playPinchTick();
-        if (this.pipObject && !this.pipWasGrabbed && this.cardHomePositions[slot]) {
-          const targetCardX = this.cardHomePositions[slot].x * 0.65;
-          this.startPipHop(targetCardX, -0.60);
+        if (this.pipObject && !this.pipWasGrabbed) {
+          // Keep Pip safely in the side desk zone, >= 20cm clearance from card buttons
+          this.startPipHop(-0.62, -0.52);
         }
         this.renderTasks();
       };
@@ -3435,28 +3445,25 @@ export class PanelSystem extends createSystem({
             : conflictingIds.has(task.id)
               ? '#ef756d'
               : priorityColor,
-        backgroundColor: isOtherDuringFocus ? '#0f171d' : taskBackground,
+        backgroundColor: isOtherDuringFocus ? '#0f171d' : (task.priority === 'high' ? '#451a03' : task.priority === 'medium' ? '#064e3b' : '#3b0764'),
       });
       card.title.setProperties({ text: task.title });
       card.description.setProperties({
         text: task.description || 'No description',
       });
-      const scheduleLabel = task.scheduledStartMinute === null
-        ? task.scheduleNeedsReview
-          ? 'SCHEDULE REVIEW'
-          : 'UNSCHEDULED'
-        : `${formatTime(task.scheduledStartMinute)}-${formatTime(task.scheduledStartMinute + task.estimatedMinutes)}`;
+      const durStr = task.estimatedMinutes >= 60 ? `${Math.round(task.estimatedMinutes / 60)}h` : `${task.estimatedMinutes}m`;
+      const priStr = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
       card.priority.setProperties({
-        text: `${task.priority.toUpperCase()} PRIORITY / ${task.estimatedMinutes} MIN / ${task.category ? `${task.category.toUpperCase()} / ` : ''}${scheduleLabel} / ${taskPhase(task)}`,
+        text: `${priStr} priority, ${durStr}`,
         color: priorityColor,
       });
       card.statusLabel.setProperties({
         text:
           task.status === 'todo'
-            ? 'Start task'
+            ? 'Start'
             : task.status === 'in-progress'
-              ? 'Mark completed'
-              : 'Move to to do',
+              ? 'Done'
+              : 'Reset',
       });
       card.statusButton.name = `${statusLabel(task.status)}: ${task.title}`;
       card.selectButton.name = `Select ${task.title}`;
@@ -4153,8 +4160,9 @@ export class PanelSystem extends createSystem({
         // Autonomous wander hop: Pip hops softly around nearby to stay lively
         const angle = Math.random() * Math.PI * 2;
         const dist = 0.06 + Math.random() * 0.10;
-        const targetX = Math.max(-0.55, Math.min(0.55, this.pipRestingPos.x + Math.cos(angle) * dist));
-        const targetZ = Math.max(-0.85, Math.min(-0.48, this.pipRestingPos.z + Math.sin(angle) * dist));
+        // Autonomous wander hop: Pip stays strictly in the side safe zone, >= 20cm clearance from card buttons
+        const targetX = Math.max(-0.68, Math.min(-0.56, this.pipRestingPos.x + (Math.random() - 0.5) * 0.08));
+        const targetZ = Math.max(-0.56, Math.min(-0.48, this.pipRestingPos.z + (Math.random() - 0.5) * 0.08));
         this.startPipHop(targetX, targetZ, this.pipRestingPos.y);
       }
     }

@@ -19,18 +19,31 @@ export type EnvironmentId =
   | 'home_office';
 
 // Default comfortable readable seated viewing pose:
-// Desk is at [0, 0, -0.80], tabletop at y = 0.74, cards at y = 0.82 & 1.10, dashboard at z = -1.05.
-// Camera at z = 0.52, y = 1.38 (~1.15m away) with 54° FOV gives natural seated reach and razor-sharp text readability.
+// Desk is at [0, 0, -0.80], tabletop at y = 0.74, cards at y = 1.05, dashboard at z = -0.92.
+// Camera at z = 0.38, y = 1.22 with -12.6° pitch brings the Dashboard, 3 Task Cards, AND the Desk Ruler all into view!
 const DEFAULT_POSE = {
   x: 0,
-  y: 1.38,
-  z: 0.52,
-  pitchRad: -0.12,
-  fovyRad: (54 * Math.PI) / 180,
+  y: 1.22,
+  z: 0.38,
+  pitchRad: -0.22,
+  fovyRad: (56 * Math.PI) / 180,
 };
 
 let currentZ = DEFAULT_POSE.z;
 let currentEnv: EnvironmentId = 'sunlit_living_room';
+
+function positionHandsOnDesk(device: any) {
+  if (!device.hands) return;
+  // Position hands resting naturally on tabletop surface near the Desk Ruler
+  if (device.hands.left?.position) {
+    device.hands.left.connected = true;
+    device.hands.left.position.set(-0.25, 0.74, -0.42);
+  }
+  if (device.hands.right?.position) {
+    device.hands.right.connected = true;
+    device.hands.right.position.set(0.25, 0.74, -0.42);
+  }
+}
 
 export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
   // Never run emulator if visitor is already in Meta Quest Browser
@@ -69,10 +82,20 @@ export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
     if (device) {
       device.primaryInputMode = 'hand';
       device.stereoEnabled = false;
-      // Hands enabled for natural hands-first interaction in desktop emulator
-      if (device.hands?.left) device.hands.left.connected = true;
-      if (device.hands?.right) device.hands.right.connected = true;
+      positionHandsOnDesk(device);
       applyCameraPose(device, currentZ);
+
+      // Interactive hand tap response: when clicking, right hand pinches toward the tabletop
+      if (typeof window !== 'undefined') {
+        window.addEventListener('pointerdown', () => {
+          if (device.hands?.right?.position) {
+            device.hands.right.position.set(0.12, 0.73, -0.44);
+            setTimeout(() => {
+              device.hands?.right?.position?.set(0.25, 0.74, -0.42);
+            }, 250);
+          }
+        });
+      }
     }
 
     // Attach floating control toolbar
@@ -101,7 +124,14 @@ export function switchEnvironment(env: EnvironmentId) {
   const win = window as any;
   const sem = win.IWER_DEVICE?.sem;
   if (sem && typeof sem.loadDefaultEnvironment === 'function') {
-    sem.loadDefaultEnvironment(env).catch((err: unknown) => {
+    sem.loadDefaultEnvironment(env).then(() => {
+      // Re-apply seated camera pose & hands so the user is ALWAYS seated facing their desk in EVERY room!
+      const device = win.IWER_DEVICE;
+      if (device) {
+        applyCameraPose(device, currentZ);
+        positionHandsOnDesk(device);
+      }
+    }).catch((err: unknown) => {
       console.warn('[DeskMate] Could not switch environment to ' + env, err);
     });
   }

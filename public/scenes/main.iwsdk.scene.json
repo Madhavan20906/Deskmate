@@ -86,6 +86,27 @@
         "RayInteractable": {}
       },
       "content": {
+        "asset": "desk-ruler",
+        "type": "asset"
+      },
+      "id": "desk-ruler",
+      "name": "Desk Ruler Schedule Bar",
+      "transform": {
+        "position": [
+          0,
+          0.74,
+          -0.48
+        ],
+        "scale": 1
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
         "asset": "pip-companion",
         "type": "asset"
       },
@@ -93,9 +114,9 @@
       "name": "Pip 3D Companion",
       "transform": {
         "position": [
-          0.00,
-          0.76,
-          -0.70
+          -0.62,
+          0.75,
+          -0.52
         ],
         "scale": 1.45
       }
@@ -219,10 +240,10 @@
       "transform": {
         "position": [
           0,
-          1.48,
-          -1.05
+          1.36,
+          -0.92
         ],
-        "scale": 0.115
+        "scale": 0.105
       }
     },
     {
@@ -249,16 +270,16 @@
       "name": "Roadmap Task Card",
       "transform": {
         "position": [
-          -0.48,
-          1.10,
-          -0.74
+          -0.36,
+          1.05,
+          -0.75
         ],
         "rotationDeg": [
           0,
           0,
           0
         ],
-        "scale": 0.13
+        "scale": 0.11
       }
     },
     {
@@ -286,10 +307,10 @@
       "transform": {
         "position": [
           0,
-          1.10,
-          -0.74
+          1.05,
+          -0.75
         ],
-        "scale": 0.13
+        "scale": 0.11
       }
     },
     {
@@ -316,11 +337,11 @@
       "name": "Inbox Task Card",
       "transform": {
         "position": [
-          0.48,
-          1.10,
-          -0.74
+          0.36,
+          1.05,
+          -0.75
         ],
-        "scale": 0.13
+        "scale": 0.11
       }
     },
     {
