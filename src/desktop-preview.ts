@@ -20,13 +20,13 @@ export type EnvironmentId =
 
 // Default comfortable readable seated viewing pose:
 // Desk is at [0, 0, -0.75], tabletop at y = 0.74, cards at y = 1.00, dashboard at y = 1.28.
-// Camera at z = 0.38, y = 1.18 with -10.3° pitch frames the Dashboard, 3 Task Cards, AND Desk Ruler all into view!
+// Camera at z = 0.85, y = 1.25 with -7° pitch frames the Dashboard, Task Cards, and entire desk comfortably.
 const DEFAULT_POSE = {
   x: 0,
-  y: 1.18,
-  z: 0.38,
-  pitchRad: -0.18,
-  fovyRad: (56 * Math.PI) / 180,
+  y: 1.25,
+  z: 0.85,
+  pitchRad: -0.12,
+  fovyRad: (64 * Math.PI) / 180,
 };
 
 let currentZ = DEFAULT_POSE.z;
@@ -54,8 +54,8 @@ function positionHandsOnDesk(device: any) {
 }
 
 export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
-  // Never run emulator if visitor is already in Meta Quest Browser
-  if (isQuestOrNativeXR()) {
+  // In production builds (Vercel) or on Meta Quest Browser, keep default native XR mode
+  if (import.meta.env.PROD || isQuestOrNativeXR()) {
     return false;
   }
 
@@ -106,9 +106,6 @@ export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
       }
     }
 
-    // Attach floating control toolbar
-    setupPreviewToolbar();
-
     return true;
   } catch (err) {
     console.warn('[DeskMate] Desktop preview initialization bypassed:', err);
@@ -116,235 +113,23 @@ export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
   }
 }
 
-function applyCameraOrientation(device: any, yaw: number, pitch: number) {
-  const cy = Math.cos(yaw / 2);
-  const sy = Math.sin(yaw / 2);
-  const cp = Math.cos(pitch / 2);
-  const sp = Math.sin(pitch / 2);
-
-  const qx = sp * cy;
-  const qy = cp * sy;
-  const qz = -sp * sy;
-  const qw = cp * cy;
-
-  device.quaternion.set(qx, qy, qz, qw);
-}
-
 function applyCameraPose(device: any, z: number) {
   device.fovy = DEFAULT_POSE.fovyRad;
   const deltaZ = z - DEFAULT_POSE.z;
   const targetY = DEFAULT_POSE.y + deltaZ * 0.08;
+  const pitchRad = DEFAULT_POSE.pitchRad - deltaZ * 0.03;
 
   device.position.set(0, targetY, z);
-  applyCameraOrientation(device, currentYaw, currentPitch);
+  device.quaternion.set(Math.sin(pitchRad / 2), 0, 0, Math.cos(pitchRad / 2));
 }
 
 export function enforceSeatedXRPose() {
   const win = window as any;
   const device = win.IWER_DEVICE;
   if (device) {
-    const restore = () => {
-      applyCameraPose(device, currentZ);
-      positionHandsOnDesk(device);
-    };
-    restore();
-    setTimeout(restore, 50);
-    setTimeout(restore, 150);
-    setTimeout(restore, 350);
-    setTimeout(restore, 700);
+    applyCameraPose(device, currentZ);
+    positionHandsOnDesk(device);
   }
 }
 
-export function switchEnvironment(env: EnvironmentId) {
-  currentEnv = env;
-  const win = window as any;
-
-  const sem = win.IWER_DEVICE?.sem;
-  if (sem && typeof sem.loadDefaultEnvironment === 'function') {
-    sem.loadDefaultEnvironment(env).then(() => {
-      enforceSeatedXRPose();
-    }).catch((err: unknown) => {
-      console.warn('[DeskMate] Could not switch environment to ' + env, err);
-    });
-  }
-
-  const buttons: Record<EnvironmentId, string> = {
-    sunlit_living_room: 'dm-btn-env-living',
-    bedroom: 'dm-btn-env-bedroom',
-    kitchen: 'dm-btn-env-kitchen',
-    home_office: 'dm-btn-env-office',
-  };
-
-  (Object.keys(buttons) as EnvironmentId[]).forEach((key) => {
-    const btn = document.getElementById(buttons[key]);
-    if (!btn) return;
-    if (key === env) {
-      btn.style.background = '#0082fb';
-      btn.style.color = '#ffffff';
-    } else {
-      btn.style.background = 'rgba(255, 255, 255, 0.08)';
-      btn.style.color = '#cbd5e1';
-    }
-  });
-}
-
-function adjustZoom(delta: number) {
-  const win = window as any;
-  const device = win.IWER_DEVICE;
-  if (!device) return;
-
-  // Clamp z between 0.50m (close) and 1.35m (far)
-  currentZ = Math.min(1.35, Math.max(0.50, currentZ + delta));
-  applyCameraPose(device, currentZ);
-}
-
-function resetZoom() {
-  const win = window as any;
-  const device = win.IWER_DEVICE;
-  if (!device) return;
-
-  currentZ = DEFAULT_POSE.z;
-  currentYaw = 0;
-  currentPitch = DEFAULT_POSE.pitchRad;
-  applyCameraPose(device, currentZ);
-}
-
-function setupPreviewToolbar() {
-  if (document.getElementById('deskmate-preview-hud')) return;
-
-  const hud = document.createElement('div');
-  hud.id = 'deskmate-preview-hud';
-  hud.style.position = 'fixed';
-  hud.style.top = '16px';
-  hud.style.left = '50%';
-  hud.style.transform = 'translateX(-50%)';
-  hud.style.zIndex = '9999';
-  hud.style.display = 'flex';
-  hud.style.alignItems = 'center';
-  hud.style.gap = '12px';
-  hud.style.padding = '8px 14px';
-  hud.style.borderRadius = '999px';
-  hud.style.background = 'rgba(15, 23, 42, 0.88)';
-  hud.style.backdropFilter = 'blur(18px)';
-  (hud.style as any).webkitBackdropFilter = 'blur(18px)';
-  hud.style.border = '1px solid rgba(83, 203, 181, 0.35)';
-  hud.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.4)';
-  hud.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-  hud.style.color = '#e2e8f0';
-  hud.style.userSelect = 'none';
-
-  hud.innerHTML = `
-    <!-- Environment Switcher (Matches IWSDK Dev XR environments) -->
-    <div style="display: flex; align-items: center; background: rgba(0, 0, 0, 0.4); padding: 2px; border-radius: 999px; gap: 2px;">
-      <button id="dm-btn-env-living" title="Sunlit Living Room (Default)" style="border: 0; background: #0082fb; color: #ffffff; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-        🛋️ Living Room
-      </button>
-      <button id="dm-btn-env-bedroom" title="Cozy Bedroom" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-        🛏️ Bedroom
-      </button>
-      <button id="dm-btn-env-kitchen" title="Modern Kitchen" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-        🍳 Kitchen
-      </button>
-      <button id="dm-btn-env-office" title="Home Office" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-        💼 Office
-      </button>
-    </div>
-
-    <!-- Zoom Controls -->
-    <div style="display: flex; align-items: center; gap: 4px; border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 10px;">
-      <span style="font-size: 11px; color: #94a3b8; font-weight: 500; margin-right: 2px;">View:</span>
-      <button id="dm-btn-zoom-out" title="Zoom Out" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 15px; font-weight: bold; cursor: pointer; display: grid; place-items: center;">-</button>
-      <button id="dm-btn-zoom-reset" title="Reset View & Recenter Desk" style="padding: 2px 8px; height: 26px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #cbd5e1; font-size: 11px; font-weight: 500; cursor: pointer;">Reset</button>
-      <button id="dm-btn-zoom-in" title="Zoom In" style="width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.08); color: #fff; font-size: 15px; font-weight: bold; cursor: pointer; display: grid; place-items: center;">+</button>
-    </div>
-
-    <!-- Hands Toggle -->
-    <div style="border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 10px;">
-      <button id="dm-btn-toggle-hands" title="Toggle Hands Wireframe (Useful for recording clean video without emulator lines)" style="border: 0; background: rgba(255, 255, 255, 0.08); color: #34d399; padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-        ✋ Hands: ON
-      </button>
-    </div>
-  `;
-
-  document.body.appendChild(hud);
-
-  // Wire buttons
-  document.getElementById('dm-btn-env-living')?.addEventListener('click', () => switchEnvironment('sunlit_living_room'));
-  document.getElementById('dm-btn-env-bedroom')?.addEventListener('click', () => switchEnvironment('bedroom'));
-  document.getElementById('dm-btn-env-kitchen')?.addEventListener('click', () => switchEnvironment('kitchen'));
-  document.getElementById('dm-btn-env-office')?.addEventListener('click', () => switchEnvironment('home_office'));
-  document.getElementById('dm-btn-zoom-in')?.addEventListener('click', () => adjustZoom(-0.12));
-  document.getElementById('dm-btn-zoom-out')?.addEventListener('click', () => adjustZoom(0.12));
-  document.getElementById('dm-btn-zoom-reset')?.addEventListener('click', () => resetZoom());
-
-  const toggleHandsBtn = document.getElementById('dm-btn-toggle-hands');
-  toggleHandsBtn?.addEventListener('click', () => {
-    handsEnabled = !handsEnabled;
-    const win = window as any;
-    const device = win.IWER_DEVICE;
-    if (device) {
-      positionHandsOnDesk(device);
-    }
-    if (toggleHandsBtn) {
-      toggleHandsBtn.textContent = handsEnabled ? '✋ Hands: ON' : '✋ Hands: OFF';
-      toggleHandsBtn.style.color = handsEnabled ? '#34d399' : '#94a3b8';
-    }
-  });
-
-  // Attach 360-degree pointer drag look controls so user can pan around the whole room freely!
-  let isDragging = false;
-  let dragStartX = 0;
-  let dragStartY = 0;
-
-  window.addEventListener('pointerdown', (e: PointerEvent) => {
-    const target = e.target as HTMLElement | null;
-    if (target && (target.closest('#deskmate-preview-hud') || target.tagName === 'BUTTON')) {
-      return;
-    }
-    isDragging = true;
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-  });
-
-  window.addEventListener('pointermove', (e: PointerEvent) => {
-    if (!isDragging) return;
-    const deltaX = e.clientX - dragStartX;
-    const deltaY = e.clientY - dragStartY;
-    if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
-      dragStartX = e.clientX;
-      dragStartY = e.clientY;
-      currentYaw -= deltaX * 0.0035;
-      currentPitch = Math.max(-0.65, Math.min(0.65, currentPitch - deltaY * 0.0035));
-      const win = window as any;
-      const device = win.IWER_DEVICE;
-      if (device) {
-        applyCameraOrientation(device, currentYaw, currentPitch);
-      }
-    }
-  });
-
-  window.addEventListener('pointerup', () => {
-    isDragging = false;
-  });
-
-  // Also attach bottom helper tip
-  const tip = document.createElement('div');
-  tip.id = 'deskmate-preview-tip';
-  tip.style.position = 'fixed';
-  tip.style.bottom = '14px';
-  tip.style.left = '50%';
-  tip.style.transform = 'translateX(-50%)';
-  tip.style.zIndex = '9998';
-  tip.style.padding = '6px 16px';
-  tip.style.borderRadius = '999px';
-  tip.style.background = 'rgba(15, 23, 42, 0.75)';
-  tip.style.backdropFilter = 'blur(12px)';
-  (tip.style as any).webkitBackdropFilter = 'blur(12px)';
-  tip.style.border = '1px solid rgba(255, 255, 255, 0.08)';
-  tip.style.fontSize = '12px';
-  tip.style.color = '#94a3b8';
-  tip.style.pointerEvents = 'none';
-  tip.style.userSelect = 'none';
-  tip.textContent = '💡 Tip: Drag anywhere with mouse/touch to look 360° around the room | Click Bedroom, Kitchen, Office above to explore!';
-  document.body.appendChild(tip);
-}
+export function switchEnvironment(_env: EnvironmentId) {}
