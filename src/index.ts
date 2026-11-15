@@ -66,28 +66,35 @@ async function bootstrap() {
   const nav = navigator as Navigator & {
     xr?: { isSessionSupported?: (m: string) => Promise<boolean> };
   };
-  if ('getDigitalGoodsService' in window && nav.xr?.isSessionSupported) {
+  if (nav.xr?.isSessionSupported) {
     nav.xr
       .isSessionSupported('immersive-ar')
       .then((supported) => {
-        if (supported) world.launchXR();
+        if (supported) {
+          try {
+            world.launchXR();
+          } catch {
+            // User gesture required; handled by launch button & pointerdown below
+          }
+        }
       })
       .catch(() => {});
-  } else if (!isQuestOrNativeXR()) {
-    // In desktop preview & Vercel, immediately step straight into the 3D room XR view
-    try {
-      world.launchXR();
-    } catch {
-      // Ignored if user interaction needed
-    }
-
-    // Any first pointer interaction immediately enters XR if browser required user gesture
-    window.addEventListener('pointerdown', () => {
-      if (!world.session && !world.sessionRequestPending) {
-        world.launchXR();
-      }
-    }, { once: true });
   }
+
+  // Any user gesture enters XR mode on devices/browsers that support it
+  window.addEventListener(
+    'pointerdown',
+    () => {
+      if (!world.session && !world.sessionRequestPending) {
+        try {
+          world.launchXR();
+        } catch {
+          // Ignored if unsupported on device
+        }
+      }
+    },
+    { once: true },
+  );
 
   world.renderer.xr.addEventListener('sessionstart', () => {
     updateSessionUI();

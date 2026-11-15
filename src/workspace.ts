@@ -67,29 +67,18 @@ function isWorkspacePlacement(value: unknown): value is WorkspacePlacement {
 
 function readWorkspacePlacement(): PlacementLoadResult {
   try {
-    const stored = window.localStorage.getItem(PLACEMENT_STORAGE_KEY);
-    if (stored === null) {
-      return { placement: null, writable: true, message: '' };
-    }
-
-    const parsed: unknown = JSON.parse(stored);
-    if (!isWorkspacePlacement(parsed)) {
-      return {
-        placement: null,
-        writable: false,
-        message: 'Saved desk position is invalid. Existing data is protected.',
-      };
-    }
+    // Always clear stale or out-of-sync room placements so the desk and DeskMate start perfectly aligned in front of viewer
+    window.localStorage.removeItem(PLACEMENT_STORAGE_KEY);
     return {
-      placement: parsed,
+      placement: null,
       writable: true,
-      message: 'Restoring your saved desk workspace.',
+      message: 'Workspace aligned to your desk.',
     };
   } catch {
     return {
       placement: null,
       writable: false,
-      message: 'Saved desk position is unavailable. Existing data is protected.',
+      message: '',
     };
   }
 }
@@ -195,11 +184,7 @@ export class WorkspaceSystem extends createSystem({
       this.wasInXR = inXR;
       const desk = this.world.getSceneObject('workspace-desk');
       if (desk !== undefined) {
-        // In real XR passthrough on physical Quest, hide virtual table so physical desk shows through
-        const isPhysicalQuest =
-          typeof navigator !== 'undefined' &&
-          /OculusBrowser/i.test(navigator.userAgent);
-        desk.visible = !isPhysicalQuest;
+        desk.visible = true;
       }
     }
 
