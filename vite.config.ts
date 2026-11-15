@@ -23,7 +23,7 @@ export default defineConfig({
   server: { host: '0.0.0.0', port: 8081, open: false },
   build: {
     outDir: 'dist',
-    sourcemap: process.env.NODE_ENV !== 'production',
+    sourcemap: false,
     target: 'esnext',
     rollupOptions: { input: './index.html' },
   },
