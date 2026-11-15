@@ -852,12 +852,12 @@ export class PanelSystem extends createSystem({
   private cardWasGrabbed: boolean[] = [false, false, false, false, false, false];
   private cardIsHovered: boolean[] = [false, false, false, false, false, false];
   private cardHomePositions: Vector3[] = [
-    new Vector3(-0.48, 1.10, -0.74),
-    new Vector3(0.00, 1.10, -0.74),
-    new Vector3(0.48, 1.10, -0.74),
-    new Vector3(-0.48, 0.82, -0.72),
-    new Vector3(0.00, 0.82, -0.72),
-    new Vector3(0.48, 0.82, -0.72),
+    new Vector3(-0.34, 0.94, -0.64),
+    new Vector3(0.00, 0.94, -0.64),
+    new Vector3(0.34, 0.94, -0.64),
+    new Vector3(0.00, -10.0, 0.00),
+    new Vector3(0.00, -10.0, 0.00),
+    new Vector3(0.00, -10.0, 0.00),
   ];
   private cardHomeRotations: Quaternion[] = [
     new Quaternion(),
@@ -883,9 +883,9 @@ export class PanelSystem extends createSystem({
   private pipWasGrabbed = false;
   private pipWiggleTimer = 0;
   private pipHopTimer = 1;
-  private pipHopStartPos = new Vector3(0.00, 0.76, -0.55);
-  private pipHopTargetPos = new Vector3(0.00, 0.76, -0.55);
-  private pipRestingPos = new Vector3(0.00, 0.76, -0.55);
+  private pipHopStartPos = new Vector3(-0.58, 0.745, -0.48);
+  private pipHopTargetPos = new Vector3(-0.58, 0.745, -0.48);
+  private pipRestingPos = new Vector3(-0.58, 0.745, -0.48);
   private pipIdleTimer = 0;
   private pipLookTarget = new Vector3();
   private tableObject: Object3D | null = null;
@@ -931,7 +931,7 @@ export class PanelSystem extends createSystem({
   private ghostHighFiveReady = false;
   private ghostHighFiveCelebrationTimer = 0;
   private ghostWasGrabbed = false;
-  private ghostRestingPos = new Vector3(-0.45, 1.02, -0.62);
+  private ghostRestingPos = new Vector3(-0.65, 0.98, -0.66);
   private lastUserHandX = 0;
   private userHandWaveReversals = 0;
   private userHandWaveResetTimer = 0;
