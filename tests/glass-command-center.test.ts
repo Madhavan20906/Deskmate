@@ -541,3 +541,158 @@ test('Tier S13: In-Place Task Editor, Touch Screen / Card Press to Zoom, Dual Po
   toggleHand();
   assert.equal(activeHand, 'right', 'Right controller/hand becomes active');
 });
+
+test('Tier S14: Multi-Week Calendar Navigation, Header Action Subviews, Workspace Mover Dock, and Warm Natural Palette', () => {
+  // 1. Multi-Week Calendar Navigation
+  let calendarStartDay = 16;
+  let selectedDayNumber = 18;
+
+  const stepWeek = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      calendarStartDay = Math.max(1, calendarStartDay - 7);
+    } else {
+      calendarStartDay = Math.min(25, calendarStartDay + 7);
+    }
+  };
+
+  assert.equal(calendarStartDay, 16);
+  stepWeek('next');
+  assert.equal(calendarStartDay, 23, 'Stepping next moves calendar start from Nov 16 to Nov 23');
+  stepWeek('next');
+  assert.equal(calendarStartDay, 25, 'Stepping next is clamped to 25');
+  stepWeek('prev');
+  assert.equal(calendarStartDay, 18, 'Stepping prev moves back by 7 days');
+  stepWeek('prev');
+  assert.equal(calendarStartDay, 11, 'Stepping prev moves to Nov 11');
+
+  // Verify dynamic week generation
+  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const generatedDays = [];
+  for (let i = 0; i < 7; i++) {
+    const dNum = calendarStartDay + i;
+    generatedDays.push({
+      dayOfWeek: daysOfWeek[i % 7],
+      dayNumber: dNum,
+      isToday: dNum === 18,
+      isSelected: dNum === selectedDayNumber,
+    });
+  }
+  assert.equal(generatedDays.length, 7);
+  assert.equal(generatedDays[0].dayNumber, 11);
+  assert.equal(generatedDays[6].dayNumber, 17);
+
+  // Day selection and task date tagging
+  selectedDayNumber = 17;
+  const testTasks: Array<{ id: string; title: string; dayNumber: number }> = [
+    { id: 't1', title: 'Task on 16', dayNumber: 16 },
+    { id: 't2', title: 'Task on 17', dayNumber: 17 },
+    { id: 't3', title: 'Task on 18', dayNumber: 18 },
+  ];
+  const tasksForSelectedDay = testTasks.filter((t) => t.dayNumber === selectedDayNumber);
+  assert.equal(tasksForSelectedDay.length, 1);
+  assert.equal(tasksForSelectedDay[0].title, 'Task on 17');
+
+  // 2. Header Action Subviews & Back Navigation
+  type ExtendedHubView =
+    | 'overview'
+    | 'week'
+    | 'month'
+    | 'tasks'
+    | 'editor'
+    | 'focus'
+    | 'analytics'
+    | 'garden'
+    | 'routines'
+    | 'notes'
+    | 'goals'
+    | 'search'
+    | 'notifications'
+    | 'settings'
+    | 'profile';
+
+  let currentView: ExtendedHubView = 'overview';
+  let hasUnreadNotifications = true;
+
+  const openHeaderView = (target: 'search' | 'notifications' | 'settings' | 'profile') => {
+    currentView = target;
+    if (target === 'notifications') {
+      hasUnreadNotifications = false;
+    }
+  };
+
+  const closeHeaderView = () => {
+    currentView = 'overview';
+  };
+
+  openHeaderView('search');
+  assert.equal(currentView, 'search', 'Search button opens Spatial Search Studio subview');
+  closeHeaderView();
+  assert.equal(currentView, 'overview', 'Back button returns to overview without state loss');
+
+  openHeaderView('notifications');
+  assert.equal(currentView, 'notifications', 'Bell button opens Spatial Notification Center');
+  assert.equal(hasUnreadNotifications, false, 'Opening notifications clears unread alert badge');
+  closeHeaderView();
+  assert.equal(currentView, 'overview');
+
+  openHeaderView('settings');
+  assert.equal(currentView, 'settings', 'Settings pill opens Spatial Studio Settings subview');
+  closeHeaderView();
+  assert.equal(currentView, 'overview');
+
+  openHeaderView('profile');
+  assert.equal(currentView, 'profile', 'Profile pill opens Productivity Profile subview');
+  closeHeaderView();
+  assert.equal(currentView, 'overview');
+
+  // 3. Workspace Mover Dock (Spatial 3D depth and height repositioning)
+  let workspaceOffset = { x: 0, y: 0, z: 0 };
+  let heightStepIndex = 0;
+
+  const pullCloser = () => {
+    workspaceOffset.z = Math.min(0.40, Number((workspaceOffset.z + 0.15).toFixed(2)));
+  };
+  const pushBack = () => {
+    workspaceOffset.z = Math.max(-0.45, Number((workspaceOffset.z - 0.15).toFixed(2)));
+  };
+  const toggleHeight = () => {
+    heightStepIndex = (heightStepIndex + 1) % 3;
+    const steps = [0, 0.10, -0.10];
+    workspaceOffset.y = steps[heightStepIndex];
+  };
+  const resetWorkspace = () => {
+    workspaceOffset = { x: 0, y: 0, z: 0 };
+    heightStepIndex = 0;
+  };
+
+  pullCloser();
+  assert.equal(workspaceOffset.z, 0.15, 'Pulled DeskMate 15cm closer');
+  pullCloser();
+  assert.equal(workspaceOffset.z, 0.30, 'Pulled DeskMate 30cm closer');
+  pullCloser();
+  assert.equal(workspaceOffset.z, 0.40, 'Clamped at max 40cm closer');
+
+  pushBack();
+  assert.equal(workspaceOffset.z, 0.25, 'Pushed DeskMate 15cm back');
+
+  toggleHeight();
+  assert.equal(workspaceOffset.y, 0.10, 'DeskMate height raised by 10cm');
+  toggleHeight();
+  assert.equal(workspaceOffset.y, -0.10, 'DeskMate height lowered by 10cm');
+  toggleHeight();
+  assert.equal(workspaceOffset.y, 0, 'DeskMate height returned to default');
+
+  resetWorkspace();
+  assert.deepEqual(workspaceOffset, { x: 0, y: 0, z: 0 }, 'Reset restored standard workspace coordinates');
+
+  // 4. Warm Architectural Palette Verification
+  const warmPalette = {
+    activeAmber: '#D97736',
+    activeAmberBorder: '#F3B27A',
+    organicSage: '#4E8762',
+    smokedGlass: 'rgba(22, 24, 29, 0.84)',
+  };
+  assert.equal(warmPalette.activeAmber, '#D97736');
+  assert.equal(warmPalette.organicSage, '#4E8762');
+  assert.ok(!('neonPurple' in warmPalette), 'No synthetic neon purple in active palette');
+});

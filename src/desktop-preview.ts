@@ -131,6 +131,36 @@ function updateHandHUD() {
   `;
 }
 
+function aimControllerAtScreenPoint(clientX: number, clientY: number, hand: 'left' | 'right') {
+  const win = window as any;
+  const device = win.IWER_DEVICE;
+  if (!device) return;
+
+  const ndcX = (clientX / window.innerWidth) * 2 - 1;
+  const ndcY = -(clientY / window.innerHeight) * 2 + 1;
+
+  // Unproject to glass plane around z = -0.70m
+  const targetX = ndcX * 0.85;
+  const targetY = 1.45 + ndcY * 0.50;
+  const targetZ = -0.70;
+
+  const ctrl = hand === 'left' ? device.controllers?.left : device.controllers?.right;
+  if (ctrl?.position && ctrl?.quaternion) {
+    const ctrlPos = ctrl.position;
+    const dir = new Vector3(targetX - ctrlPos.x, targetY - ctrlPos.y, targetZ - ctrlPos.z).normalize();
+    const quat = new Quaternion().setFromUnitVectors(forwardVec, dir);
+    ctrl.quaternion.set(quat.x, quat.y, quat.z, quat.w);
+  }
+
+  const xrHand = hand === 'left' ? device.hands?.left : device.hands?.right;
+  if (xrHand?.position && xrHand?.quaternion) {
+    const handPos = xrHand.position;
+    const dir = new Vector3(targetX - handPos.x, targetY - handPos.y, targetZ - handPos.z).normalize();
+    const quat = new Quaternion().setFromUnitVectors(forwardVec, dir);
+    xrHand.quaternion.set(quat.x, quat.y, quat.z, quat.w);
+  }
+}
+
 let hudInitialized = false;
 export function initDesktopHandHUD() {
   if (hudInitialized || typeof document === 'undefined' || isQuestOrNativeXR()) return;
@@ -144,8 +174,8 @@ export function initDesktopHandHUD() {
   hud.style.zIndex = '9999';
   hud.style.padding = '8px 14px';
   hud.style.borderRadius = '999px';
-  hud.style.backgroundColor = 'rgba(11, 16, 32, 0.88)';
-  hud.style.border = '1px solid rgba(124, 92, 255, 0.4)';
+  hud.style.backgroundColor = 'rgba(22, 24, 29, 0.88)';
+  hud.style.border = '1px solid rgba(217, 119, 54, 0.4)';
   hud.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
   hud.style.backdropFilter = 'blur(12px)';
   (hud.style as any).webkitBackdropFilter = 'blur(12px)';
@@ -157,11 +187,11 @@ export function initDesktopHandHUD() {
 
   hud.addEventListener('mouseenter', () => {
     hud.style.transform = 'translateY(-2px)';
-    hud.style.borderColor = '#A78BFA';
+    hud.style.borderColor = '#F3B27A';
   });
   hud.addEventListener('mouseleave', () => {
     hud.style.transform = 'translateY(0)';
-    hud.style.borderColor = 'rgba(124, 92, 255, 0.4)';
+    hud.style.borderColor = 'rgba(217, 119, 54, 0.4)';
   });
   hud.addEventListener('click', () => {
     toggleActiveHand();
@@ -182,16 +212,36 @@ export function initDesktopHandHUD() {
     }
   });
 
-  // Dynamic dual pointer parity: auto-switch commit hand when pointing to left vs right workspace sides
+  // Dynamic dual pointer parity: auto-switch commit hand and aim controller at point
   window.addEventListener('pointermove', (e) => {
-    const isLeftScreen = e.clientX < window.innerWidth * 0.46;
+    const isLeftScreen = e.clientX < window.innerWidth * 0.48;
     const targetHand = isLeftScreen ? 'left' : 'right';
     if (activeHand !== targetHand) {
       setActiveHand(targetHand);
     }
+    aimControllerAtScreenPoint(e.clientX, e.clientY, targetHand);
   });
 
-  // Right-click commits left hand explicitly, left-click commits active hand
+  // Pointer click triggers button 0 on the active controller
+  window.addEventListener('pointerdown', (e) => {
+    if (!(e.target instanceof HTMLCanvasElement)) return;
+    const isLeft = activeHand === 'left' || e.clientX < window.innerWidth * 0.48 || e.button === 2;
+    const targetHand = isLeft ? 'left' : 'right';
+    setActiveHand(targetHand);
+    aimControllerAtScreenPoint(e.clientX, e.clientY, targetHand);
+
+    const win = window as any;
+    const device = win.IWER_DEVICE;
+    const ctrl = isLeft ? device?.controllers?.left : device?.controllers?.right;
+    if (ctrl && typeof ctrl.updateButtonValue === 'function') {
+      ctrl.updateButtonValue(0, 1.0);
+      window.setTimeout(() => {
+        ctrl.updateButtonValue(0, 0.0);
+      }, 100);
+    }
+  });
+
+  // Right-click commits left hand explicitly
   window.addEventListener('contextmenu', (e) => {
     if (e.target instanceof HTMLCanvasElement) {
       setActiveHand('left');
