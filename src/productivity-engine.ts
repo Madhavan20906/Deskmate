@@ -219,3 +219,114 @@ export function formatMinuteTime(minute: number): string {
   const m = minute % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
+
+export interface ParsedVoiceTask {
+  title: string;
+  dayNumber: number;
+  estimatedMinutes: number;
+  priority: 'low' | 'medium' | 'high';
+  scheduledStartMinute: number | null;
+}
+
+/**
+ * Natural language voice command parser for Pip the robot assistant.
+ * Parses speech phrases like:
+ * - "Add task Finish ML Report on Friday 2 hours high priority"
+ * - "Schedule Code Review tomorrow at 2 PM 45 minutes"
+ * - "Add Team Sync on Thursday"
+ */
+export function parseVoiceTaskCommand(transcript: string, baseDay = 18): ParsedVoiceTask | null {
+  const lower = transcript.toLowerCase().trim();
+  if (!lower.includes('add') && !lower.includes('schedule') && !lower.includes('create') && !lower.includes('task')) {
+    return null;
+  }
+
+  // 1. Resolve Day
+  let targetDay = baseDay;
+  if (lower.includes('tomorrow')) {
+    targetDay = baseDay + 1;
+  } else if (lower.includes('today')) {
+    targetDay = baseDay;
+  } else if (lower.includes('sunday')) {
+    targetDay = 16;
+  } else if (lower.includes('monday')) {
+    targetDay = 17;
+  } else if (lower.includes('tuesday')) {
+    targetDay = 18;
+  } else if (lower.includes('wednesday')) {
+    targetDay = 19;
+  } else if (lower.includes('thursday')) {
+    targetDay = 20;
+  } else if (lower.includes('friday')) {
+    targetDay = 21;
+  } else if (lower.includes('saturday')) {
+    targetDay = 22;
+  } else {
+    const numMatch = lower.match(/(?:nov(?:ember)?\s*|on\s+)(\d{1,2})/);
+    if (numMatch && numMatch[1]) {
+      const parsedNum = parseInt(numMatch[1], 10);
+      if (parsedNum >= 1 && parsedNum <= 31) {
+        targetDay = parsedNum;
+      }
+    }
+  }
+
+  // 2. Resolve Duration
+  let duration = 30; // default 30m
+  const hourMatch = lower.match(/(\d+)\s*(?:hours?|hrs?|h\b)/);
+  const minMatch = lower.match(/(\d+)\s*(?:minutes?|mins?|m\b)/);
+  if (hourMatch && hourMatch[1]) {
+    duration = parseInt(hourMatch[1], 10) * 60;
+    if (minMatch && minMatch[1]) {
+      duration += parseInt(minMatch[1], 10);
+    }
+  } else if (minMatch && minMatch[1]) {
+    duration = parseInt(minMatch[1], 10);
+  }
+
+  // 3. Resolve Priority
+  let priority: 'low' | 'medium' | 'high' = 'medium';
+  if (lower.includes('high priority') || lower.includes('urgent') || lower.includes('critical')) {
+    priority = 'high';
+  } else if (lower.includes('low priority') || lower.includes('minor')) {
+    priority = 'low';
+  }
+
+  // 4. Resolve Start Time
+  let startMinute: number | null = 10 * 60; // default 10:00 AM
+  const timeMatch = lower.match(/at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
+  if (timeMatch && timeMatch[1]) {
+    let hour = parseInt(timeMatch[1], 10);
+    const minute = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0;
+    const meridian = timeMatch[3];
+    if (meridian === 'pm' && hour < 12) hour += 12;
+    if (meridian === 'am' && hour === 12) hour = 0;
+    startMinute = hour * 60 + minute;
+  }
+
+  // 5. Clean Title
+  let title = transcript
+    .replace(/^(?:please\s+)?(?:pip\s+)?(?:can\s+you\s+)?(?:add\s+a?\s*task|schedule\s+a?\s*task|create\s+a?\s*task|add|schedule|create)\s*(?:called|named|to)?/i, '')
+    .replace(/\b(?:for|on\s+)?(?:tomorrow|today|sunday|monday|tuesday|wednesday|thursday|friday|saturday|nov(?:ember)?\s*\d{1,2})\b/gi, '')
+    .replace(/(?:at\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/gi, '')
+    .replace(/(?:for\s+)?(?:\d+\s*(?:hours?|hrs?|minutes?|mins?|h\b|m\b))/gi, '')
+    .replace(/(?:high|medium|low)\s+priority/gi, '')
+    .replace(/\b(?:for|on|at|priority)\b/gi, '')
+    .replace(/[,.]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!title || title.length < 2) {
+    title = 'Scheduled Task';
+  } else {
+    title = title.charAt(0).toUpperCase() + title.slice(1);
+  }
+
+  return {
+    title,
+    dayNumber: targetDay,
+    estimatedMinutes: duration,
+    priority,
+    scheduledStartMinute: startMinute,
+  };
+}

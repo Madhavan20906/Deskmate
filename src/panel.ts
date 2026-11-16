@@ -51,7 +51,7 @@ import {
 } from './glass-data-adapters.js';
 
 import { GhostDeskmateAudio } from './audio.js';
-import { recommendWhatNext, planDaySchedule, TaskItem } from './productivity-engine.js';
+import { recommendWhatNext, planDaySchedule, TaskItem, parseVoiceTaskCommand } from './productivity-engine.js';
 
 const STORAGE_KEY_TASKS = 'deskmate.tasks.v1';
 
@@ -147,6 +147,15 @@ export class PanelSystem extends createSystem({
   private pipRobotObject: any = null;
   private pipEmoteState: 'celebrate' | 'thinking' | 'idle' = 'idle';
   private pipEmoteTimer: number | null = null;
+  private simulatedVoiceIndex = 0;
+  private readonly sampleVoiceCommands = [
+    'Add task Research Paper on Friday for 90 minutes high priority',
+    'Schedule Code Review tomorrow at 2 PM for 45 minutes',
+    'Add Design Sync on Thursday 60 minutes',
+    'Plan my day',
+    'Start focus session for 25 minutes',
+    'What next',
+  ];
 
   // Hub View Controls
   private activeTab: NavTab = 'schedule';
@@ -450,6 +459,20 @@ export class PanelSystem extends createSystem({
     this.bindPipPanel();
     this.bindFocusPanel();
     this.bindEditSheet();
+
+    // Bind direct 3D interaction on Pip Robot avatar
+    const pipObj = this.world.getSceneObject('pip-robot');
+    if (pipObj) {
+      this.addPress(pipObj, () => {
+        this.triggerPipEmote('celebrate');
+        if (this.soundEnabled && this.audio) {
+          this.audio.playPinchTick();
+        }
+        const selTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+        this.setPipSpeech(`Pip here! Nov ${this.selectedDayNumber} has ${selTasks.length} task${selTasks.length === 1 ? '' : 's'}. Speak or click microphone to add more!`);
+      });
+    }
+
     this.refreshAllUI();
   }
 
@@ -1788,15 +1811,140 @@ export class PanelSystem extends createSystem({
     const micBtn = asset.getElementById('btn-pip-mic');
     if (micBtn) {
       this.addPress(micBtn, () => {
-        this.voiceListening = !this.voiceListening;
-        if (this.voiceListening) {
-          this.setPipSpeech('Listening for spatial voice commands... Speak anytime.');
-        } else {
-          this.setPipSpeech('Voice commands paused.');
-        }
-        this.refreshPipPanelUI();
+        this.handleVoiceInputTrigger();
       });
     }
+  }
+
+  private handleVoiceInputTrigger() {
+    const SpeechRec =
+      typeof window !== 'undefined' &&
+      ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+
+    if (SpeechRec) {
+      try {
+        const rec = new SpeechRec();
+        rec.continuous = false;
+        rec.interimResults = false;
+        rec.lang = 'en-US';
+        rec.onstart = () => {
+          this.voiceListening = true;
+          this.setPipSpeech('Listening for voice... Say any task and day (e.g. "Add task on Friday")');
+          this.triggerPipEmote('thinking');
+          this.refreshPipPanelUI();
+        };
+        rec.onresult = (evt: any) => {
+          this.voiceListening = false;
+          this.refreshPipPanelUI();
+          const transcript = evt.results?.[0]?.[0]?.transcript || '';
+          if (transcript) {
+            this.executeVoiceCommand(transcript);
+          }
+        };
+        rec.onerror = () => {
+          this.voiceListening = false;
+          this.refreshPipPanelUI();
+          this.triggerNextSimulatedVoiceCommand();
+        };
+        rec.start();
+        return;
+      } catch {}
+    }
+
+    this.triggerNextSimulatedVoiceCommand();
+  }
+
+  private triggerNextSimulatedVoiceCommand() {
+    const cmd = this.sampleVoiceCommands[this.simulatedVoiceIndex % this.sampleVoiceCommands.length];
+    this.simulatedVoiceIndex++;
+    this.voiceListening = true;
+    this.refreshPipPanelUI();
+    this.setPipSpeech(`Voice input: "${cmd}"`);
+    this.triggerPipEmote('thinking');
+
+    window.setTimeout(() => {
+      this.voiceListening = false;
+      this.refreshPipPanelUI();
+      this.executeVoiceCommand(cmd);
+    }, 700);
+  }
+
+  public executeVoiceCommand(transcript: string) {
+    const lower = transcript.toLowerCase();
+
+    // Check for Plan My Day
+    if (lower.includes('plan my day') || lower.includes('plan today')) {
+      const mappedTasks: TaskItem[] = this.tasks.map((t) => ({
+        id: t.id,
+        title: t.title,
+        priority: t.priority,
+        estimatedMinutes: t.estimatedMinutes,
+        scheduledStartMinute: t.scheduledStartMinute,
+        status: (t.status === 'in_progress' ? 'in-progress' : t.status) as any,
+        createdAt: Date.now(),
+        completedAt: t.completedAt ?? null,
+      }));
+      const planned = planDaySchedule(mappedTasks);
+      for (const item of planned.assignments) {
+        const t = this.tasks.find((x) => x.id === item.taskId);
+        if (t) t.scheduledStartMinute = item.startMinute;
+      }
+      this.saveTasks(true, 'Planned schedule with rest buffers');
+      this.setPipSpeech('Planned your day with 10-minute rest buffers. You are all set!');
+      this.triggerPipEmote('celebrate');
+      if (this.soundEnabled && this.audio) this.audio.playPinchTick();
+      return;
+    }
+
+    // Check for Focus
+    if (lower.includes('focus') || lower.includes('sprint') || lower.includes('pomodoro')) {
+      const matchMin = lower.match(/(\d+)\s*(?:minute|min)/);
+      const minutes = matchMin && matchMin[1] ? parseInt(matchMin[1], 10) : 25;
+      this.focusRemainingSeconds = minutes * 60;
+      this.focusTotalSeconds = minutes * 60;
+      this.focusRunning = true;
+      this.setPipSpeech(`Focus sprint started for ${minutes} minutes. Let's do this!`);
+      this.triggerPipEmote('celebrate');
+      if (this.soundEnabled && this.audio) this.audio.playPinchTick();
+      this.refreshHubPanelUI();
+      return;
+    }
+
+    // Check for What Next
+    if (lower.includes('what next') || lower.includes('what should i do')) {
+      this.handlePipWhatNext();
+      return;
+    }
+
+    // Parse task addition on any day
+    const parsed = parseVoiceTaskCommand(transcript, this.selectedDayNumber);
+    if (parsed) {
+      const newTask: GlassTask = {
+        id: `task-${Date.now()}`,
+        title: parsed.title,
+        estimatedMinutes: parsed.estimatedMinutes,
+        priority: parsed.priority,
+        scheduledStartMinute: parsed.scheduledStartMinute,
+        status: 'todo',
+        dayNumber: parsed.dayNumber,
+      };
+      this.tasks.push(newTask);
+      this.saveTasks(true, `Added "${parsed.title}" via Pip`);
+      this.selectedDayNumber = parsed.dayNumber;
+      this.refreshAllUI();
+
+      const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayName = daysOfWeek[parsed.dayNumber % 7] || 'Nov';
+      this.setPipSpeech(
+        `Added "${parsed.title}" for ${dayName}, Nov ${parsed.dayNumber} (${parsed.estimatedMinutes}m, ${parsed.priority} priority).`,
+      );
+      this.triggerPipEmote('celebrate');
+      if (this.soundEnabled && this.audio) this.audio.playPinchTick();
+      return;
+    }
+
+    this.setPipSpeech(`I heard: "${transcript}". Tell me any task and day (e.g. "Add code review on Friday")!`);
+    this.triggerPipEmote('thinking');
   }
 
   private handlePipWhatNext() {
