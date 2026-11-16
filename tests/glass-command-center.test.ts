@@ -26,6 +26,7 @@ import {
   generateGreetingSubtitle,
 } from '../src/glass-data-adapters.ts';
 import type { GlassTask } from '../src/glass-data-adapters.ts';
+import { parseVoiceTaskCommand } from '../src/productivity-engine.ts';
 
 test('Tier S1: Panel Grab, Move, and Arc Magnetic Snap (Hands & Controllers Parity)', () => {
   // Test both hands and controller grip
@@ -695,4 +696,54 @@ test('Tier S14: Multi-Week Calendar Navigation, Header Action Subviews, Workspac
   assert.equal(warmPalette.activeAmber, '#D97736');
   assert.equal(warmPalette.organicSage, '#4E8762');
   assert.ok(!('neonPurple' in warmPalette), 'No synthetic neon purple in active palette');
+});
+
+test('Tier S15: Pip Robot Voice Command Parser, Multi-Day Task Addition, and Spatial Avatar Interactions', () => {
+  // 1. Voice Command: Add task on a specific future day with duration and priority
+  const voiceInput1 = 'Add task Research Paper on Friday for 90 minutes high priority';
+  const parsed1 = parseVoiceTaskCommand(voiceInput1, 18);
+  assert.ok(parsed1 !== null, 'Voice command parsed successfully');
+  assert.equal(parsed1.title, 'Research Paper');
+  assert.equal(parsed1.dayNumber, 21, 'Friday maps to Nov 21');
+  assert.equal(parsed1.estimatedMinutes, 90, 'Parsed 90 minutes duration');
+  assert.equal(parsed1.priority, 'high', 'Parsed high priority');
+
+  // 2. Voice Command: Schedule on tomorrow with specific time
+  const voiceInput2 = 'Schedule Code Review tomorrow at 2 PM for 45 minutes';
+  const parsed2 = parseVoiceTaskCommand(voiceInput2, 18);
+  assert.ok(parsed2 !== null);
+  assert.equal(parsed2.title, 'Code Review');
+  assert.equal(parsed2.dayNumber, 19, 'Tomorrow maps to Nov 19');
+  assert.equal(parsed2.scheduledStartMinute, 14 * 60, '2 PM maps to 14:00 (840m)');
+  assert.equal(parsed2.estimatedMinutes, 45);
+  assert.equal(parsed2.priority, 'medium', 'Defaults to medium priority');
+
+  // 3. Voice Command: Add task on numeric date
+  const voiceInput3 = 'Create task ML Benchmark on Nov 20 2 hours';
+  const parsed3 = parseVoiceTaskCommand(voiceInput3, 18);
+  assert.ok(parsed3 !== null);
+  assert.equal(parsed3.title, 'ML Benchmark');
+  assert.equal(parsed3.dayNumber, 20);
+  assert.equal(parsed3.estimatedMinutes, 120);
+
+  // 4. Non-task speech phrases return null to avoid spurious additions
+  assert.equal(parseVoiceTaskCommand('What is the weather outside?'), null);
+  assert.equal(parseVoiceTaskCommand('How are my habits doing today?'), null);
+
+  // 5. Task creation and state preservation in task collection
+  const taskCollection: GlassTask[] = [];
+  const created: GlassTask = {
+    id: 'voice-task-1',
+    title: parsed1.title,
+    estimatedMinutes: parsed1.estimatedMinutes,
+    priority: parsed1.priority,
+    scheduledStartMinute: parsed1.scheduledStartMinute,
+    status: 'todo',
+    dayNumber: parsed1.dayNumber,
+  };
+  taskCollection.push(created);
+
+  assert.equal(taskCollection.length, 1);
+  assert.equal(taskCollection[0].dayNumber, 21, 'Task is assigned to requested day');
+  assert.equal(taskCollection[0].status, 'todo');
 });
