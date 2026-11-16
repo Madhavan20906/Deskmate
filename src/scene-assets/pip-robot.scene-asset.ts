@@ -78,12 +78,14 @@ export function buildPipRobotMesh(): PipRobotRig {
   // 1. Glowing Double Ring Platform (y = -0.12)
   const outerRingGeo = new TorusGeometry(0.14, 0.005, 12, 32);
   const outerRing = new Mesh(outerRingGeo, ringGlowMaterial1);
+  outerRing.name = 'pip-outer-ring';
   outerRing.rotation.x = Math.PI / 2;
   outerRing.position.y = -0.12;
   root.add(outerRing);
 
   const innerRingGeo = new TorusGeometry(0.10, 0.004, 12, 28);
   const innerRing = new Mesh(innerRingGeo, ringGlowMaterial2);
+  innerRing.name = 'pip-inner-ring';
   innerRing.rotation.x = Math.PI / 2;
   innerRing.position.y = -0.10;
   root.add(innerRing);
