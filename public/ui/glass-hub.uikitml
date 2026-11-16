@@ -969,6 +969,305 @@
       font-weight: 600;
       color: rgba(255, 255, 255, 0.90);
     }
+
+    .hub-main-view {
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .hub-subview {
+      flex-direction: column;
+      width: 100%;
+      height: 480px;
+      padding: 12px;
+      border-radius: 16px;
+      background-color: rgba(18, 25, 48, 0.92);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.14);
+      gap: 8px;
+    }
+
+    .subview-top-bar {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding-bottom: 6px;
+    }
+
+    .subview-back-btn {
+      flex-direction: row;
+      align-items: center;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      border-radius: 999px;
+      background-color: #7C5CFF;
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.40);
+    }
+
+    .subview-back-btn:hover {
+      background-color: #906ffa;
+      border-color: #FFFFFF;
+      border-width: 2px;
+    }
+
+    .subview-back-btn:active {
+      background-color: #633ef5;
+    }
+
+    .subview-back-text {
+      font-size: 11px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .subview-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .subview-body {
+      flex-direction: column;
+      width: 100%;
+      flex-grow: 1;
+      gap: 8px;
+    }
+
+    .week-columns-row {
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      gap: 4px;
+      flex-grow: 1;
+    }
+
+    .week-day-col {
+      flex-direction: column;
+      flex-grow: 1;
+      width: 100px;
+      padding: 6px;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.04);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.08);
+      gap: 4px;
+    }
+
+    .week-day-col-active {
+      background-color: rgba(124, 92, 255, 0.15);
+      border-color: #7C5CFF;
+    }
+
+    .week-day-header-btn {
+      flex-direction: column;
+      align-items: center;
+      padding: 4px;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.06);
+      width: 100%;
+      gap: 2px;
+    }
+
+    .week-day-header-btn:hover {
+      background-color: rgba(124, 92, 255, 0.35);
+    }
+
+    .week-day-name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .week-day-date {
+      font-size: 10px;
+      font-weight: 600;
+      color: #A78BFA;
+    }
+
+    .week-day-tasks {
+      flex-direction: column;
+      gap: 4px;
+      flex-grow: 1;
+      width: 100%;
+    }
+
+    .week-task-badge {
+      padding: 3px;
+      border-radius: 4px;
+      background-color: rgba(59, 130, 246, 0.25);
+      border-width: 1px;
+      border-color: rgba(59, 130, 246, 0.50);
+      width: 100%;
+    }
+
+    .week-task-text {
+      font-size: 9px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    .week-add-btn {
+      padding-top: 3px;
+      padding-bottom: 3px;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .week-add-btn:hover {
+      background-color: rgba(124, 92, 255, 0.40);
+      border-color: #A78BFA;
+    }
+
+    .week-add-text {
+      font-size: 9px;
+      font-weight: 700;
+      color: #E2E8F0;
+    }
+
+    .month-grid-container {
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      flex-grow: 1;
+    }
+
+    .month-days-header-row {
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    .month-header-cell {
+      width: 98px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.60);
+    }
+
+    .month-dates-row {
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      gap: 4px;
+    }
+
+    .month-date-tile {
+      flex-direction: column;
+      width: 98px;
+      height: 48px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.08);
+      padding: 4px;
+      gap: 2px;
+    }
+
+    .month-date-tile:hover {
+      background-color: rgba(124, 92, 255, 0.25);
+      border-color: #A78BFA;
+    }
+
+    .month-date-tile-active {
+      background-color: rgba(124, 92, 255, 0.35);
+      border-color: #7C5CFF;
+      border-width: 1.5px;
+    }
+
+    .month-date-num {
+      font-size: 11px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .month-task-count-text {
+      font-size: 9px;
+      font-weight: 600;
+      color: #60A5FA;
+    }
+
+    .month-selected-day-card {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.06);
+      width: 100%;
+    }
+
+    .garden-action-row {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .garden-act-btn {
+      flex-grow: 1;
+      height: 38px;
+      border-radius: 10px;
+      background-color: rgba(34, 197, 94, 0.20);
+      border-width: 1px;
+      border-color: rgba(34, 197, 94, 0.50);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .garden-act-btn:hover {
+      background-color: rgba(34, 197, 94, 0.40);
+      border-color: #4ADE80;
+    }
+
+    .garden-act-btn:active {
+      background-color: #16A34A;
+    }
+
+    .garden-act-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .interactive-card-item {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.10);
+      width: 100%;
+    }
+
+    .interactive-card-item:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+      border-color: #7C5CFF;
+    }
+
+    .interactive-card-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
   </style>
 
   <div class="panel-handle">
@@ -1077,252 +1376,630 @@
     </Button>
   </div>
 
-  <div class="schedule-card">
-    <div class="schedule-card-header">
-      <span class="schedule-title">Today's Schedule (8:00 AM – 10:00 PM)</span>
-      <div class="schedule-controls">
-        <div class="schedule-view-tabs">
-          <Button id="tab-day" class="sched-view-btn sched-view-btn-active">
-            <ButtonLabel class="sched-view-text-active">Day</ButtonLabel>
+  <div id="view-overview" class="hub-main-view">
+    <div class="schedule-card">
+      <div class="schedule-card-header">
+        <span id="hub-schedule-title" class="schedule-title">Today's Schedule (8:00 AM – 10:00 PM)</span>
+        <div class="schedule-controls">
+          <div class="schedule-view-tabs">
+            <Button id="tab-day" class="sched-view-btn sched-view-btn-active">
+              <ButtonLabel class="sched-view-text-active">Day</ButtonLabel>
+            </Button>
+            <Button id="tab-week" class="sched-view-btn">
+              <ButtonLabel class="sched-view-text">Week</ButtonLabel>
+            </Button>
+            <Button id="tab-month" class="sched-view-btn">
+              <ButtonLabel class="sched-view-text">Month</ButtonLabel>
+            </Button>
+          </div>
+          <Button id="btn-add-block" class="sched-action-btn">
+            <ButtonLabel class="sched-action-text">+ Block</ButtonLabel>
           </Button>
-          <Button id="tab-week" class="sched-view-btn">
-            <ButtonLabel class="sched-view-text">Week</ButtonLabel>
-          </Button>
-          <Button id="tab-month" class="sched-view-btn">
-            <ButtonLabel class="sched-view-text">Month</ButtonLabel>
+          <Button id="btn-zoom-schedule" class="sched-action-btn">
+            <ButtonLabel class="sched-action-text">⛶ Week</ButtonLabel>
           </Button>
         </div>
-        <Button id="btn-add-block" class="sched-action-btn">
-          <ButtonLabel class="sched-action-text">+ Block</ButtonLabel>
-        </Button>
-        <Button id="btn-zoom-schedule" class="sched-action-btn">
-          <ButtonLabel class="sched-action-text">⛶ Zoom</ButtonLabel>
-        </Button>
+      </div>
+
+      <div class="timeline-container">
+        <div class="now-marker-row">
+          <div id="now-marker" class="now-marker-badge" style="margin-left: 172px;">
+            <span id="now-marker-text" class="now-marker-text">10:24 AM</span>
+          </div>
+        </div>
+
+        <div class="timeline-axis-labels">
+          <span class="axis-label">8 AM</span>
+          <span class="axis-label">9 AM</span>
+          <span class="axis-label">10 AM</span>
+          <span class="axis-label">11 AM</span>
+          <span class="axis-label">12 PM</span>
+          <span class="axis-label">1 PM</span>
+          <span class="axis-label">2 PM</span>
+          <span class="axis-label">3 PM</span>
+          <span class="axis-label">4 PM</span>
+          <span class="axis-label">5 PM</span>
+          <span class="axis-label">7 PM</span>
+          <span class="axis-label">8 PM</span>
+          <span class="axis-label">9 PM</span>
+          <span class="axis-label">10 PM</span>
+        </div>
+
+        <div id="timeline-track" class="timeline-track">
+          <Button id="block-0" class="schedule-block" style="background-color: #2563EB; width: 110px; margin-left: 45px;">
+            <ButtonLabel id="block-title-0" class="block-title">ML Assignment</ButtonLabel>
+            <ButtonLabel id="block-time-0" class="block-time">9:00 - 10:30</ButtonLabel>
+          </Button>
+
+          <Button id="block-1" class="schedule-block" style="background-color: #D97706; width: 120px; margin-left: 20px;">
+            <ButtonLabel id="block-title-1" class="block-title">Implement API</ButtonLabel>
+            <ButtonLabel id="block-time-1" class="block-time">11:00 - 1:00</ButtonLabel>
+          </Button>
+
+          <Button id="block-2" class="schedule-block" style="background-color: #7C3AED; width: 68px; margin-left: 40px;">
+            <ButtonLabel id="block-title-2" class="block-title">Team Meet</ButtonLabel>
+            <ButtonLabel id="block-time-2" class="block-time">2:00 - 2:30</ButtonLabel>
+          </Button>
+
+          <Button id="block-3" class="schedule-block" style="background-color: #0284C7; width: 85px; margin-left: 35px;">
+            <ButtonLabel id="block-title-3" class="block-title">Research</ButtonLabel>
+            <ButtonLabel id="block-time-3" class="block-time">3:30 - 5:00</ButtonLabel>
+          </Button>
+
+          <Button id="block-4" class="schedule-block" style="background-color: #16A34A; width: 75px; margin-left: 45px;">
+            <ButtonLabel id="block-title-4" class="block-title">Gym</ButtonLabel>
+            <ButtonLabel id="block-time-4" class="block-time">6:00 - 7:00</ButtonLabel>
+          </Button>
+        </div>
       </div>
     </div>
 
-    <div class="timeline-container">
-      <div class="now-marker-row">
-        <div id="now-marker" class="now-marker-badge" style="margin-left: 172px;">
-          <span id="now-marker-text" class="now-marker-text">10:24 AM</span>
+    <div class="bottom-cards-row">
+      <div class="card-base" id="card-tasks">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <span id="hub-tasks-count" class="card-title">Tasks (4)</span>
+            <Button id="btn-zoom-tasks" class="card-zoom-btn">
+              <ButtonLabel class="card-zoom-text">⛶ Expand</ButtonLabel>
+            </Button>
+          </div>
+          <div class="filter-chips-row">
+            <Button id="chip-filter-all" class="filter-chip filter-chip-active">
+              <ButtonLabel class="filter-chip-text-active">All</ButtonLabel>
+            </Button>
+            <Button id="chip-filter-high" class="filter-chip">
+              <ButtonLabel class="filter-chip-text">High</ButtonLabel>
+            </Button>
+            <Button id="chip-filter-med" class="filter-chip">
+              <ButtonLabel class="filter-chip-text">Med</ButtonLabel>
+            </Button>
+            <Button id="chip-filter-low" class="filter-chip">
+              <ButtonLabel class="filter-chip-text">Low</ButtonLabel>
+            </Button>
+          </div>
         </div>
+
+        <div class="hub-task-rows">
+          <div class="hub-task-item">
+            <Button id="hub-chk-box-0" class="chk-square">
+              <ButtonLabel id="hub-chk-mark-0" class="chk-square-mark"></ButtonLabel>
+            </Button>
+            <div class="hub-task-left">
+              <ButtonLabel id="hub-task-title-0" class="hub-task-text">Finish ML assignment</ButtonLabel>
+            </div>
+            <div class="hub-task-right">
+              <span class="hub-task-badge badge-high">High 1h 30m</span>
+              <Button id="hub-task-edit-0" class="task-edit-btn">
+                <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
+              </Button>
+            </div>
+          </div>
+
+          <div class="hub-task-item">
+            <Button id="hub-chk-box-1" class="chk-square">
+              <ButtonLabel id="hub-chk-mark-1" class="chk-square-mark"></ButtonLabel>
+            </Button>
+            <div class="hub-task-left">
+              <ButtonLabel id="hub-task-title-1" class="hub-task-text">Implement API</ButtonLabel>
+            </div>
+            <div class="hub-task-right">
+              <span class="hub-task-badge badge-med">Med 2h</span>
+              <Button id="hub-task-edit-1" class="task-edit-btn">
+                <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
+              </Button>
+            </div>
+          </div>
+
+          <div class="hub-task-item">
+            <Button id="hub-chk-box-2" class="chk-square">
+              <ButtonLabel id="hub-chk-mark-2" class="chk-square-mark"></ButtonLabel>
+            </Button>
+            <div class="hub-task-left">
+              <ButtonLabel id="hub-task-title-2" class="hub-task-text">Team meeting</ButtonLabel>
+            </div>
+            <div class="hub-task-right">
+              <span class="hub-task-badge badge-low">Low 30m</span>
+              <Button id="hub-task-edit-2" class="task-edit-btn">
+                <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
+              </Button>
+            </div>
+          </div>
+
+          <div class="hub-task-item">
+            <Button id="hub-chk-box-3" class="chk-square chk-square-checked">
+              <ButtonLabel id="hub-chk-mark-3" class="chk-square-mark">✓</ButtonLabel>
+            </Button>
+            <div class="hub-task-left">
+              <ButtonLabel id="hub-task-title-3" class="hub-task-text-strike">Read research paper</ButtonLabel>
+            </div>
+            <div class="hub-task-right">
+              <span class="hub-task-badge badge-med">Med 1h</span>
+              <Button id="hub-task-edit-3" class="task-edit-btn">
+                <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <Button id="hub-btn-add-task" class="add-task-footer-btn">
+          <ButtonLabel class="add-task-footer-text">+ Add Task</ButtonLabel>
+        </Button>
       </div>
 
-      <div class="timeline-axis-labels">
-        <span class="axis-label">8 AM</span>
-        <span class="axis-label">9 AM</span>
-        <span class="axis-label">10 AM</span>
-        <span class="axis-label">11 AM</span>
-        <span class="axis-label">12 PM</span>
-        <span class="axis-label">1 PM</span>
-        <span class="axis-label">2 PM</span>
-        <span class="axis-label">3 PM</span>
-        <span class="axis-label">4 PM</span>
-        <span class="axis-label">5 PM</span>
-        <span class="axis-label">7 PM</span>
-        <span class="axis-label">8 PM</span>
-        <span class="axis-label">9 PM</span>
-        <span class="axis-label">10 PM</span>
+      <div class="card-base" id="card-focus">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <span class="card-title">Focus Session</span>
+            <Button id="btn-zoom-focus" class="card-zoom-btn">
+              <ButtonLabel class="card-zoom-text">⛶ Expand</ButtonLabel>
+            </Button>
+          </div>
+          <Button id="btn-focus-settings" class="card-zoom-btn">
+            <ButtonLabel class="card-zoom-text">⚙️ Mode</ButtonLabel>
+          </Button>
+        </div>
+
+        <div class="focus-timer-body">
+          <div class="timer-ring-row">
+            <div class="timer-ring">
+              <span id="hub-focus-time" class="timer-digits">25:00</span>
+              <span id="hub-focus-mode" class="timer-label">Pomodoro</span>
+            </div>
+
+            <Button id="hub-focus-play-btn" class="hub-play-btn">
+              <ButtonLabel id="hub-focus-play-icon" class="hub-play-icon">▶</ButtonLabel>
+            </Button>
+          </div>
+
+          <div class="focus-quick-chips-row">
+            <Button id="hub-focus-minus5" class="focus-quick-chip">
+              <ButtonLabel class="focus-quick-chip-text">-5m</ButtonLabel>
+            </Button>
+            <Button id="hub-focus-plus5" class="focus-quick-chip">
+              <ButtonLabel class="focus-quick-chip-text">+5m</ButtonLabel>
+            </Button>
+            <Button id="hub-focus-reset" class="focus-quick-chip">
+              <ButtonLabel class="focus-quick-chip-text">Reset</ButtonLabel>
+            </Button>
+            <Button id="hub-focus-break" class="focus-quick-chip">
+              <ButtonLabel class="focus-quick-chip-text">Break</ButtonLabel>
+            </Button>
+          </div>
+        </div>
+
+        <span id="hub-focus-sessions-count" class="focus-footer-text">⏱ 4/8 Sessions Today</span>
       </div>
 
-      <div id="timeline-track" class="timeline-track">
-        <Button id="block-0" class="schedule-block" style="background-color: #2563EB; width: 110px; margin-left: 45px;">
-          <ButtonLabel id="block-title-0" class="block-title">ML Assignment</ButtonLabel>
-          <ButtonLabel id="block-time-0" class="block-time">9:00 - 10:30</ButtonLabel>
-        </Button>
+      <div class="card-base" id="card-workload">
+        <div class="card-header-row">
+          <div class="card-title-group">
+            <span class="card-title">Workload</span>
+            <Button id="btn-zoom-workload" class="card-zoom-btn">
+              <ButtonLabel class="card-zoom-text">⛶ Expand</ButtonLabel>
+            </Button>
+          </div>
+        </div>
 
-        <Button id="block-1" class="schedule-block" style="background-color: #D97706; width: 120px; margin-left: 20px;">
-          <ButtonLabel id="block-title-1" class="block-title">Implement API</ButtonLabel>
-          <ButtonLabel id="block-time-1" class="block-time">11:00 - 1:00</ButtonLabel>
-        </Button>
+        <div class="workload-body">
+          <Button id="btn-gauge-toggle" class="donut-gauge">
+            <ButtonLabel id="donut-percentage-text" class="donut-gauge-text">72%</ButtonLabel>
+          </Button>
 
-        <Button id="block-2" class="schedule-block" style="background-color: #7C3AED; width: 68px; margin-left: 40px;">
-          <ButtonLabel id="block-title-2" class="block-title">Team Meet</ButtonLabel>
-          <ButtonLabel id="block-time-2" class="block-time">2:00 - 2:30</ButtonLabel>
-        </Button>
+          <div class="workload-legend">
+            <div class="legend-row">
+              <div class="legend-dot-cyan"></div>
+              <span id="legend-planned-text" class="legend-text">Planned 7h 30m</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot-green"></div>
+              <span id="legend-completed-text" class="legend-text">Completed 2h 00m</span>
+            </div>
+            <div class="legend-row">
+              <div class="legend-dot-gray"></div>
+              <span id="legend-remaining-text" class="legend-text">Remaining 5h 30m</span>
+            </div>
+          </div>
+        </div>
 
-        <Button id="block-3" class="schedule-block" style="background-color: #0284C7; width: 85px; margin-left: 35px;">
-          <ButtonLabel id="block-title-3" class="block-title">Research</ButtonLabel>
-          <ButtonLabel id="block-time-3" class="block-time">3:30 - 5:00</ButtonLabel>
-        </Button>
-
-        <Button id="block-4" class="schedule-block" style="background-color: #16A34A; width: 75px; margin-left: 45px;">
-          <ButtonLabel id="block-title-4" class="block-title">Gym</ButtonLabel>
-          <ButtonLabel id="block-time-4" class="block-time">6:00 - 7:00</ButtonLabel>
+        <Button id="btn-workload-insight" class="workload-insight-capsule">
+          <ButtonLabel id="workload-insight-text" class="workload-insight-text">💡 You're on track! ~2h free after 7 PM.</ButtonLabel>
         </Button>
       </div>
     </div>
   </div>
 
-  <div class="bottom-cards-row">
-    <div class="card-base" id="card-tasks">
-      <div class="card-header-row">
-        <div class="card-title-group">
-          <span id="hub-tasks-count" class="card-title">Tasks (4)</span>
-          <Button id="btn-zoom-tasks" class="card-zoom-btn">
-            <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-          </Button>
+  <!-- Subview: Week Schedule -->
+  <div id="view-week" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-week-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Day Schedule</ButtonLabel>
+      </Button>
+      <span class="subview-title">Week Schedule • Nov 16 – Nov 22, 2026</span>
+      <div class="schedule-view-tabs">
+        <Button id="week-tab-day" class="sched-view-btn">
+          <ButtonLabel class="sched-view-text">Day</ButtonLabel>
+        </Button>
+        <Button id="week-tab-week" class="sched-view-btn sched-view-btn-active">
+          <ButtonLabel class="sched-view-text-active">Week</ButtonLabel>
+        </Button>
+        <Button id="week-tab-month" class="sched-view-btn">
+          <ButtonLabel class="sched-view-text">Month</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+
+    <div class="week-columns-row">
+      <div class="week-day-col" id="week-col-0">
+        <Button id="week-day-btn-0" class="week-day-header-btn">
+          <ButtonLabel class="week-day-name">Sun 16</ButtonLabel>
+          <ButtonLabel id="week-day-count-0" class="week-day-date">1 task</ButtonLabel>
+        </Button>
+        <div class="week-day-tasks">
+          <div class="week-task-badge"><span id="week-task-0" class="week-task-text">ML Dataset</span></div>
         </div>
-        <div class="filter-chips-row">
-          <Button id="chip-filter-all" class="filter-chip filter-chip-active">
-            <ButtonLabel class="filter-chip-text-active">All</ButtonLabel>
-          </Button>
-          <Button id="chip-filter-high" class="filter-chip">
-            <ButtonLabel class="filter-chip-text">High</ButtonLabel>
-          </Button>
-          <Button id="chip-filter-med" class="filter-chip">
-            <ButtonLabel class="filter-chip-text">Med</ButtonLabel>
-          </Button>
-          <Button id="chip-filter-low" class="filter-chip">
-            <ButtonLabel class="filter-chip-text">Low</ButtonLabel>
-          </Button>
-        </div>
+        <Button id="week-day-add-0" class="week-add-btn">
+          <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+        </Button>
       </div>
 
-      <div class="hub-task-rows">
-        <div class="hub-task-item">
-          <Button id="hub-chk-box-0" class="chk-square">
-            <ButtonLabel id="hub-chk-mark-0" class="chk-square-mark"></ButtonLabel>
-          </Button>
-          <div class="hub-task-left">
-            <ButtonLabel id="hub-task-title-0" class="hub-task-text">Finish ML assignment</ButtonLabel>
-          </div>
-          <div class="hub-task-right">
-            <span class="hub-task-badge badge-high">High 1h 30m</span>
-            <Button id="hub-task-edit-0" class="task-edit-btn">
-              <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
-            </Button>
-          </div>
+      <div class="week-day-col" id="week-col-1">
+        <Button id="week-day-btn-1" class="week-day-header-btn">
+          <ButtonLabel class="week-day-name">Mon 17</ButtonLabel>
+          <ButtonLabel id="week-day-count-1" class="week-day-date">1 task</ButtonLabel>
+        </Button>
+        <div class="week-day-tasks">
+          <div class="week-task-badge"><span id="week-task-1" class="week-task-text">Design API</span></div>
         </div>
-
-        <div class="hub-task-item">
-          <Button id="hub-chk-box-1" class="chk-square">
-            <ButtonLabel id="hub-chk-mark-1" class="chk-square-mark"></ButtonLabel>
-          </Button>
-          <div class="hub-task-left">
-            <ButtonLabel id="hub-task-title-1" class="hub-task-text">Implement API</ButtonLabel>
-          </div>
-          <div class="hub-task-right">
-            <span class="hub-task-badge badge-med">Med 2h</span>
-            <Button id="hub-task-edit-1" class="task-edit-btn">
-              <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
-            </Button>
-          </div>
-        </div>
-
-        <div class="hub-task-item">
-          <Button id="hub-chk-box-2" class="chk-square">
-            <ButtonLabel id="hub-chk-mark-2" class="chk-square-mark"></ButtonLabel>
-          </Button>
-          <div class="hub-task-left">
-            <ButtonLabel id="hub-task-title-2" class="hub-task-text">Team meeting</ButtonLabel>
-          </div>
-          <div class="hub-task-right">
-            <span class="hub-task-badge badge-low">Low 30m</span>
-            <Button id="hub-task-edit-2" class="task-edit-btn">
-              <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
-            </Button>
-          </div>
-        </div>
-
-        <div class="hub-task-item">
-          <Button id="hub-chk-box-3" class="chk-square chk-square-checked">
-            <ButtonLabel id="hub-chk-mark-3" class="chk-square-mark">✓</ButtonLabel>
-          </Button>
-          <div class="hub-task-left">
-            <ButtonLabel id="hub-task-title-3" class="hub-task-text-strike">Read research paper</ButtonLabel>
-          </div>
-          <div class="hub-task-right">
-            <span class="hub-task-badge badge-med">Med 1h</span>
-            <Button id="hub-task-edit-3" class="task-edit-btn">
-              <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
-            </Button>
-          </div>
-        </div>
+        <Button id="week-day-add-1" class="week-add-btn">
+          <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+        </Button>
       </div>
 
-      <Button id="hub-btn-add-task" class="add-task-footer-btn">
-        <ButtonLabel class="add-task-footer-text">+ Add Task</ButtonLabel>
+      <div class="week-day-col week-day-col-active" id="week-col-2">
+        <Button id="week-day-btn-2" class="week-day-header-btn">
+          <ButtonLabel class="week-day-name">Tue 18 • Today</ButtonLabel>
+          <ButtonLabel id="week-day-count-2" class="week-day-date">4 tasks</ButtonLabel>
+        </Button>
+        <div class="week-day-tasks">
+          <div class="week-task-badge"><span id="week-task-2-a" class="week-task-text">Finish ML</span></div>
+          <div class="week-task-badge"><span id="week-task-2-b" class="week-task-text">Implement API</span></div>
+          <div class="week-task-badge"><span id="week-task-2-c" class="week-task-text">Team Meet</span></div>
+        </div>
+        <Button id="week-day-add-2" class="week-add-btn">
+          <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+        </Button>
+      </div>
+
+      <div class="week-day-col" id="week-col-3">
+        <Button id="week-day-btn-3" class="week-day-header-btn">
+          <ButtonLabel class="week-day-name">Wed 19</ButtonLabel>
+          <ButtonLabel id="week-day-count-3" class="week-day-date">1 task</ButtonLabel>
+        </Button>
+        <div class="week-day-tasks">
+          <div class="week-task-badge"><span id="week-task-3" class="week-task-text">Code Review</span></div>
+        </div>
+        <Button id="week-day-add-3" class="week-add-btn">
+          <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+        </Button>
+      </div>
+
+      <div class="week-day-col" id="week-col-4">
+        <Button id="week-day-btn-4" class="week-day-header-btn">
+          <ButtonLabel class="week-day-name">Thu 20</ButtonLabel>
+          <ButtonLabel id="week-day-count-4" class="week-day-date">1 task</ButtonLabel>
+        </Button>
+        <div class="week-day-tasks">
+          <div class="week-task-badge"><span id="week-task-4" class="week-task-text">Write Report</span></div>
+        </div>
+        <Button id="week-day-add-4" class="week-add-btn">
+          <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+        </Button>
+      </div>
+
+      <div class="week-day-col" id="week-col-5">
+        <Button id="week-day-btn-5" class="week-day-header-btn">
+          <ButtonLabel class="week-day-name">Fri 21</ButtonLabel>
+          <ButtonLabel id="week-day-count-5" class="week-day-date">1 task</ButtonLabel>
+        </Button>
+        <div class="week-day-tasks">
+          <div class="week-task-badge"><span id="week-task-5" class="week-task-text">Project Sub</span></div>
+        </div>
+        <Button id="week-day-add-5" class="week-add-btn">
+          <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+        </Button>
+      </div>
+
+      <div class="week-day-col" id="week-col-6">
+        <Button id="week-day-btn-6" class="week-day-header-btn">
+          <ButtonLabel class="week-day-name">Sat 22</ButtonLabel>
+          <ButtonLabel id="week-day-count-6" class="week-day-date">0 tasks</ButtonLabel>
+        </Button>
+        <div class="week-day-tasks">
+          <div class="week-task-badge"><span id="week-task-6" class="week-task-text">Weekend Rest</span></div>
+        </div>
+        <Button id="week-day-add-6" class="week-add-btn">
+          <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subview: Month Calendar -->
+  <div id="view-month" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-month-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Day Schedule</ButtonLabel>
+      </Button>
+      <span class="subview-title">November 2026 • Monthly Calendar</span>
+      <div class="schedule-view-tabs">
+        <Button id="month-tab-day" class="sched-view-btn">
+          <ButtonLabel class="sched-view-text">Day</ButtonLabel>
+        </Button>
+        <Button id="month-tab-week" class="sched-view-btn">
+          <ButtonLabel class="sched-view-text">Week</ButtonLabel>
+        </Button>
+        <Button id="month-tab-month" class="sched-view-btn sched-view-btn-active">
+          <ButtonLabel class="sched-view-text-active">Month</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+
+    <div class="month-grid-container">
+      <div class="month-days-header-row">
+        <span class="month-header-cell">Sun</span>
+        <span class="month-header-cell">Mon</span>
+        <span class="month-header-cell">Tue</span>
+        <span class="month-header-cell">Wed</span>
+        <span class="month-header-cell">Thu</span>
+        <span class="month-header-cell">Fri</span>
+        <span class="month-header-cell">Sat</span>
+      </div>
+
+      <div class="month-dates-row">
+        <Button id="month-date-16" class="month-date-tile">
+          <ButtonLabel class="month-date-num">16</ButtonLabel>
+          <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
+        </Button>
+        <Button id="month-date-17" class="month-date-tile">
+          <ButtonLabel class="month-date-num">17</ButtonLabel>
+          <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
+        </Button>
+        <Button id="month-date-18" class="month-date-tile month-date-tile-active">
+          <ButtonLabel class="month-date-num">18 • Today</ButtonLabel>
+          <ButtonLabel class="month-task-count-text">4 tasks</ButtonLabel>
+        </Button>
+        <Button id="month-date-19" class="month-date-tile">
+          <ButtonLabel class="month-date-num">19</ButtonLabel>
+          <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
+        </Button>
+        <Button id="month-date-20" class="month-date-tile">
+          <ButtonLabel class="month-date-num">20</ButtonLabel>
+          <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
+        </Button>
+        <Button id="month-date-21" class="month-date-tile">
+          <ButtonLabel class="month-date-num">21</ButtonLabel>
+          <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
+        </Button>
+        <Button id="month-date-22" class="month-date-tile">
+          <ButtonLabel class="month-date-num">22</ButtonLabel>
+          <ButtonLabel class="month-task-count-text">0 tasks</ButtonLabel>
+        </Button>
+      </div>
+
+      <div class="month-selected-day-card">
+        <span id="month-selected-day-label" class="subview-title">Selected Day: Tue, Nov 18 • 4 tasks</span>
+        <Button id="btn-month-add-task" class="subview-back-btn">
+          <ButtonLabel class="subview-back-text">+ Add Task for this Day</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subview: All Tasks & Backlog -->
+  <div id="view-tasks" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-tasks-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">All Tasks &amp; Backlog</span>
+      <Button id="btn-tasks-add-task" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">+ Add New Task</ButtonLabel>
       </Button>
     </div>
-
-    <div class="card-base" id="card-focus">
-      <div class="card-header-row">
-        <div class="card-title-group">
-          <span class="card-title">Focus Session</span>
-          <Button id="btn-zoom-focus" class="card-zoom-btn">
-            <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-          </Button>
-        </div>
-        <Button id="btn-focus-settings" class="card-zoom-btn">
-          <ButtonLabel class="card-zoom-text">⚙️ Mode</ButtonLabel>
-        </Button>
+    <div class="subview-body">
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">📌 Finish ML assignment • High • 9:00 - 10:30 AM</span>
+        <span class="hub-task-badge badge-high">High</span>
       </div>
-
-      <div class="focus-timer-body">
-        <div class="timer-ring-row">
-          <div class="timer-ring">
-            <span id="hub-focus-time" class="timer-digits">25:00</span>
-            <span id="hub-focus-mode" class="timer-label">Pomodoro</span>
-          </div>
-
-          <Button id="hub-focus-play-btn" class="hub-play-btn">
-            <ButtonLabel id="hub-focus-play-icon" class="hub-play-icon">▶</ButtonLabel>
-          </Button>
-        </div>
-
-        <div class="focus-quick-chips-row">
-          <Button id="hub-focus-minus5" class="focus-quick-chip">
-            <ButtonLabel class="focus-quick-chip-text">-5m</ButtonLabel>
-          </Button>
-          <Button id="hub-focus-plus5" class="focus-quick-chip">
-            <ButtonLabel class="focus-quick-chip-text">+5m</ButtonLabel>
-          </Button>
-          <Button id="hub-focus-reset" class="focus-quick-chip">
-            <ButtonLabel class="focus-quick-chip-text">Reset</ButtonLabel>
-          </Button>
-          <Button id="hub-focus-break" class="focus-quick-chip">
-            <ButtonLabel class="focus-quick-chip-text">Break</ButtonLabel>
-          </Button>
-        </div>
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">📌 Implement API • Medium • 11:00 AM - 1:00 PM</span>
+        <span class="hub-task-badge badge-med">Medium</span>
       </div>
-
-      <span id="hub-focus-sessions-count" class="focus-footer-text">⏱ 4/8 Sessions Today</span>
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">📌 Team meeting • Low • 2:00 - 2:30 PM</span>
+        <span class="hub-task-badge badge-low">Low</span>
+      </div>
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">📌 Read research paper • Medium • 3:30 - 5:00 PM</span>
+        <span class="hub-task-badge badge-med">Medium</span>
+      </div>
     </div>
+  </div>
 
-    <div class="card-base" id="card-workload">
-      <div class="card-header-row">
-        <div class="card-title-group">
-          <span class="card-title">Workload</span>
-          <Button id="btn-zoom-workload" class="card-zoom-btn">
-            <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-          </Button>
-        </div>
+  <!-- Subview: Focus Studio -->
+  <div id="view-focus" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-focus-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">Spatial Focus Studio</span>
+      <Button id="btn-focus-studio-play" class="subview-back-btn">
+        <ButtonLabel id="btn-focus-studio-play-text" class="subview-back-text">▶ Start Sprint</ButtonLabel>
+      </Button>
+    </div>
+    <div class="subview-body" style="align-items: center; justify-content: center; gap: 14px;">
+      <span id="focus-studio-timer" class="subview-title" style="font-size: 36px; font-weight: 800; color: #A78BFA;">25:00</span>
+      <span id="focus-studio-mode" class="greeting-subtitle" style="font-size: 14px;">Pomodoro Focus Mode • 4/8 Sessions Today</span>
+      <div class="focus-quick-chips-row" style="width: 380px;">
+        <Button id="focus-studio-minus5" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-5m</ButtonLabel></Button>
+        <Button id="focus-studio-plus5" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">+5m</ButtonLabel></Button>
+        <Button id="focus-studio-reset" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">Reset</ButtonLabel></Button>
+        <Button id="focus-studio-break" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">Break</ButtonLabel></Button>
       </div>
+    </div>
+  </div>
 
-      <div class="workload-body">
-        <Button id="btn-gauge-toggle" class="donut-gauge">
-          <ButtonLabel id="donut-percentage-text" class="donut-gauge-text">72%</ButtonLabel>
+  <!-- Subview: Analytics -->
+  <div id="view-analytics" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-analytics-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">Productivity Analytics &amp; Workload</span>
+      <span class="subview-back-text" style="color: #4ADE80;">94% Score • On Track</span>
+    </div>
+    <div class="subview-body">
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">📊 Planned Time: 7h 30m</span>
+        <span class="legend-text" style="color: #06B6D4;">68% Day Capacity</span>
+      </div>
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">✅ Completed Time: 2h 00m</span>
+        <span class="legend-text" style="color: #22C55E;">2 tasks completed</span>
+      </div>
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">⏱ Remaining Focus Time: 5h 30m</span>
+        <span class="legend-text" style="color: #FBBF24;">Free after 7 PM</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subview: Productivity Garden -->
+  <div id="view-garden" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-garden-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span id="garden-hub-title" class="subview-title">Productivity Garden • Level 3 🌱</span>
+      <span id="garden-hub-xp" class="subview-back-text" style="color: #86EFAC;">600 / 1,000 XP</span>
+    </div>
+    <div class="subview-body">
+      <div class="interactive-card-item" style="padding: 12px; align-items: center; justify-content: center; gap: 8px;">
+        <span class="weather-icon" style="font-size: 36px;">🌳</span>
+        <span class="interactive-card-text" style="font-size: 14px;">Great Oak Tree • 7 Day Consistency Streak!</span>
+      </div>
+      <div class="garden-action-row">
+        <Button id="btn-garden-water" class="garden-act-btn">
+          <ButtonLabel class="garden-act-text">💧 Water (+20 XP)</ButtonLabel>
         </Button>
-
-        <div class="workload-legend">
-          <div class="legend-row">
-            <div class="legend-dot-cyan"></div>
-            <span id="legend-planned-text" class="legend-text">Planned 7h 30m</span>
-          </div>
-          <div class="legend-row">
-            <div class="legend-dot-green"></div>
-            <span id="legend-completed-text" class="legend-text">Completed 2h 00m</span>
-          </div>
-          <div class="legend-row">
-            <div class="legend-dot-gray"></div>
-            <span id="legend-remaining-text" class="legend-text">Remaining 5h 30m</span>
-          </div>
-        </div>
+        <Button id="btn-garden-tend" class="garden-act-btn">
+          <ButtonLabel class="garden-act-text">🌿 Prune (+10 XP)</ButtonLabel>
+        </Button>
+        <Button id="btn-garden-nurture" class="garden-act-btn">
+          <ButtonLabel class="garden-act-text">✨ Fertilizer (+30 XP)</ButtonLabel>
+        </Button>
       </div>
+    </div>
+  </div>
 
-      <Button id="btn-workload-insight" class="workload-insight-capsule">
-        <ButtonLabel id="workload-insight-text" class="workload-insight-text">💡 You're on track! ~2h free after 7 PM.</ButtonLabel>
+  <!-- Subview: Daily Routines -->
+  <div id="view-routines" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-routines-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">Daily Routines &amp; Habits</span>
+      <span class="subview-back-text" style="color: #FBBF24;">🔥 7 Day Streak</span>
+    </div>
+    <div class="subview-body">
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">☀️ Morning: Hydrate &amp; 5m Stretch</span>
+        <span class="routine-badge-complete">✓ Done</span>
+      </div>
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">☀️ Morning: Review Top 3 Goals</span>
+        <span class="routine-badge-complete">✓ Done</span>
+      </div>
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">☀️ Morning: Deep Work Preparation</span>
+        <span class="routine-badge-complete">✓ Done</span>
+      </div>
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">🌙 Wind-down: Clear Inbox &amp; Close Tabs</span>
+        <span class="routine-badge-pending">Pending</span>
+      </div>
+      <div class="interactive-card-item">
+        <span class="interactive-card-text">🌙 Wind-down: Log Daily Learnings</span>
+        <span class="routine-badge-pending">Pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subview: Spatial Notes -->
+  <div id="view-notes" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-notes-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">Spatial Productivity Notes</span>
+      <Button id="btn-notes-add" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">+ Quick Note</ButtonLabel>
+      </Button>
+    </div>
+    <div class="subview-body">
+      <Button id="note-item-0" class="interactive-card-item">
+        <ButtonLabel class="interactive-card-text">📝 ML Assignment: Finalize test loss graphs and submit report</ButtonLabel>
+      </Button>
+      <Button id="note-item-1" class="interactive-card-item">
+        <ButtonLabel class="interactive-card-text">💡 API Architecture: Check headers, rate limits, and token refresh flow</ButtonLabel>
+      </Button>
+      <Button id="note-item-2" class="interactive-card-item">
+        <ButtonLabel class="interactive-card-text">🎯 Sprint Goals: Deliver 60fps WebXR spatial command center</ButtonLabel>
+      </Button>
+    </div>
+  </div>
+
+  <!-- Subview: Quarterly Goals -->
+  <div id="view-goals" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-goals-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">Quarterly Goals &amp; Deadlines</span>
+      <span class="subview-back-text" style="color: #60A5FA;">Q4 2026</span>
+    </div>
+    <div class="subview-body">
+      <Button id="goal-item-0" class="interactive-card-item">
+        <ButtonLabel class="interactive-card-text">🎯 Ship DeskMate Spatial Studio • 75% Completed</ButtonLabel>
+        <span class="hub-task-badge badge-high">High</span>
+      </Button>
+      <Button id="goal-item-1" class="interactive-card-item">
+        <ButtonLabel class="interactive-card-text">📚 Read 4 Research Papers • 2/4 Completed</ButtonLabel>
+        <span class="hub-task-badge badge-med">Med</span>
+      </Button>
+      <Button id="goal-item-2" class="interactive-card-item">
+        <ButtonLabel class="interactive-card-text">🔥 7-Day Continuous Focus Streak • Active!</ButtonLabel>
+        <span class="hub-task-badge badge-low">Active</span>
       </Button>
     </div>
   </div>

@@ -56,7 +56,19 @@ import { PipRobotRig } from './scene-assets/pip-robot.scene-asset.js';
 
 const STORAGE_KEY_TASKS = 'deskmate.tasks.v1';
 
-type NavTab = 'tasks' | 'schedule' | 'focus' | 'analytics' | 'garden' | 'routines' | 'notes' | 'goals';
+export type NavTab = 'tasks' | 'schedule' | 'focus' | 'analytics' | 'garden' | 'routines' | 'notes' | 'goals';
+
+export type HubContentView =
+  | 'overview'
+  | 'week'
+  | 'month'
+  | 'tasks'
+  | 'focus'
+  | 'analytics'
+  | 'garden'
+  | 'routines'
+  | 'notes'
+  | 'goals';
 
 function setText(element: any, text: string | number) {
   if (!element) return;
@@ -125,6 +137,7 @@ export class PanelSystem extends createSystem({
   // Hub View Controls
   private activeTab: NavTab = 'schedule';
   private scheduleView: 'day' | 'week' | 'month' = 'day';
+  private activeHubView: HubContentView = 'overview';
   private taskFilter: 'all' | 'high' | 'medium' | 'low' = 'all';
   private voiceListening = false;
   private hasUnreadNotification = true;
@@ -261,6 +274,7 @@ export class PanelSystem extends createSystem({
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
           this.tasks = parsed;
+          this.ensureWeekTasksPopulated();
           return;
         }
       }
@@ -268,7 +282,79 @@ export class PanelSystem extends createSystem({
       console.warn('[DeskMate] Could not load stored tasks, using seed data:', err);
     }
     this.tasks = JSON.parse(JSON.stringify(SEED_TASKS));
+    this.ensureWeekTasksPopulated();
     this.saveTasks(false);
+  }
+
+  private ensureWeekTasksPopulated() {
+    for (const t of this.tasks) {
+      if (t.dayNumber === undefined) {
+        t.dayNumber = 18;
+      }
+    }
+
+    const defaultMultiDayTasks: GlassTask[] = [
+      {
+        id: 'seed-task-16-a',
+        title: 'Review System Specs',
+        priority: 'medium',
+        estimatedMinutes: 60,
+        scheduledStartMinute: 10 * 60,
+        status: 'completed',
+        dayNumber: 16,
+      },
+      {
+        id: 'seed-task-17-a',
+        title: 'Data Pipeline Benchmark',
+        priority: 'high',
+        estimatedMinutes: 90,
+        scheduledStartMinute: 11 * 60,
+        status: 'completed',
+        dayNumber: 17,
+      },
+      {
+        id: 'seed-task-19-a',
+        title: 'Code Refactoring',
+        priority: 'medium',
+        estimatedMinutes: 90,
+        scheduledStartMinute: 10 * 60,
+        status: 'todo',
+        dayNumber: 19,
+      },
+      {
+        id: 'seed-task-20-a',
+        title: 'Write Technical Report',
+        priority: 'high',
+        estimatedMinutes: 60,
+        scheduledStartMinute: 14 * 60,
+        status: 'todo',
+        dayNumber: 20,
+      },
+      {
+        id: 'seed-task-21-a',
+        title: 'Project Submission & Demo',
+        priority: 'high',
+        estimatedMinutes: 60,
+        scheduledStartMinute: 11 * 60,
+        status: 'todo',
+        dayNumber: 21,
+      },
+      {
+        id: 'seed-task-22-a',
+        title: 'Weekly Review & Planning',
+        priority: 'low',
+        estimatedMinutes: 45,
+        scheduledStartMinute: 16 * 60,
+        status: 'todo',
+        dayNumber: 22,
+      },
+    ];
+
+    for (const defTask of defaultMultiDayTasks) {
+      if (!this.tasks.some((t) => t.id === defTask.id || (t.dayNumber === defTask.dayNumber && t.title === defTask.title))) {
+        this.tasks.push(defTask);
+      }
+    }
   }
 
   private saveTasks(recordUndo = true, undoLabel = 'Update task') {
@@ -370,41 +456,9 @@ export class PanelSystem extends createSystem({
   }
 
   // --------------------------------------------------------------------------
-  // Section Zoom / Focus View Mechanics
+  // Section Zoom & In-Place Subview Mechanics (Zero 3D Camera Zoom)
   // --------------------------------------------------------------------------
-  public zoomSection(panelId: string, sectionTitle = 'Section View', offsetY = 1.25, zoomScale = 0.155) {
-    this.zoomedPanelId = panelId;
-
-    const targetObj = this.world.getSceneObject(panelId);
-    if (targetObj) {
-      targetObj.position.set(0, offsetY, -0.40);
-      targetObj.rotation.set(0, 0, 0);
-      targetObj.scale.set(zoomScale, zoomScale, zoomScale);
-      targetObj.visible = true;
-    }
-
-    const allPanelIds = ['panel-left-tasks', 'panel-hub', 'panel-right-pip', 'panel-right-focus'];
-    for (const id of allPanelIds) {
-      if (id !== panelId) {
-        const obj = this.world.getSceneObject(id);
-        if (obj) {
-          obj.visible = false;
-        }
-      }
-    }
-
-    this.updateZoomBackButtons(panelId, sectionTitle, true);
-
-    if (this.soundEnabled && this.audio) {
-      this.audio.playPinchTick();
-    }
-    this.setPipSpeech(`Zoomed in on ${sectionTitle}. Click "◀ Back to Overview" anytime to return.`);
-  }
-
-  public resetZoom() {
-    const prevZoomed = this.zoomedPanelId;
-    this.zoomedPanelId = null;
-
+  public resetPanelTransforms() {
     const defaults: Record<string, { pos: [number, number, number]; rotDeg: [number, number, number]; scale: number }> = {
       'panel-left-tasks': { pos: [-0.58, 1.28, -0.68], rotDeg: [0, 22, 0], scale: 0.10 },
       'panel-hub': { pos: [0, 1.28, -0.72], rotDeg: [0, 0, 0], scale: 0.10 },
@@ -425,13 +479,103 @@ export class PanelSystem extends createSystem({
         obj.visible = true;
       }
     }
+  }
 
-    this.updateZoomBackButtons(prevZoomed || '', '', false);
+  public zoomSection(panelId: string, sectionTitle = 'Section View', _offsetY = 1.25, _zoomScale = 0.155) {
+    this.zoomedPanelId = panelId;
+
+    // Strict requirement: Never move 3D panels into the camera or hide the other panels.
+    // Keep all 4 panels firmly positioned in their natural curved DeskMate arc.
+    this.resetPanelTransforms();
+
+    // Show the requested section in-place in the Center Hub content area
+    if (/tasks|agenda/i.test(sectionTitle)) {
+      this.setHubView('tasks');
+    } else if (/focus/i.test(sectionTitle)) {
+      this.setHubView('focus');
+    } else if (/workload|analytics/i.test(sectionTitle)) {
+      this.setHubView('analytics');
+    } else if (/calendar|month/i.test(sectionTitle)) {
+      this.setHubView('month');
+    } else if (/week/i.test(sectionTitle)) {
+      this.setHubView('week');
+    } else if (/garden/i.test(sectionTitle)) {
+      this.setHubView('garden');
+    } else if (/routine|habit/i.test(sectionTitle)) {
+      this.setHubView('routines');
+    } else if (/deadline|goal/i.test(sectionTitle)) {
+      this.setHubView('goals');
+    } else if (/quick/i.test(sectionTitle)) {
+      this.openEditSheet(null);
+    } else if (/pip/i.test(sectionTitle)) {
+      this.handlePipWhatNext();
+    } else {
+      this.setHubView('overview');
+    }
+
+    if (this.soundEnabled && this.audio) {
+      this.audio.playPinchTick();
+    }
+    this.setPipSpeech(`Opened ${sectionTitle}. Click "◀ Back" anytime to return.`);
+  }
+
+  public resetZoom() {
+    this.zoomedPanelId = null;
+    this.resetPanelTransforms();
+    this.setHubView('overview');
 
     if (this.soundEnabled && this.audio) {
       this.audio.playPinchTick();
     }
     this.setPipSpeech('Returned to full workspace overview. All changes are preserved.');
+  }
+
+  public setHubView(view: HubContentView) {
+    this.activeHubView = view;
+    const hubAsset = this.getAsset('panel-hub');
+    if (!hubAsset) return;
+
+    const allViews: Array<{ id: string; view: HubContentView }> = [
+      { id: 'view-overview', view: 'overview' },
+      { id: 'view-week', view: 'week' },
+      { id: 'view-month', view: 'month' },
+      { id: 'view-tasks', view: 'tasks' },
+      { id: 'view-focus', view: 'focus' },
+      { id: 'view-analytics', view: 'analytics' },
+      { id: 'view-garden', view: 'garden' },
+      { id: 'view-routines', view: 'routines' },
+      { id: 'view-notes', view: 'notes' },
+      { id: 'view-goals', view: 'goals' },
+    ];
+
+    for (const v of allViews) {
+      const el = hubAsset.getElementById(v.id) as any;
+      if (el) {
+        const isTarget = v.view === view;
+        el.style = el.style || {};
+        el.style.display = isTarget ? 'flex' : 'none';
+        if (typeof el.setProperties === 'function') {
+          el.setProperties({ display: isTarget ? 'flex' : 'none' });
+        }
+      }
+    }
+
+    // Update active nav tab styling
+    const navTabs: NavTab[] = ['tasks', 'schedule', 'focus', 'analytics', 'garden', 'routines', 'notes', 'goals'];
+    for (const tab of navTabs) {
+      const tabEl = hubAsset.getElementById(`nav-${tab}`) as any;
+      if (tabEl && typeof tabEl.setProperties === 'function') {
+        const isActive =
+          (tab === 'schedule' && (view === 'overview' || view === 'week' || view === 'month')) ||
+          tab === view;
+        tabEl.setProperties({
+          backgroundColor: isActive ? 'rgba(124, 92, 255, 0.40)' : 'rgba(255, 255, 255, 0.05)',
+          borderColor: isActive ? '#7C5CFF' : 'rgba(255, 255, 255, 0.12)',
+        });
+      }
+    }
+
+    this.refreshHubPanelUI();
   }
 
   private updateZoomBackButtons(panelId: string, sectionTitle: string, isZoomed: boolean) {
@@ -520,6 +664,7 @@ export class PanelSystem extends createSystem({
           this.selectedDayNumber = selected.dayNumber;
           this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, Nov ${selected.dayNumber}.`);
           this.refreshTasksPanelUI();
+          this.refreshHubPanelUI();
         });
       }
     }
@@ -554,10 +699,11 @@ export class PanelSystem extends createSystem({
           estimatedMinutes: 60,
           scheduledStartMinute: 16 * 60,
           status: 'todo',
+          dayNumber: this.selectedDayNumber,
         };
         this.tasks.push(newEvent);
         this.saveTasks(true, 'Added "Design Review & Sync" event');
-        this.setPipSpeech('Added new event "Design Review & Sync" at 4:00 PM.');
+        this.setPipSpeech(`Added new event "Design Review & Sync" on Nov ${this.selectedDayNumber} at 4:00 PM.`);
       });
     }
     const quickFocus = asset.getElementById('quick-add-focus');
@@ -893,14 +1039,207 @@ export class PanelSystem extends createSystem({
       const btn = asset.getElementById(item.id);
       if (btn) {
         this.addPress(btn, () => {
+          if (item.id === 'dock-calendar') {
+            this.setHubView('month');
+          } else if (item.id === 'dock-timeline') {
+            this.setHubView('week');
+          } else if (item.id === 'dock-notes') {
+            this.setHubView('notes');
+          } else if (item.id === 'dock-goals') {
+            this.setHubView('goals');
+          } else if (item.id === 'dock-reports') {
+            this.setHubView('analytics');
+          } else if (item.id === 'dock-capture') {
+            this.openEditSheet(null);
+          }
           this.setPipSpeech(`Dock: Opened ${item.label}.`);
         });
       }
+    }
+
+    // ------------------------------------------------------------------------
+    // In-Place Subviews: Back Buttons
+    // ------------------------------------------------------------------------
+    const subviewBackBtns = [
+      'btn-week-back',
+      'btn-month-back',
+      'btn-tasks-back',
+      'btn-focus-back',
+      'btn-analytics-back',
+      'btn-garden-back',
+      'btn-routines-back',
+      'btn-notes-back',
+      'btn-goals-back',
+    ];
+    for (const bId of subviewBackBtns) {
+      const btn = asset.getElementById(bId);
+      if (btn) {
+        this.addPress(btn, () => {
+          this.scheduleView = 'day';
+          this.setHubView('overview');
+          this.setPipSpeech('Returned to Day Schedule overview. All changes preserved.');
+        });
+      }
+    }
+
+    // Week View Subview Controls
+    const weekTabDay = asset.getElementById('week-tab-day');
+    if (weekTabDay) this.addPress(weekTabDay, () => this.setScheduleView('day'));
+    const weekTabWeek = asset.getElementById('week-tab-week');
+    if (weekTabWeek) this.addPress(weekTabWeek, () => this.setScheduleView('week'));
+    const weekTabMonth = asset.getElementById('week-tab-month');
+    if (weekTabMonth) this.addPress(weekTabMonth, () => this.setScheduleView('month'));
+
+    const weekDays = ['Sun 16', 'Mon 17', 'Tue 18', 'Wed 19', 'Thu 20', 'Fri 21', 'Sat 22'];
+    for (let i = 0; i < 7; i++) {
+      const dayNum = 16 + i;
+      const dayBtn = asset.getElementById(`week-day-btn-${i}`);
+      if (dayBtn) {
+        this.addPress(dayBtn, () => {
+          this.selectedDayNumber = dayNum;
+          this.scheduleView = 'day';
+          this.setHubView('overview');
+          this.setPipSpeech(`Switched to ${weekDays[i]} schedule. Add or modify tasks for this day.`);
+        });
+      }
+
+      const addBtn = asset.getElementById(`week-day-add-${i}`);
+      if (addBtn) {
+        this.addPress(addBtn, () => {
+          this.selectedDayNumber = dayNum;
+          this.openEditSheet(null);
+        });
+      }
+    }
+
+    // Month View Subview Controls
+    const monthTabDay = asset.getElementById('month-tab-day');
+    if (monthTabDay) this.addPress(monthTabDay, () => this.setScheduleView('day'));
+    const monthTabWeek = asset.getElementById('month-tab-week');
+    if (monthTabWeek) this.addPress(monthTabWeek, () => this.setScheduleView('week'));
+    const monthTabMonth = asset.getElementById('month-tab-month');
+    if (monthTabMonth) this.addPress(monthTabMonth, () => this.setScheduleView('month'));
+
+    for (let d = 16; d <= 22; d++) {
+      const tile = asset.getElementById(`month-date-${d}`);
+      if (tile) {
+        this.addPress(tile, () => {
+          this.selectedDayNumber = d;
+          this.setPipSpeech(`Selected Nov ${d}. Click "+ Add Task for this Day" to schedule.`);
+          this.refreshHubPanelUI();
+        });
+      }
+    }
+
+    const monthAddBtn = asset.getElementById('btn-month-add-task');
+    if (monthAddBtn) {
+      this.addPress(monthAddBtn, () => this.openEditSheet(null));
+    }
+
+    // Tasks Subview Controls
+    const tasksAddBtn = asset.getElementById('btn-tasks-add-task');
+    if (tasksAddBtn) {
+      this.addPress(tasksAddBtn, () => this.openEditSheet(null));
+    }
+
+    // Focus Studio Subview Controls
+    const studioPlay = asset.getElementById('btn-focus-studio-play');
+    if (studioPlay) {
+      this.addPress(studioPlay, () => this.toggleFocusTimer());
+    }
+    const studioMinus = asset.getElementById('focus-studio-minus5');
+    if (studioMinus) {
+      this.addPress(studioMinus, () => {
+        this.focusRemainingSeconds = Math.max(60, this.focusRemainingSeconds - 5 * 60);
+        this.refreshHubPanelUI();
+      });
+    }
+    const studioPlus = asset.getElementById('focus-studio-plus5');
+    if (studioPlus) {
+      this.addPress(studioPlus, () => {
+        this.focusRemainingSeconds = Math.min(120 * 60, this.focusRemainingSeconds + 5 * 60);
+        this.refreshHubPanelUI();
+      });
+    }
+    const studioReset = asset.getElementById('focus-studio-reset');
+    if (studioReset) {
+      this.addPress(studioReset, () => {
+        this.focusRunning = false;
+        this.focusRemainingSeconds = 25 * 60;
+        this.focusTotalSeconds = 25 * 60;
+        this.focusMode = 'pomodoro';
+        this.setPipSpeech('Focus timer reset to 25m Pomodoro.');
+        this.refreshHubPanelUI();
+      });
+    }
+    const studioBreak = asset.getElementById('focus-studio-break');
+    if (studioBreak) {
+      this.addPress(studioBreak, () => {
+        this.focusMode = 'short_break';
+        this.focusRemainingSeconds = 5 * 60;
+        this.focusTotalSeconds = 5 * 60;
+        this.focusRunning = true;
+        this.setPipSpeech('Starting 5-minute break!');
+        this.refreshHubPanelUI();
+      });
+    }
+
+    // Garden Subview Controls
+    const gardenWater = asset.getElementById('btn-garden-water');
+    if (gardenWater) {
+      this.addPress(gardenWater, () => {
+        this.gardenPoints += 20;
+        this.setPipSpeech('💧 Watered the Great Oak! +20 XP awarded.');
+        this.triggerPipEmote('celebrate');
+        this.refreshAllUI();
+      });
+    }
+    const gardenTend = asset.getElementById('btn-garden-tend');
+    if (gardenTend) {
+      this.addPress(gardenTend, () => {
+        this.gardenPoints += 10;
+        this.setPipSpeech('🌿 Pruned the foliage! +10 XP awarded.');
+        this.triggerPipEmote('celebrate');
+        this.refreshAllUI();
+      });
+    }
+    const gardenNurture = asset.getElementById('btn-garden-nurture');
+    if (gardenNurture) {
+      this.addPress(gardenNurture, () => {
+        this.gardenPoints += 30;
+        this.setPipSpeech('✨ Organic fertilizer applied! +30 XP! Tree is thriving!');
+        this.triggerPipEmote('celebrate');
+        this.refreshAllUI();
+      });
+    }
+
+    // Notes and Goals Subviews
+    for (let i = 0; i < 3; i++) {
+      const noteItem = asset.getElementById(`note-item-${i}`);
+      if (noteItem) {
+        this.addPress(noteItem, () => {
+          this.setPipSpeech(`Opened note #${i + 1}. All notes synced.`);
+        });
+      }
+      const goalItem = asset.getElementById(`goal-item-${i}`);
+      if (goalItem) {
+        this.addPress(goalItem, () => {
+          this.setPipSpeech(`Goal #${i + 1}: On track for Q4 completion!`);
+        });
+      }
+    }
+    const notesAdd = asset.getElementById('btn-notes-add');
+    if (notesAdd) {
+      this.addPress(notesAdd, () => {
+        this.setPipSpeech('Quick Note added to spatial scratchpad.');
+      });
     }
   }
 
   private getFilteredTasks(): GlassTask[] {
     return this.tasks.filter((t) => {
+      const taskDay = t.dayNumber ?? 18;
+      if (taskDay !== this.selectedDayNumber) return false;
       if (this.taskFilter === 'all') return true;
       return t.priority === this.taskFilter;
     });
@@ -908,8 +1247,14 @@ export class PanelSystem extends createSystem({
 
   private setScheduleView(view: 'day' | 'week' | 'month') {
     this.scheduleView = view;
+    if (view === 'day') {
+      this.setHubView('overview');
+    } else if (view === 'week') {
+      this.setHubView('week');
+    } else if (view === 'month') {
+      this.setHubView('month');
+    }
     this.setPipSpeech(`Schedule view switched to ${view.toUpperCase()}.`);
-    this.refreshHubPanelUI();
   }
 
   private setTaskFilter(filter: 'all' | 'high' | 'medium' | 'low') {
@@ -920,8 +1265,12 @@ export class PanelSystem extends createSystem({
 
   private switchNavTab(tab: NavTab) {
     this.activeTab = tab;
+    if (tab === 'schedule') {
+      this.setScheduleView(this.scheduleView);
+    } else {
+      this.setHubView(tab as HubContentView);
+    }
     this.setPipSpeech(`Switched to ${tab.toUpperCase()} tab.`);
-    this.refreshHubPanelUI();
   }
 
   private toggleSettingsSheet() {
@@ -1238,6 +1587,7 @@ export class PanelSystem extends createSystem({
             priority: this.editDraftPriority,
             scheduledStartMinute: this.editDraftStartTime,
             status: 'todo',
+            dayNumber: this.selectedDayNumber,
           };
           this.tasks.push(newTask);
           this.saveTasks(true, `Added "${this.editDraftTitle}"`);
@@ -1464,14 +1814,23 @@ export class PanelSystem extends createSystem({
       );
     }
 
-    const schedBlocks = tasksToScheduleBlocks(this.tasks);
+    const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+    const schedBlocks = tasksToScheduleBlocks(dayTasks);
     for (let i = 0; i < 5; i++) {
       const block = schedBlocks[i];
+      const blockEl = asset.getElementById(`block-${i}`) as any;
       const blockTitleEl = asset.getElementById(`block-title-${i}`) as any;
       const blockTimeEl = asset.getElementById(`block-time-${i}`) as any;
       if (block) {
+        if (blockEl && typeof blockEl.setProperties === 'function') {
+          blockEl.setProperties({ display: 'flex' });
+        }
         if (blockTitleEl) setText(blockTitleEl, shortenScheduleTitle(block.title));
         if (blockTimeEl) setText(blockTimeEl, block.timeRangeFormatted);
+      } else {
+        if (blockEl && typeof blockEl.setProperties === 'function') {
+          blockEl.setProperties({ display: 'none' });
+        }
       }
     }
 
@@ -1497,6 +1856,96 @@ export class PanelSystem extends createSystem({
         }
       }
     }
+
+    // Dynamic Week View updates
+    for (let i = 0; i < 7; i++) {
+      const dayNum = 16 + i;
+      const tasksForDay = this.tasks.filter((t) => (t.dayNumber ?? 18) === dayNum);
+      const countEl = asset.getElementById(`week-day-count-${i}`) as any;
+      if (countEl) setText(countEl, `${tasksForDay.length} task${tasksForDay.length === 1 ? '' : 's'}`);
+
+      const colEl = asset.getElementById(`week-col-${i}`) as any;
+      if (colEl && typeof colEl.setProperties === 'function') {
+        const isSelected = dayNum === this.selectedDayNumber;
+        colEl.setProperties({
+          backgroundColor: isSelected ? 'rgba(124, 92, 255, 0.20)' : 'rgba(255, 255, 255, 0.04)',
+          borderColor: isSelected ? '#7C5CFF' : 'rgba(255, 255, 255, 0.08)',
+        });
+      }
+    }
+
+    const t0 = this.tasks.find((t) => (t.dayNumber ?? 18) === 16);
+    const w0 = asset.getElementById('week-task-0') as any;
+    if (w0) setText(w0, t0 ? t0.title : 'No tasks');
+
+    const t1 = this.tasks.find((t) => (t.dayNumber ?? 18) === 17);
+    const w1 = asset.getElementById('week-task-1') as any;
+    if (w1) setText(w1, t1 ? t1.title : 'No tasks');
+
+    const t2s = this.tasks.filter((t) => (t.dayNumber ?? 18) === 18);
+    const w2a = asset.getElementById('week-task-2-a') as any;
+    const w2b = asset.getElementById('week-task-2-b') as any;
+    const w2c = asset.getElementById('week-task-2-c') as any;
+    if (w2a) setText(w2a, t2s[0]?.title || 'Finish ML');
+    if (w2b) setText(w2b, t2s[1]?.title || 'Implement API');
+    if (w2c) setText(w2c, t2s[2]?.title || 'Team Meet');
+
+    const t3 = this.tasks.find((t) => (t.dayNumber ?? 18) === 19);
+    const w3 = asset.getElementById('week-task-3') as any;
+    if (w3) setText(w3, t3 ? t3.title : 'No tasks');
+
+    const t4 = this.tasks.find((t) => (t.dayNumber ?? 18) === 20);
+    const w4 = asset.getElementById('week-task-4') as any;
+    if (w4) setText(w4, t4 ? t4.title : 'No tasks');
+
+    const t5 = this.tasks.find((t) => (t.dayNumber ?? 18) === 21);
+    const w5 = asset.getElementById('week-task-5') as any;
+    if (w5) setText(w5, t5 ? t5.title : 'No tasks');
+
+    const t6 = this.tasks.find((t) => (t.dayNumber ?? 18) === 22);
+    const w6 = asset.getElementById('week-task-6') as any;
+    if (w6) setText(w6, t6 ? t6.title : 'Weekend Rest');
+
+    // Dynamic Month View updates
+    for (let d = 16; d <= 22; d++) {
+      const tile = asset.getElementById(`month-date-${d}`) as any;
+      if (tile && typeof tile.setProperties === 'function') {
+        const isSelected = d === this.selectedDayNumber;
+        tile.setProperties({
+          backgroundColor: isSelected ? 'rgba(124, 92, 255, 0.35)' : 'rgba(255, 255, 255, 0.05)',
+          borderColor: isSelected ? '#7C5CFF' : 'rgba(255, 255, 255, 0.12)',
+        });
+      }
+    }
+
+    const monthSelectedDayLabel = asset.getElementById('month-selected-day-label') as any;
+    if (monthSelectedDayLabel) {
+      const selTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+      setText(
+        monthSelectedDayLabel,
+        `Selected Day: Nov ${this.selectedDayNumber} • ${selTasks.length} task${selTasks.length === 1 ? '' : 's'}`,
+      );
+    }
+
+    // Dynamic Focus Studio updates
+    const studioTimer = asset.getElementById('focus-studio-timer') as any;
+    if (studioTimer) {
+      const mins = Math.floor(this.focusRemainingSeconds / 60);
+      const secs = this.focusRemainingSeconds % 60;
+      setText(studioTimer, `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`);
+    }
+
+    const studioPlayText = asset.getElementById('btn-focus-studio-play-text') as any;
+    if (studioPlayText) {
+      setText(studioPlayText, this.focusRunning ? '⏸ Pause Sprint' : '▶ Start Sprint');
+    }
+
+    // Dynamic Garden Subview updates
+    const gardenProgress = calculateGardenProgress(this.gardenPoints);
+    const gardenTitle = asset.getElementById('garden-hub-title') as any;
+    if (gardenTitle) setText(gardenTitle, `Productivity Garden • Level ${gardenProgress.level} 🌱`);
+    const gardenXp = asset.getElementById('garden-hub-xp') as any;
+    if (gardenXp) setText(gardenXp, `${this.gardenPoints} / 1,000 XP`);
   }
 
   private refreshPipPanelUI() {
