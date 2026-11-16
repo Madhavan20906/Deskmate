@@ -1908,10 +1908,194 @@ export class PanelSystem extends createSystem({
  }, 700);
  }
 
+ public speakTextAloud(text: string) {
+ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+ try {
+ window.speechSynthesis.cancel();
+ const clean = text.replace(/[*_#`[\]()]/g, ' ').replace(/\s+/g, ' ').trim();
+ const utterance = new SpeechSynthesisUtterance(clean);
+ utterance.rate = 1.05;
+ utterance.pitch = 1.1;
+ utterance.volume = 1.0;
+ window.speechSynthesis.speak(utterance);
+ } catch (e) {
+ console.warn('Speech synthesis failed:', e);
+ }
+ }
+ }
+
  public executeVoiceCommand(transcript: string) {
  const lower = transcript.toLowerCase();
 
- // Check for Plan My Day
+ // 1. Section Navigation: switch to, open, show, bring to view
+ if (
+ lower.includes('switch to') ||
+ lower.includes('open ') ||
+ lower.includes('show ') ||
+ lower.includes('bring ') ||
+ lower.includes('view ') ||
+ lower.includes('go to ') ||
+ lower.includes('navigate to ')
+ ) {
+ if (lower.includes('calendar') || lower.includes('month')) {
+ this.zoomSection('panel-left-tasks', 'Mini Calendar');
+ this.setPipSpeech('Done: Brought Mini Calendar to view.');
+ return;
+ }
+ if (lower.includes('task') || lower.includes('agenda')) {
+ this.zoomSection('panel-left-tasks', 'Agenda');
+ this.setPipSpeech('Done: Brought Agenda and Tasks to view.');
+ return;
+ }
+ if (lower.includes('habit') || lower.includes('streak')) {
+ this.zoomSection('panel-right-focus', 'Habits & Streaks');
+ this.setPipSpeech('Done: Brought Habits and Streaks to view.');
+ return;
+ }
+ if (lower.includes('deadline') || lower.includes('upcoming')) {
+ this.zoomSection('panel-right-focus', 'Upcoming Deadlines');
+ this.setPipSpeech('Done: Brought Upcoming Deadlines to view.');
+ return;
+ }
+ if (lower.includes('schedule') || lower.includes('day')) {
+ this.switchNavTab('schedule');
+ this.resetZoom();
+ this.setPipSpeech('Done: Brought Day Schedule to view.');
+ return;
+ }
+ if (lower.includes('timer') || lower.includes('focus')) {
+ this.zoomSection('panel-hub', 'Focus Session');
+ this.setPipSpeech('Done: Brought Focus Timer to view.');
+ return;
+ }
+ if (lower.includes('routine')) {
+ this.zoomSection('panel-left-tasks', 'Routines');
+ this.setPipSpeech('Done: Brought Routines to view.');
+ return;
+ }
+ if (lower.includes('garden')) {
+ this.zoomSection('panel-right-pip', 'Productivity Garden');
+ this.setPipSpeech('Done: Brought Productivity Garden to view.');
+ return;
+ }
+ if (lower.includes('overview') || lower.includes('dashboard') || lower.includes('back')) {
+ this.resetZoom();
+ this.setPipSpeech('Done: Returned to full workspace overview.');
+ return;
+ }
+ }
+
+ // 2. Delete / Remove Task
+ if (lower.startsWith('delete') || lower.startsWith('remove') || lower.includes('delete task') || lower.includes('remove task')) {
+ const query = lower
+ .replace(/^(?:delete|remove)\s+(?:task\s+)?/, '')
+ .replace(/^(?:the\s+)/, '')
+ .trim();
+ if (query) {
+ const taskIndex = this.tasks.findIndex((t) => t.title.toLowerCase().includes(query));
+ if (taskIndex >= 0) {
+ const removed = this.tasks.splice(taskIndex, 1)[0];
+ this.saveTasks(true, `Deleted "${removed.title}" via Pip`);
+ this.refreshAllUI();
+ this.triggerPipEmote('celebrate');
+ this.setPipSpeech(`Done: Removed task "${removed.title}".`);
+ return;
+ } else {
+ this.setPipSpeech(`Not done: Could not find any task matching "${query}".`);
+ return;
+ }
+ }
+ }
+
+ // 3. Edit / Modify / Update Task
+ if (lower.startsWith('edit') || lower.startsWith('update') || lower.startsWith('change') || lower.startsWith('modify')) {
+ const priorityMatch = lower.match(/(?:change|set)\s+(?:task\s+)?(.+?)\s+priority\s+to\s+(high|medium|low)/);
+ if (priorityMatch) {
+ const taskQuery = priorityMatch[1].trim();
+ const newPrio = priorityMatch[2] as 'high' | 'medium' | 'low';
+ const task = this.tasks.find((t) => t.title.toLowerCase().includes(taskQuery));
+ if (task) {
+ task.priority = newPrio;
+ this.saveTasks(true, `Changed priority of "${task.title}" to ${newPrio}`);
+ this.refreshAllUI();
+ this.triggerPipEmote('celebrate');
+ this.setPipSpeech(`Done: Changed priority of "${task.title}" to ${newPrio}.`);
+ return;
+ }
+ }
+
+ const durationMatch = lower.match(/(?:change|set)\s+(?:task\s+)?(.+?)\s+duration\s+to\s+(\d+)\s*(?:minutes|min|m)?/);
+ if (durationMatch) {
+ const taskQuery = durationMatch[1].trim();
+ const newDur = parseInt(durationMatch[2], 10);
+ const task = this.tasks.find((t) => t.title.toLowerCase().includes(taskQuery));
+ if (task) {
+ task.estimatedMinutes = newDur;
+ this.saveTasks(true, `Changed duration of "${task.title}" to ${newDur}m`);
+ this.refreshAllUI();
+ this.triggerPipEmote('celebrate');
+ this.setPipSpeech(`Done: Changed duration of "${task.title}" to ${newDur} minutes.`);
+ return;
+ }
+ }
+
+ const editQuery = lower
+ .replace(/^(?:edit|update|change|modify)\s+(?:task\s+)?/, '')
+ .replace(/^(?:the\s+)/, '')
+ .trim();
+ if (editQuery) {
+ const task = this.tasks.find((t) => t.title.toLowerCase().includes(editQuery));
+ if (task) {
+ this.openEditSheet(task.id);
+ this.triggerPipEmote('thinking');
+ this.setPipSpeech(`Done: Opened editor for "${task.title}". Modify details in the Command Hub.`);
+ return;
+ } else {
+ this.setPipSpeech(`Not done: Could not find any task matching "${editQuery}".`);
+ return;
+ }
+ }
+ }
+
+ // 4. Finish / Complete Task
+ if (lower.startsWith('finish') || lower.startsWith('complete') || lower.includes('mark done') || lower.includes('finish task') || lower.includes('complete task')) {
+ const query = lower
+ .replace(/^(?:finish|complete|mark done)\s+(?:task\s+)?/, '')
+ .replace(/^(?:the\s+)/, '')
+ .replace(/\s+as done$/, '')
+ .trim();
+ if (query) {
+ const task = this.tasks.find((t) => t.title.toLowerCase().includes(query));
+ if (task) {
+ task.status = 'completed';
+ task.completedAt = Date.now();
+ this.gardenPoints += 20;
+ this.saveTasks(true, `Completed "${task.title}" via Pip`);
+ this.refreshAllUI();
+ this.triggerPipEmote('celebrate');
+ this.setPipSpeech(`Done: Marked "${task.title}" as completed! +20 XP awarded.`);
+ return;
+ } else {
+ this.setPipSpeech(`Not done: Could not find a task matching "${query}".`);
+ return;
+ }
+ }
+ }
+
+ // 5. Keep Timer / Set Timer
+ if (lower.includes('timer') || lower.includes('keep timer') || lower.includes('set timer')) {
+ const matchMin = lower.match(/(\d+)\s*(?:minute|min|m)?/);
+ const minutes = matchMin && matchMin[1] ? parseInt(matchMin[1], 10) : 25;
+ this.focusRemainingSeconds = minutes * 60;
+ this.focusTotalSeconds = minutes * 60;
+ this.focusRunning = true;
+ this.refreshHubPanelUI();
+ this.triggerPipEmote('celebrate');
+ this.setPipSpeech(`Done: Kept timer at ${minutes} minutes and started focus session.`);
+ return;
+ }
+
+ // 6. Plan My Day
  if (lower.includes('plan my day') || lower.includes('plan today')) {
  const mappedTasks: TaskItem[] = this.tasks.map((t) => ({
  id: t.id,
@@ -1929,33 +2113,30 @@ export class PanelSystem extends createSystem({
  if (t) t.scheduledStartMinute = item.startMinute;
  }
  this.saveTasks(true, 'Planned schedule with rest buffers');
- this.setPipSpeech('Planned your day with 10-minute rest buffers. You are all set!');
+ this.setPipSpeech('Done: Planned your day with 10-minute rest buffers. You are all set!');
  this.triggerPipEmote('celebrate');
  if (this.soundEnabled && this.audio) this.audio.playPinchTick();
  return;
  }
 
- // Check for Focus
- if (lower.includes('focus') || lower.includes('sprint') || lower.includes('pomodoro')) {
- const matchMin = lower.match(/(\d+)\s*(?:minute|min)/);
- const minutes = matchMin && matchMin[1] ? parseInt(matchMin[1], 10) : 25;
- this.focusRemainingSeconds = minutes * 60;
- this.focusTotalSeconds = minutes * 60;
- this.focusRunning = true;
- this.setPipSpeech(`Focus sprint started for ${minutes} minutes. Let's do this!`);
- this.triggerPipEmote('celebrate');
- if (this.soundEnabled && this.audio) this.audio.playPinchTick();
- this.refreshHubPanelUI();
+ // 7. Workload / Capacity Check
+ if (lower.includes('overload') || lower.includes('capacity') || lower.includes('workload')) {
+ const donut = calculateWorkloadDonut(this.tasks);
+ if (donut.isOverloaded) {
+ this.setPipSpeech(`Workload alert: You have ${donut.scheduledFormatted} scheduled. Consider rescheduling low priority items.`);
+ } else {
+ this.setPipSpeech(`You are at ${donut.percentage}% capacity with ${donut.scheduledFormatted} planned. You are on track!`);
+ }
  return;
  }
 
- // Check for What Next
+ // 8. What Next Recommendation
  if (lower.includes('what next') || lower.includes('what should i do')) {
  this.handlePipWhatNext();
  return;
  }
 
- // Parse task addition on any day
+ // 9. Add Task on Any Day
  const parsed = parseVoiceTaskCommand(transcript, this.selectedDayNumber);
  if (parsed) {
  const newTask: GlassTask = {
@@ -1973,16 +2154,16 @@ export class PanelSystem extends createSystem({
  this.refreshAllUI();
 
  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
- const dayName = daysOfWeek[parsed.dayNumber % 7] || 'Nov';
+ const dayName = daysOfWeek[parsed.dayNumber % 7] || 'Day';
  this.setPipSpeech(
- `Added "${parsed.title}" for ${dayName}, Nov ${parsed.dayNumber} (${parsed.estimatedMinutes}m, ${parsed.priority} priority).`,
+ `Done: Added task "${parsed.title}" on ${dayName}, Nov ${parsed.dayNumber} (${parsed.estimatedMinutes}m, ${parsed.priority} priority).`,
  );
  this.triggerPipEmote('celebrate');
  if (this.soundEnabled && this.audio) this.audio.playPinchTick();
  return;
  }
 
- this.setPipSpeech(`I heard: "${transcript}". Tell me any task and day (e.g. "Add code review on Friday")!`);
+ this.setPipSpeech(`Not done: I heard "${transcript}". Tell me what to add, delete, edit, or switch to!`);
  this.triggerPipEmote('thinking');
  }
 
@@ -1999,14 +2180,14 @@ export class PanelSystem extends createSystem({
  }));
  const rec = recommendWhatNext(mappedTasks);
  if (rec && rec.task) {
- this.setPipSpeech(`Recommended next: "${rec.task.title}". ${rec.rationale}`);
+ this.setPipSpeech(`Done: Recommended next task is "${rec.task.title}". ${rec.rationale}`);
  this.triggerPipEmote('thinking');
  } else {
- this.setPipSpeech('All caught up! Start a new task or take a rest.');
+ this.setPipSpeech('Done: All caught up! Start a new task or take a rest.');
  }
  }
 
- public setPipSpeech(text: string) {
+ public setPipSpeech(text: string, speakAloud: boolean = true) {
  const pipAsset = this.getAsset('panel-right-pip');
  if (pipAsset) {
  const speechEl = pipAsset.getElementById('pip-speech-text') as any;
@@ -2016,6 +2197,9 @@ export class PanelSystem extends createSystem({
  if (hubAsset) {
  const hubPipText = hubAsset.getElementById('hub-pip-text') as any;
  if (hubPipText) setText(hubPipText, `Pip: ${text}`);
+ }
+ if (speakAloud) {
+ this.speakTextAloud(text);
  }
  }
 
