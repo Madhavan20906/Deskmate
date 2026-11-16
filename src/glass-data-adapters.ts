@@ -223,6 +223,15 @@ export function tasksToRowViewModels(tasks: GlassTask[]): TaskRowViewModel[] {
   });
 }
 
+export function shortenScheduleTitle(title: string): string {
+  const t = title.trim();
+  if (/research|paper/i.test(t)) return 'Paper';
+  if (/meeting|sync/i.test(t)) return 'Team Sync';
+  if (/api/i.test(t)) return 'API Build';
+  if (/ml|assignment/i.test(t)) return 'ML Sprint';
+  return t.length > 12 ? t.slice(0, 10) + '...' : t;
+}
+
 export function tasksToScheduleBlocks(tasks: GlassTask[]): ScheduleBlockViewModel[] {
   const scheduled = tasks.filter(
     (t) =>

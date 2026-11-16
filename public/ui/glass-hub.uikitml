@@ -3,13 +3,13 @@
     .glass-hub-panel {
       flex-direction: column;
       width: 760px;
-      height: 660px;
-      padding: 18px;
+      height: 620px;
+      padding: 16px;
       border-radius: 24px;
       background-color: rgba(11, 16, 32, 0.78);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.16);
-      gap: 12px;
+      gap: 10px;
     }
 
     .panel-handle {
@@ -17,12 +17,12 @@
       justify-content: center;
       align-items: center;
       width: 100%;
-      height: 12px;
+      height: 8px;
       margin-bottom: 2px;
     }
 
     .handle-bar {
-      width: 60px;
+      width: 56px;
       height: 4px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.28);
@@ -33,7 +33,7 @@
       justify-content: space-between;
       align-items: center;
       width: 100%;
-      padding-bottom: 4px;
+      padding-bottom: 2px;
     }
 
     .header-time-group {
@@ -62,18 +62,12 @@
     }
 
     .brand-cube {
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
       background-color: #7C5CFF;
       align-items: center;
       justify-content: center;
-    }
-
-    .brand-cube-inner {
-      font-size: 13px;
-      font-weight: 800;
-      color: #FFFFFF;
     }
 
     .brand-title {
@@ -92,36 +86,30 @@
     }
 
     .icon-action-btn {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.08);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.15);
       align-items: center;
       justify-content: center;
-    }
-
-    .icon-btn-text {
-      font-size: 16px;
-      color: #FFFFFF;
+      padding: 0px;
     }
 
     .greeting-section {
       flex-direction: column;
       gap: 2px;
-      padding-top: 2px;
-      padding-bottom: 4px;
     }
 
     .greeting-title {
-      font-size: 22px;
+      font-size: 21px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
     .greeting-subtitle {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       color: rgba(255, 255, 255, 0.70);
     }
@@ -129,19 +117,19 @@
     .nav-tiles-row {
       flex-direction: row;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       width: 100%;
     }
 
     .nav-tile {
       flex-direction: column;
       flex-grow: 1;
-      height: 58px;
-      padding-top: 8px;
-      padding-bottom: 8px;
-      padding-left: 12px;
-      padding-right: 12px;
-      border-radius: 16px;
+      height: 56px;
+      padding-top: 6px;
+      padding-bottom: 6px;
+      padding-left: 10px;
+      padding-right: 10px;
+      border-radius: 14px;
       background-color: rgba(255, 255, 255, 0.05);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.10);
@@ -164,12 +152,8 @@
       gap: 6px;
     }
 
-    .nav-tile-icon {
-      font-size: 14px;
-    }
-
     .nav-tile-name {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       color: #FFFFFF;
     }
@@ -195,13 +179,13 @@
     .schedule-card {
       flex-direction: column;
       width: 100%;
-      height: 180px;
-      padding: 14px;
+      height: 168px;
+      padding: 12px;
       border-radius: 18px;
       background-color: rgba(18, 25, 48, 0.85);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.12);
-      gap: 10px;
+      gap: 8px;
     }
 
     .schedule-card-header {
@@ -245,7 +229,7 @@
     .timeline-track {
       flex-direction: row;
       width: 100%;
-      height: 72px;
+      height: 66px;
       border-radius: 12px;
       background-color: rgba(255, 255, 255, 0.04);
       border-width: 1px;
@@ -257,21 +241,24 @@
 
     .schedule-block {
       flex-direction: column;
-      height: 56px;
+      height: 52px;
       border-radius: 10px;
-      padding: 8px;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 6px;
+      padding-bottom: 6px;
       justify-content: center;
       gap: 2px;
     }
 
     .block-title {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 800;
       color: #FFFFFF;
     }
 
     .block-time {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.85);
     }
@@ -287,7 +274,7 @@
     .summary-card {
       flex-direction: row;
       flex-grow: 1;
-      padding: 14px;
+      padding: 12px;
       border-radius: 18px;
       background-color: rgba(18, 25, 48, 0.85);
       border-width: 1px;
@@ -297,8 +284,8 @@
     }
 
     .donut-visual {
-      width: 76px;
-      height: 76px;
+      width: 72px;
+      height: 72px;
       border-radius: 999px;
       border-width: 6px;
       border-color: #7C5CFF;
@@ -308,69 +295,63 @@
     }
 
     .donut-percent {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
     .workload-info {
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
       flex-grow: 1;
     }
 
     .workload-title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       color: #FFFFFF;
     }
 
-    .workload-legend-row {
-      flex-direction: row;
-      align-items: center;
-      gap: 6px;
+    .workload-legend {
+      flex-direction: column;
+      gap: 5px;
     }
 
-    .legend-dot-violet {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background-color: #7C5CFF;
+    .legend-item {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
     }
 
     .legend-dot-blue {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 999px;
       background-color: #3B82F6;
     }
 
     .legend-dot-gray {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.40);
+      background-color: rgba(255, 255, 255, 0.50);
     }
 
     .legend-text {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      color: rgba(255, 255, 255, 0.80);
+      color: rgba(255, 255, 255, 0.90);
     }
 
     .garden-visual {
-      width: 76px;
-      height: 76px;
-      border-radius: 20px;
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
       background-color: rgba(34, 197, 94, 0.15);
       border-width: 1px;
       border-color: rgba(34, 197, 94, 0.40);
       align-items: center;
       justify-content: center;
-    }
-
-    .garden-icon-large {
-      font-size: 32px;
     }
 
     .garden-info {
@@ -432,20 +413,26 @@
 
     <div class="header-brand-group">
       <div class="brand-cube">
-        <span class="brand-cube-inner">D</span>
+        <Bot width="15" height="15" color="#FFFFFF"></Bot>
       </div>
       <span class="brand-title">DeskMate</span>
     </div>
 
     <div class="header-actions-group">
       <Button id="btn-bell" class="icon-action-btn">
-        <ButtonLabel class="icon-btn-text">B</ButtonLabel>
+        <ButtonIcon>
+          <Bell color="#FFFFFF"></Bell>
+        </ButtonIcon>
       </Button>
       <Button id="btn-settings" class="icon-action-btn">
-        <ButtonLabel class="icon-btn-text">S</ButtonLabel>
+        <ButtonIcon>
+          <Settings color="#FFFFFF"></Settings>
+        </ButtonIcon>
       </Button>
       <Button id="btn-profile" class="icon-action-btn">
-        <ButtonLabel class="icon-btn-text">P</ButtonLabel>
+        <ButtonIcon>
+          <User color="#FFFFFF"></User>
+        </ButtonIcon>
       </Button>
     </div>
   </div>
@@ -458,7 +445,7 @@
   <div class="nav-tiles-row">
     <Button id="nav-tasks" class="nav-tile">
       <div class="nav-tile-top">
-        <span class="nav-tile-icon">T</span>
+        <Check width="16" height="16" color="#A78BFA"></Check>
         <ButtonLabel class="nav-tile-name">Tasks</ButtonLabel>
       </div>
       <span id="nav-tasks-sub" class="nav-tile-subtitle">4 Active</span>
@@ -466,7 +453,7 @@
 
     <Button id="nav-schedule" class="nav-tile nav-tile-active">
       <div class="nav-tile-top">
-        <span class="nav-tile-icon">C</span>
+        <Calendar width="16" height="16" color="#FFFFFF"></Calendar>
         <ButtonLabel class="nav-tile-name">Schedule</ButtonLabel>
       </div>
       <span class="nav-tile-subtitle-active">Today</span>
@@ -474,7 +461,7 @@
 
     <Button id="nav-focus" class="nav-tile">
       <div class="nav-tile-top">
-        <span class="nav-tile-icon">F</span>
+        <Play width="16" height="16" color="#FFFFFF"></Play>
         <ButtonLabel class="nav-tile-name">Focus</ButtonLabel>
       </div>
       <span class="nav-tile-subtitle">Start Session</span>
@@ -482,7 +469,7 @@
 
     <Button id="nav-analytics" class="nav-tile">
       <div class="nav-tile-top">
-        <span class="nav-tile-icon">A</span>
+        <ChartColumn width="16" height="16" color="#FFFFFF"></ChartColumn>
         <ButtonLabel class="nav-tile-name">Analytics</ButtonLabel>
       </div>
       <span class="nav-tile-subtitle">Your Progress</span>
@@ -490,7 +477,7 @@
 
     <Button id="nav-garden" class="nav-tile nav-tile-garden">
       <div class="nav-tile-top">
-        <span class="nav-tile-icon">G</span>
+        <Sprout width="16" height="16" color="#4ADE80"></Sprout>
         <ButtonLabel class="nav-tile-name">Garden</ButtonLabel>
       </div>
       <span id="nav-garden-sub" class="nav-tile-subtitle-garden">Level 3</span>
@@ -515,22 +502,22 @@
 
       <div id="timeline-track" class="timeline-track">
         <Button id="block-0" class="schedule-block" style="background-color: #7C5CFF; width: 140px; margin-left: 55px;">
-          <ButtonLabel id="block-title-0" class="block-title">Finish ML assignment</ButtonLabel>
+          <ButtonLabel id="block-title-0" class="block-title">ML Sprint</ButtonLabel>
           <ButtonLabel id="block-time-0" class="block-time">09:00 - 10:30</ButtonLabel>
         </Button>
 
         <Button id="block-1" class="schedule-block" style="background-color: #3B82F6; width: 180px; margin-left: 25px;">
-          <ButtonLabel id="block-title-1" class="block-title">Implement API</ButtonLabel>
+          <ButtonLabel id="block-title-1" class="block-title">API Build</ButtonLabel>
           <ButtonLabel id="block-time-1" class="block-time">11:00 - 13:00</ButtonLabel>
         </Button>
 
-        <Button id="block-2" class="schedule-block" style="background-color: #F59E0B; width: 75px; margin-left: 55px;">
-          <ButtonLabel id="block-title-2" class="block-title">Team meeting</ButtonLabel>
+        <Button id="block-2" class="schedule-block" style="background-color: #F59E0B; width: 80px; margin-left: 55px;">
+          <ButtonLabel id="block-title-2" class="block-title">Team Sync</ButtonLabel>
           <ButtonLabel id="block-time-2" class="block-time">14:00 - 14:30</ButtonLabel>
         </Button>
 
         <Button id="block-3" class="schedule-block" style="background-color: #22C55E; width: 95px; margin-left: 25px;">
-          <ButtonLabel id="block-title-3" class="block-title">Read research paper</ButtonLabel>
+          <ButtonLabel id="block-title-3" class="block-title">Paper</ButtonLabel>
           <ButtonLabel id="block-time-3" class="block-time">15:00 - 16:00</ButtonLabel>
         </Button>
       </div>
@@ -544,24 +531,22 @@
       </div>
       <div class="workload-info">
         <span class="workload-title">Workload</span>
-        <div class="workload-legend-row">
-          <div class="legend-dot-violet"></div>
-          <span id="legend-scheduled-text" class="legend-text">Scheduled: 5h 0m</span>
-        </div>
-        <div class="workload-legend-row">
-          <div class="legend-dot-blue"></div>
-          <span id="legend-remaining-text" class="legend-text">Remaining: 3h 0m</span>
-        </div>
-        <div class="workload-legend-row">
-          <div class="legend-dot-gray"></div>
-          <span class="legend-text">Available: 8h 0m</span>
+        <div class="workload-legend">
+          <div class="legend-item">
+            <div class="legend-dot-blue"></div>
+            <span id="legend-scheduled-text" class="legend-text">Scheduled: 5.0h</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot-gray"></div>
+            <span id="legend-remaining-text" class="legend-text">Remaining: 3.0h</span>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="summary-card">
       <div class="garden-visual">
-        <span class="garden-icon-large">L</span>
+        <Sprout width="36" height="36" color="#22C55E"></Sprout>
       </div>
       <div class="garden-info">
         <div class="garden-title-row">
