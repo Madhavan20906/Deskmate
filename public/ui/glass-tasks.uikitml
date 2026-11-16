@@ -28,7 +28,6 @@
       background-color: rgba(255, 255, 255, 0.28);
     }
 
-    /* Mini Calendar */
     .calendar-card {
       flex-direction: column;
       width: 100%;
@@ -139,7 +138,6 @@
       color: #FFFFFF;
     }
 
-    /* Section Headers */
     .section-header-row {
       flex-direction: row;
       justify-content: space-between;
@@ -160,7 +158,6 @@
       color: #A78BFA;
     }
 
-    /* Agenda List */
     .agenda-list {
       flex-direction: column;
       gap: 6px;
@@ -245,7 +242,6 @@
       color: #FFFFFF;
     }
 
-    /* Quick Add Bar */
     .quick-add-group {
       flex-direction: column;
       gap: 6px;
@@ -294,7 +290,6 @@
       color: #FFFFFF;
     }
 
-    /* Routines Card */
     .routines-card {
       flex-direction: column;
       width: 100%;
@@ -371,7 +366,6 @@
       color: rgba(255, 255, 255, 0.60);
     }
 
-    /* Undo Bar */
     .undo-bar {
       flex-direction: row;
       align-items: center;

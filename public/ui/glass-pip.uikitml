@@ -28,7 +28,6 @@
       background-color: rgba(255, 255, 255, 0.28);
     }
 
-    /* Pip Companion Card */
     .pip-card {
       flex-direction: column;
       width: 100%;
@@ -193,7 +192,6 @@
       color: #FFFFFF;
     }
 
-    /* Productivity Garden Card */
     .garden-card {
       flex-direction: column;
       width: 100%;

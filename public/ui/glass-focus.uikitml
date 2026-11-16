@@ -28,7 +28,6 @@
       background-color: rgba(255, 255, 255, 0.28);
     }
 
-    /* Habits & Streaks Card */
     .habits-card {
       flex-direction: column;
       width: 100%;
@@ -148,7 +147,6 @@
       margin-left: 4px;
     }
 
-    /* Upcoming & Deadlines Card */
     .deadlines-card {
       flex-direction: column;
       width: 100%;

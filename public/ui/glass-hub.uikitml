@@ -28,7 +28,6 @@
       background-color: rgba(255, 255, 255, 0.28);
     }
 
-    /* Hub Header */
     .hub-header {
       flex-direction: row;
       justify-content: space-between;
@@ -181,12 +180,10 @@
       height: 6px;
       border-radius: 999px;
       background-color: #EF4444;
-      position: absolute;
-      top: 4px;
-      right: 4px;
+      margin-left: 2px;
+      margin-top: -6px;
     }
 
-    /* Greeting & Banner */
     .hero-banner-row {
       flex-direction: row;
       justify-content: space-between;
@@ -238,7 +235,6 @@
       color: #E0F2FE;
     }
 
-    /* 8 Navigation Tabs */
     .nav-tabs-bar {
       flex-direction: row;
       justify-content: space-between;
@@ -288,7 +284,6 @@
       color: #FFFFFF;
     }
 
-    /* Schedule Section */
     .schedule-card {
       flex-direction: column;
       width: 100%;
@@ -370,7 +365,6 @@
       color: #FFFFFF;
     }
 
-    /* Timeline */
     .timeline-container {
       flex-direction: column;
       width: 100%;
@@ -467,7 +461,6 @@
       color: rgba(255, 255, 255, 0.85);
     }
 
-    /* Bottom 3 Cards Row */
     .bottom-cards-row {
       flex-direction: row;
       justify-content: space-between;
@@ -501,7 +494,6 @@
       color: #FFFFFF;
     }
 
-    /* Card 1: Tasks */
     .filter-chips-row {
       flex-direction: row;
       gap: 2px;
@@ -623,7 +615,6 @@
       color: #60A5FA;
     }
 
-    /* Card 2: Focus Session */
     .focus-timer-body {
       flex-direction: column;
       align-items: center;
@@ -692,7 +683,6 @@
       text-align: center;
     }
 
-    /* Card 3: Workload */
     .workload-body {
       flex-direction: row;
       align-items: center;
@@ -774,7 +764,6 @@
       color: #FDE68A;
     }
 
-    /* Bottom Dock */
     .dock-container {
       flex-direction: row;
       justify-content: center;
