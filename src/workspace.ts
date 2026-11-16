@@ -90,9 +90,6 @@ export class WorkspaceSystem extends createSystem({
 }) {
   private workspaceRoot!: Group;
   private workspaceEntity!: Entity;
-  private statusLabel!: NonNullable<
-    ReturnType<UIKitMLAsset['getElementById']>
-  >;
   private savedPlacement: WorkspacePlacement | null = null;
   private storageWritable = true;
   private viewerPosition = new Vector3();
@@ -105,26 +102,9 @@ export class WorkspaceSystem extends createSystem({
   private parentWorldRotation = new Quaternion();
 
   init(): void {
-    const dashboard = this.world.requireSceneObject<UIKitMLAsset>(
-      'workspace-dashboard',
-    );
-    const pinButton = dashboard.getElementById('workspace-pin');
-    const nudgeUpButton = dashboard.getElementById('workspace-nudge-up');
-    const nudgeDownButton = dashboard.getElementById('workspace-nudge-down');
-    const resetButton = dashboard.getElementById('workspace-reset');
-    const statusLabel = dashboard.getElementById('workspace-anchor-status');
-    if (pinButton == null || resetButton == null || statusLabel == null) {
-      throw new Error('Workspace placement controls are missing from the dashboard.');
-    }
-    this.statusLabel = statusLabel;
-
     const loadedPlacement = readWorkspacePlacement();
     this.savedPlacement = loadedPlacement.placement;
     this.storageWritable = loadedPlacement.writable;
-    this.setStatus(
-      loadedPlacement.message ||
-        'Workspace ready. Enter XR, look at a tabletop, then pin your desk.',
-    );
 
     this.workspaceRoot = new Group();
     this.workspaceRoot.name = 'Deskmate Workspace Anchor';
@@ -134,89 +114,34 @@ export class WorkspaceSystem extends createSystem({
     for (const nodeId of WORKSPACE_NODE_IDS) {
       const object = this.world.getSceneObject(nodeId);
       if (object === undefined) {
-        console.warn(`[DeskMate] Workspace scene node "${nodeId}" could not be found.`);
         continue;
       }
       object.position.sub(this.workspaceRoot.position);
       this.workspaceRoot.add(object);
     }
-
-    pinButton.name = 'Pin the workspace above the tabletop in view';
-    resetButton.name = 'Reset the workspace to its default position';
-    const pinWorkspace = () => this.pinToDesk();
-    const resetWorkspace = () => this.resetWorkspace();
-    pinButton.addEventListener('click', pinWorkspace);
-    resetButton.addEventListener('click', resetWorkspace);
-    this.cleanupFuncs.push(
-      () => pinButton.removeEventListener('click', pinWorkspace),
-      () => resetButton.removeEventListener('click', resetWorkspace),
-    );
-
-    if (nudgeUpButton != null) {
-      const nudgeUp = () => this.nudgeWorkspace(0.05);
-      nudgeUpButton.name = 'Calibrate desk height up 5cm';
-      nudgeUpButton.addEventListener('click', nudgeUp);
-      this.cleanupFuncs.push(() => nudgeUpButton.removeEventListener('click', nudgeUp));
-    }
-    if (nudgeDownButton != null) {
-      const nudgeDown = () => this.nudgeWorkspace(-0.05);
-      nudgeDownButton.name = 'Calibrate desk height down 5cm';
-      nudgeDownButton.addEventListener('click', nudgeDown);
-      this.cleanupFuncs.push(() => nudgeDownButton.removeEventListener('click', nudgeDown));
-    }
   }
 
-  private wasInXR = false;
-
   update(): void {
-    const inXR = this.xrManager.getSession() !== null;
-    if (inXR !== this.wasInXR) {
-      this.wasInXR = inXR;
-      const desk = this.world.getSceneObject('workspace-desk');
-      if (desk !== undefined) {
-        desk.visible = true;
-      }
-    }
-
     if (this.savedPlacement !== null) {
       const [x, y, z] = this.savedPlacement.position;
-      // Safeguard against corrupted or out-of-bounds coordinates
       if (Math.abs(x) < 2.5 && y > -0.5 && y < 1.6 && Math.abs(z) < 2.5) {
         this.workspaceRoot.position.fromArray(this.savedPlacement.position);
         this.workspaceRoot.quaternion.fromArray(this.savedPlacement.quaternion);
-        this.setStatus('Workspace restored to its saved room position.');
       } else {
         this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
         this.workspaceRoot.quaternion.identity();
-        this.setStatus('Workspace aligned to your desk.');
       }
       this.savedPlacement = null;
     }
   }
 
-  private nudgeWorkspace(deltaY: number): void {
-    this.workspaceRoot.position.y += deltaY;
-    const sign = deltaY > 0 ? '+5cm' : '-5cm';
-    this.persistWorkspacePosition(`Desk height calibrated by ${sign} (${this.workspaceRoot.position.y.toFixed(2)}m).`);
-  }
-
-  private pinToDesk(): void {
-    if (this.xrManager.getSession() === null) {
-      this.setStatus('Enter XR to scan your room and pin the workspace to a desk.');
-      return;
-    }
-
+  public pinToDesk(): void {
+    if (this.xrManager.getSession() === null) return;
     const desk = this.findDeskPlane();
-    if (desk === null) {
-      this.setStatus('No tabletop found in view. Look at a flat desk surface and try again.');
-      return;
-    }
+    if (desk === null) return;
     const deskObject = desk.object3D;
     const parent = this.workspaceRoot.parent;
-    if (deskObject === undefined || parent === null) {
-      this.setStatus('The desk surface is no longer available. Scan it and try again.');
-      return;
-    }
+    if (deskObject === undefined || parent === null) return;
 
     deskObject.getWorldPosition(this.placementPosition);
     this.world.camera.getWorldPosition(this.viewerPosition);
@@ -232,7 +157,17 @@ export class WorkspaceSystem extends createSystem({
     this.workspaceRoot.quaternion
       .copy(this.parentWorldRotation.invert())
       .multiply(this.worldRotation);
-    this.persistWorkspacePosition('Workspace pinned above the detected desk.');
+  }
+
+  public resetWorkspace(): void {
+    this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
+    this.workspaceRoot.quaternion.identity();
+    this.savedPlacement = null;
+    if (this.storageWritable) {
+      try {
+        window.localStorage.removeItem(PLACEMENT_STORAGE_KEY);
+      } catch {}
+    }
   }
 
   private findDeskPlane(): Entity | null {
@@ -261,63 +196,17 @@ export class WorkspaceSystem extends createSystem({
 
       this.direction.subVectors(this.planePosition, this.viewerPosition);
       const distance = this.direction.length();
-      if (distance > 3.5 || this.direction.normalize().dot(this.forward) < -0.1) {
-        continue;
-      }
-      const namedDesk = label.includes('desk') || label.includes('table');
-      const score =
-        (namedDesk ? 3 : 0) +
-        Math.min(polygonArea(plane.polygon), 2) -
-        distance * 0.25 -
-        Math.abs(this.planePosition.y - 0.75);
+      if (distance < 0.3 || distance > 2.5) continue;
+      this.direction.normalize();
+      const alignment = this.forward.dot(this.direction);
+      if (alignment < 0.3) continue;
+
+      const score = polygonArea(plane.polygon) * 2 + alignment * 2 - distance;
       if (score > bestScore) {
         bestScore = score;
         bestEntity = entity;
       }
     }
     return bestEntity;
-  }
-
-  private resetWorkspace(): void {
-    this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
-    this.workspaceRoot.quaternion.identity();
-    this.savedPlacement = null;
-    if (!this.storageWritable) {
-      this.setStatus('Workspace reset for this session. Saved room data is protected.');
-      return;
-    }
-    try {
-      window.localStorage.removeItem(PLACEMENT_STORAGE_KEY);
-      this.setStatus('Workspace reset to its default position.');
-    } catch {
-      this.storageWritable = false;
-      this.setStatus('Workspace reset for this session. Browser storage is unavailable.');
-    }
-  }
-
-  private persistWorkspacePosition(message: string): void {
-    if (!this.storageWritable) {
-      this.setStatus(`${message} Saved room data is protected; this change is session-only.`);
-      return;
-    }
-    const placement: WorkspacePlacement = {
-      schemaVersion: 1,
-      position: this.workspaceRoot.position.toArray(),
-      quaternion: this.workspaceRoot.quaternion.toArray(),
-    };
-    try {
-      window.localStorage.setItem(
-        PLACEMENT_STORAGE_KEY,
-        JSON.stringify(placement),
-      );
-      this.setStatus(`${message} Position saved on this browser.`);
-    } catch {
-      this.storageWritable = false;
-      this.setStatus(`${message} Browser storage is unavailable; this change is session-only.`);
-    }
-  }
-
-  private setStatus(message: string): void {
-    this.statusLabel.setProperties({ text: message });
   }
 }
