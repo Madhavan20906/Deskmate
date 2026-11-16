@@ -3,10 +3,10 @@
     .glass-pip-panel {
       flex-direction: column;
       width: 340px;
-      height: 240px;
-      padding: 14px;
+      height: 330px;
+      padding: 12px;
       border-radius: 24px;
-      background-color: rgba(11, 16, 32, 0.78);
+      background-color: rgba(11, 16, 32, 0.82);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.16);
       gap: 8px;
@@ -18,7 +18,7 @@
       align-items: center;
       width: 100%;
       height: 6px;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
 
     .handle-bar {
@@ -28,94 +28,260 @@
       background-color: rgba(255, 255, 255, 0.28);
     }
 
-    .pip-header {
+    /* Pip Companion Card */
+    .pip-card {
       flex-direction: column;
-      gap: 2px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 16px;
+      background-color: rgba(18, 25, 48, 0.85);
+      border-width: 1px;
+      border-color: rgba(6, 182, 212, 0.25);
+      gap: 6px;
     }
 
-    .pip-title-row {
+    .pip-header-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .pip-title-group {
       flex-direction: row;
       align-items: center;
-      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .pip-avatar-circle {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background-color: rgba(6, 182, 212, 0.25);
+      border-width: 1px;
+      border-color: #06B6D4;
+      align-items: center;
+      justify-content: center;
     }
 
     .pip-title {
-      font-size: 17px;
+      font-size: 13px;
       font-weight: 700;
       color: #FFFFFF;
     }
 
-    .pip-status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background-color: #06B6D4;
-    }
-
-    .pip-subtitle {
-      font-size: 11px;
+    .pip-tagline {
+      font-size: 10px;
       font-weight: 500;
-      color: rgba(255, 255, 255, 0.70);
-    }
-
-    .pip-stage-area {
-      flex-direction: column;
-      height: 52px;
-      border-radius: 14px;
-      background-color: rgba(18, 25, 48, 0.50);
-      border-width: 1px;
-      border-color: rgba(6, 182, 212, 0.20);
-      align-items: center;
-      justify-content: center;
+      color: rgba(255, 255, 255, 0.60);
     }
 
     .pip-speech-bubble {
       flex-direction: row;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 6px;
-      padding-bottom: 6px;
-      border-radius: 12px;
-      background-color: rgba(11, 16, 32, 0.92);
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border-radius: 10px;
+      background-color: rgba(11, 16, 32, 0.85);
       border-width: 1px;
-      border-color: rgba(6, 182, 212, 0.45);
-      max-width: 312px;
-      align-items: center;
-      justify-content: center;
+      border-color: rgba(6, 182, 212, 0.35);
+      width: 100%;
     }
 
     .pip-speech-text {
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 600;
       color: #E0F2FE;
     }
 
-    .pip-chips-row {
-      flex-direction: row;
-      gap: 6px;
-      justify-content: center;
-      align-items: center;
-      padding-top: 2px;
+    .pip-action-grid {
+      flex-direction: column;
+      gap: 4px;
       width: 100%;
     }
 
-    .pip-chip-btn {
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 4px;
-      padding-bottom: 4px;
+    .pip-action-row {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .pip-action-chip {
+      flex-direction: row;
+      flex-grow: 1;
+      height: 26px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.06);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.12);
+      align-items: center;
+      justify-content: center;
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+
+    .pip-action-chip:hover {
+      background-color: rgba(6, 182, 212, 0.30);
+      border-color: #06B6D4;
+    }
+
+    .pip-action-chip:active {
+      background-color: rgba(6, 182, 212, 0.55);
+      border-color: #FFFFFF;
+    }
+
+    .pip-action-text {
+      font-size: 10px;
+      font-weight: 600;
+      color: #E2E8F0;
+    }
+
+    .pip-voice-bar {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding-top: 2px;
+    }
+
+    .waveform-visual {
+      flex-direction: row;
+      align-items: center;
+      gap: 3px;
+      flex-grow: 1;
+      height: 20px;
+      padding-left: 6px;
+    }
+
+    .wave-bar {
+      width: 3px;
+      height: 8px;
+      border-radius: 999px;
+      background-color: rgba(6, 182, 212, 0.60);
+    }
+
+    .wave-bar-tall {
+      height: 14px;
+      background-color: #06B6D4;
+    }
+
+    .mic-btn {
+      width: 26px;
+      height: 26px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.08);
       border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.18);
       align-items: center;
       justify-content: center;
     }
 
-    .pip-chip-text {
+    .mic-btn:hover {
+      background-color: rgba(6, 182, 212, 0.40);
+      border-color: #06B6D4;
+    }
+
+    .mic-btn-active {
+      background-color: #EF4444;
+      border-color: #EF4444;
+    }
+
+    .mic-icon-text {
       font-size: 11px;
-      font-weight: 600;
-      color: #E2E8F0;
+      color: #FFFFFF;
+    }
+
+    /* Productivity Garden Card */
+    .garden-card {
+      flex-direction: column;
+      width: 100%;
+      padding: 10px;
+      border-radius: 16px;
+      background-color: rgba(18, 25, 48, 0.85);
+      border-width: 1px;
+      border-color: rgba(34, 197, 94, 0.25);
+      gap: 6px;
+    }
+
+    .garden-header-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .garden-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .garden-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #4ADE80;
+    }
+
+    .garden-body-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .garden-details {
+      flex-direction: column;
+      gap: 4px;
+      flex-grow: 1;
+    }
+
+    .garden-level-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .garden-streak-text {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.70);
+    }
+
+    .garden-xp-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .garden-xp-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: #86EFAC;
+    }
+
+    .garden-bar-bg {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.10);
+      overflow: hidden;
+    }
+
+    .garden-bar-fill {
+      width: 60%;
+      height: 100%;
+      border-radius: 999px;
+      background-color: #22C55E;
+    }
+
+    .garden-tree-icon {
+      font-size: 32px;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 
@@ -123,32 +289,77 @@
     <div class="handle-bar"></div>
   </div>
 
-  <div class="pip-header">
-    <div class="pip-title-row">
-      <span class="pip-title">Pip</span>
-      <div class="pip-status-dot"></div>
+  <!-- Pip Companion -->
+  <div class="pip-card">
+    <div class="pip-header-row">
+      <div class="pip-title-group">
+        <div class="pip-avatar-circle">
+          <Bot width="13" height="13" color="#06B6D4"></Bot>
+        </div>
+        <span class="pip-title">Pip</span>
+      </div>
+      <span class="pip-tagline">Your Productivity Companion</span>
     </div>
-    <span class="pip-subtitle">Your Productivity Companion</span>
+
+    <div class="pip-speech-bubble">
+      <span id="pip-speech-text" class="pip-speech-text">Ready to focus! Finish ML assignment is up next.</span>
+    </div>
+
+    <div class="pip-action-grid">
+      <div class="pip-action-row">
+        <Button id="chip-pip-plan-day" class="pip-action-chip">
+          <ButtonLabel class="pip-action-text">📅 Plan my day</ButtonLabel>
+        </Button>
+        <Button id="chip-pip-what-next" class="pip-action-chip">
+          <ButtonLabel class="pip-action-text">💬 What's next?</ButtonLabel>
+        </Button>
+      </div>
+      <div class="pip-action-row">
+        <Button id="chip-pip-overloaded" class="pip-action-chip">
+          <ButtonLabel class="pip-action-text">📊 Am I overloaded?</ButtonLabel>
+        </Button>
+        <Button id="chip-pip-start-focus" class="pip-action-chip">
+          <ButtonLabel class="pip-action-text">▶ Start focus session</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+
+    <div class="pip-voice-bar">
+      <div class="waveform-visual">
+        <div class="wave-bar"></div>
+        <div class="wave-bar wave-bar-tall"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar wave-bar-tall"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar wave-bar-tall"></div>
+        <div class="wave-bar"></div>
+      </div>
+      <Button id="btn-pip-mic" class="mic-btn">
+        <ButtonLabel id="pip-mic-icon" class="mic-icon-text">🎙️</ButtonLabel>
+      </Button>
+    </div>
   </div>
 
-  <div class="pip-stage-area"></div>
+  <!-- Productivity Garden -->
+  <div class="garden-card">
+    <div class="garden-header-row">
+      <span class="garden-title">Productivity Garden</span>
+      <span class="garden-badge">Active</span>
+    </div>
 
-  <div class="pip-speech-bubble">
-    <span id="pip-speech-text" class="pip-speech-text">Ready to focus! Finish ML assignment is up next.</span>
-  </div>
+    <div class="garden-body-row">
+      <div class="garden-details">
+        <span id="garden-level-text" class="garden-level-text">Level 3 🌱</span>
+        <span class="garden-streak-text">Keep the streak!</span>
+        <div class="garden-xp-row">
+          <span id="garden-xp-text" class="garden-xp-label">600 / 1,000 XP</span>
+        </div>
+        <div class="garden-bar-bg">
+          <div id="garden-progress-bar-fill" class="garden-bar-fill"></div>
+        </div>
+      </div>
 
-  <div class="pip-chips-row">
-    <Button id="chip-pip-what-next" class="pip-chip-btn">
-      <ButtonLabel class="pip-chip-text">What next?</ButtonLabel>
-    </Button>
-    <Button id="chip-pip-plan-day" class="pip-chip-btn">
-      <ButtonLabel class="pip-chip-text">Plan day</ButtonLabel>
-    </Button>
-    <Button id="chip-pip-recap" class="pip-chip-btn">
-      <ButtonLabel class="pip-chip-text">Recap</ButtonLabel>
-    </Button>
-    <Button id="chip-pip-break" class="pip-chip-btn">
-      <ButtonLabel class="pip-chip-text">Break</ButtonLabel>
-    </Button>
+      <div class="garden-tree-icon">🌳</div>
+    </div>
   </div>
 </Panel>

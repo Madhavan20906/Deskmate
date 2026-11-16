@@ -9,6 +9,9 @@
  * - 5-step undo stack with 8s timer
  * - Procedural Pip 3D companion robot bob & expressions
  * - Task edit sheet with steppers, presets, priority toggle, and 2-tap delete confirmation
+ * - 100% interactive controls across all modules (Mini Calendar, Agenda, Quick Add, Routines,
+ *   Hub 8-tabs, Weather, Now marker, Schedule Day/Week/Month, Tasks Filter, Focus Timer,
+ *   Workload Donut, Pip Smart Assistant, Habits & Streaks, Deadlines, Dock)
  */
 
 import {
@@ -21,6 +24,18 @@ import {
 import {
   GlassTask,
   SEED_TASKS,
+  SEED_WEATHER,
+  SEED_CALENDAR_DAYS,
+  SEED_AGENDA_ITEMS,
+  SEED_ROUTINES,
+  SEED_HABITS,
+  SEED_DEADLINES,
+  WeatherData,
+  CalendarDayViewModel,
+  AgendaItemViewModel,
+  RoutineGroup,
+  HabitItem,
+  UpcomingDeadline,
   tasksToRowViewModels,
   tasksToScheduleBlocks,
   shortenScheduleTitle,
@@ -29,6 +44,7 @@ import {
   generateGreeting,
   getClockViewModel,
   calculateFocusRing,
+  formatMinutesDuration,
   UndoStack,
 } from './glass-data-adapters.js';
 
@@ -38,7 +54,7 @@ import { PipRobotRig } from './scene-assets/pip-robot.scene-asset.js';
 
 const STORAGE_KEY_TASKS = 'deskmate.tasks.v1';
 
-type NavTab = 'home' | 'tasks' | 'schedule' | 'focus' | 'analytics' | 'garden';
+type NavTab = 'tasks' | 'schedule' | 'focus' | 'analytics' | 'garden' | 'routines' | 'notes' | 'goals';
 
 /**
  * Robust helper to set text on UIKitML elements.
@@ -93,9 +109,28 @@ export class PanelSystem extends createSystem({
   private focusRemainingSeconds = 25 * 60;
   private focusRunning = false;
   private focusMode: 'pomodoro' | 'short_break' | 'long_break' = 'pomodoro';
+  private focusSessionsCompleted = 4;
 
-  // Garden Points
-  private gardenPoints = 220; // Level 3 in reference
+  // Garden Points (XP)
+  private gardenPoints = 600; // Level 3: 600 / 1,000 XP in reference
+
+  // Interactive Models
+  private weather: WeatherData = { ...SEED_WEATHER };
+  private calendarDays: CalendarDayViewModel[] = JSON.parse(JSON.stringify(SEED_CALENDAR_DAYS));
+  private selectedDayNumber = 18;
+  private selectedMonthIndex = 10; // November
+  private readonly monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  private agendaItems: AgendaItemViewModel[] = JSON.parse(JSON.stringify(SEED_AGENDA_ITEMS));
+  private routines: RoutineGroup[] = JSON.parse(JSON.stringify(SEED_ROUTINES));
+  private habits: HabitItem[] = JSON.parse(JSON.stringify(SEED_HABITS));
+  private deadlines: UpcomingDeadline[] = JSON.parse(JSON.stringify(SEED_DEADLINES));
+
+  // Hub View Controls
+  private activeTab: NavTab = 'schedule';
+  private scheduleView: 'day' | 'week' | 'month' = 'day';
+  private taskFilter: 'all' | 'high' | 'medium' | 'low' = 'all';
+  private voiceListening = false;
+  private hasUnreadNotification = true;
 
   // Active Edit Task State
   private editingTaskId: string | null = null;
@@ -105,9 +140,6 @@ export class PanelSystem extends createSystem({
   private editDraftStartTime: number | null = 540; // 09:00
   private deleteTapCount = 0;
   private deleteResetTimer: number | null = null;
-
-  // Active View Tab on Hub
-  private activeTab: NavTab = 'home';
 
   // Pip 3D Robot
   private pipRig: PipRobotRig | null = null;
@@ -134,34 +166,45 @@ export class PanelSystem extends createSystem({
   }
 
   private lastElementPressTime = new WeakMap<any, number>();
+  private lastHoverSoundTime = 0;
 
   /**
    * Universal press listener with 300ms debounce across both element and children.
    * Handles BOTH hand tracking (fingertip poke / pointerdown)
    * and controller ray (trigger select / click).
    * Also binds to children (e.g. ButtonLabel) to prevent missed ray hits.
+   * Emits spatial hover hum on pointerenter and tactile pinch tick on click/pointerdown.
    */
   private addPress(element: any, handler: () => void) {
     if (!element || typeof element.addEventListener !== 'function') return;
+
+    const onEnter = () => {
+      const now = performance.now();
+      if (this.soundEnabled && this.audio && now - this.lastHoverSoundTime > 90) {
+        this.lastHoverSoundTime = now;
+        this.audio.playHoverHum();
+      }
+    };
 
     const trigger = () => {
       const now = performance.now();
       const lastElem = this.lastElementPressTime.get(element) || 0;
       if (now - lastElem < 300) return;
       this.lastElementPressTime.set(element, now);
+      if (this.soundEnabled && this.audio) {
+        this.audio.playPinchTick();
+      }
       handler();
     };
 
+    element.addEventListener('pointerenter', onEnter);
     element.addEventListener('click', trigger);
-    this.cleanupFuncs.push(() => {
-      try {
-        element.removeEventListener('click', trigger);
-      } catch {}
-    });
-
     element.addEventListener('pointerdown', trigger);
+
     this.cleanupFuncs.push(() => {
       try {
+        element.removeEventListener('pointerenter', onEnter);
+        element.removeEventListener('click', trigger);
         element.removeEventListener('pointerdown', trigger);
       } catch {}
     });
@@ -169,15 +212,13 @@ export class PanelSystem extends createSystem({
     if (Array.isArray(element.children)) {
       for (const child of element.children) {
         if (child && typeof child.addEventListener === 'function') {
+          child.addEventListener('pointerenter', onEnter);
           child.addEventListener('click', trigger);
-          this.cleanupFuncs.push(() => {
-            try {
-              child.removeEventListener('click', trigger);
-            } catch {}
-          });
           child.addEventListener('pointerdown', trigger);
           this.cleanupFuncs.push(() => {
             try {
+              child.removeEventListener('pointerenter', onEnter);
+              child.removeEventListener('click', trigger);
               child.removeEventListener('pointerdown', trigger);
             } catch {}
           });
@@ -291,7 +332,7 @@ export class PanelSystem extends createSystem({
     if (this.isBound) return;
     const hubAsset = this.getAsset('panel-hub');
     const tasksAsset = this.getAsset('panel-left-tasks');
-    if (!hubAsset?.getElementById('hub-time') || !tasksAsset?.getElementById('btn-add-task')) {
+    if (!hubAsset?.getElementById('hub-time') || !tasksAsset?.getElementById('quick-add-task')) {
       return; // DOM not ready yet; update() will bind as soon as elements mount
     }
     this.isBound = true;
@@ -304,16 +345,116 @@ export class PanelSystem extends createSystem({
   }
 
   // --------------------------------------------------------------------------
-  // Tasks Panel Binding
+  // Left Panel: Tasks, Calendar, Agenda, Routines
   // --------------------------------------------------------------------------
   private bindTasksPanel() {
     const asset = this.getAsset('panel-left-tasks');
     if (!asset) return;
 
-    // Add Task Button
-    const addBtn = asset.getElementById('btn-add-task');
-    if (addBtn) {
-      this.addPress(addBtn, () => this.openEditSheet(null));
+    // Mini Calendar Month Navigation
+    const prevMonth = asset.getElementById('cal-prev-month');
+    if (prevMonth) {
+      this.addPress(prevMonth, () => {
+        this.selectedMonthIndex = (this.selectedMonthIndex - 1 + 12) % 12;
+        this.updateCalendarHeader();
+      });
+    }
+    const nextMonth = asset.getElementById('cal-next-month');
+    if (nextMonth) {
+      this.addPress(nextMonth, () => {
+        this.selectedMonthIndex = (this.selectedMonthIndex + 1) % 12;
+        this.updateCalendarHeader();
+      });
+    }
+
+    // Mini Calendar Days
+    for (let i = 0; i < 7; i++) {
+      const dayBtn = asset.getElementById(`cal-day-${i}`);
+      if (dayBtn) {
+        this.addPress(dayBtn, () => {
+          this.calendarDays.forEach((d, idx) => {
+            d.isSelected = idx === i;
+          });
+          const selected = this.calendarDays[i];
+          this.selectedDayNumber = selected.dayNumber;
+          this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, Nov ${selected.dayNumber}.`);
+          this.refreshTasksPanelUI();
+        });
+      }
+    }
+
+    // Today's Agenda Checkboxes
+    for (let i = 0; i < this.agendaItems.length; i++) {
+      const chkBtn = asset.getElementById(`agenda-chk-${i}`);
+      if (chkBtn) {
+        this.addPress(chkBtn, () => this.toggleAgendaItem(i));
+      }
+      const rowName = asset.getElementById(`agenda-name-${i}`);
+      if (rowName) {
+        this.addPress(rowName, () => {
+          const item = this.agendaItems[i];
+          this.setPipSpeech(`Agenda item: "${item.title}" at ${item.timeFormatted}.`);
+        });
+      }
+    }
+
+    // Quick Add Pills
+    const quickTask = asset.getElementById('quick-add-task');
+    if (quickTask) {
+      this.addPress(quickTask, () => this.openEditSheet(null));
+    }
+    const quickEvent = asset.getElementById('quick-add-event');
+    if (quickEvent) {
+      this.addPress(quickEvent, () => {
+        const newEvent: GlassTask = {
+          id: `event-${Date.now()}`,
+          title: 'Design Review & Sync',
+          priority: 'medium',
+          estimatedMinutes: 60,
+          scheduledStartMinute: 16 * 60, // 4 PM
+          status: 'todo',
+        };
+        this.tasks.push(newEvent);
+        this.saveTasks(true, 'Added "Design Review & Sync" event');
+        this.setPipSpeech('Added new event "Design Review & Sync" at 4:00 PM.');
+      });
+    }
+    const quickFocus = asset.getElementById('quick-add-focus');
+    if (quickFocus) {
+      this.addPress(quickFocus, () => this.toggleFocusTimer());
+    }
+
+    // Routines Rows
+    const morningRow = asset.getElementById('routine-morning-row');
+    if (morningRow) {
+      this.addPress(morningRow, () => {
+        const morning = this.routines.find((r) => r.id === 'routine-morning');
+        if (morning) {
+          morning.completedCount = morning.completedCount === morning.totalCount ? 0 : morning.totalCount;
+          this.setPipSpeech(
+            morning.completedCount === morning.totalCount
+              ? '☀️ Morning routine complete! Great start to your day.'
+              : 'Reset morning routine for a fresh start.',
+          );
+          this.refreshTasksPanelUI();
+        }
+      });
+    }
+
+    const winddownRow = asset.getElementById('routine-winddown-row');
+    if (winddownRow) {
+      this.addPress(winddownRow, () => {
+        const winddown = this.routines.find((r) => r.id === 'routine-winddown');
+        if (winddown) {
+          winddown.completedCount = (winddown.completedCount + 1) % (winddown.totalCount + 1);
+          this.setPipSpeech(
+            winddown.completedCount === winddown.totalCount
+              ? '🌙 Wind-down routine done! Rest well tonight.'
+              : `Wind-down routine: ${winddown.completedCount}/${winddown.totalCount} completed.`,
+          );
+          this.refreshTasksPanelUI();
+        }
+      });
     }
 
     // Undo Button
@@ -321,23 +462,229 @@ export class PanelSystem extends createSystem({
     if (undoBtn) {
       this.addPress(undoBtn, () => this.triggerUndo());
     }
+  }
 
-    // Checkboxes and Row click
-    for (let i = 0; i < 4; i++) {
-      const chkBtn = asset.getElementById(`task-chk-${i}`);
-      if (chkBtn) {
-        this.addPress(chkBtn, () => this.toggleTaskComplete(i));
+  private updateCalendarHeader() {
+    const asset = this.getAsset('panel-left-tasks');
+    if (!asset) return;
+    const monthLabel = asset.getElementById('cal-month-label') as any;
+    if (monthLabel) {
+      setText(monthLabel, `${this.monthNames[this.selectedMonthIndex]} 2026`);
+    }
+    this.setPipSpeech(`Switched calendar to ${this.monthNames[this.selectedMonthIndex]} 2026.`);
+  }
+
+  private toggleAgendaItem(index: number) {
+    if (!this.agendaItems[index]) return;
+    const item = this.agendaItems[index];
+    item.isCompleted = !item.isCompleted;
+
+    if (item.isCompleted) {
+      this.gardenPoints += 20;
+      this.setPipSpeech(`Checked off "${item.title}"! +20 XP awarded.`);
+      this.triggerPipEmote('celebrate');
+    } else {
+      this.setPipSpeech(`Reopened agenda item "${item.title}".`);
+    }
+
+    this.refreshTasksPanelUI();
+    this.refreshHubPanelUI();
+    this.refreshPipPanelUI();
+  }
+
+  // --------------------------------------------------------------------------
+  // Center Hub Panel Binding
+  // --------------------------------------------------------------------------
+  private bindHubPanel() {
+    const asset = this.getAsset('panel-hub');
+    if (!asset) return;
+
+    // Weather Pill Toggle
+    const weatherBtn = asset.getElementById('btn-weather');
+    if (weatherBtn) {
+      this.addPress(weatherBtn, () => {
+        this.weather.isCelsius = !this.weather.isCelsius;
+        const tempStr = this.weather.isCelsius ? `${this.weather.tempC}°C` : `${this.weather.tempF}°F`;
+        const tempEl = asset.getElementById('weather-temp') as any;
+        if (tempEl) setText(tempEl, tempStr);
+        this.setPipSpeech(`Weather in ${this.weather.city}: ${tempStr}, ${this.weather.condition}.`);
+      });
+    }
+
+    // Header Action Buttons
+    const searchBtn = asset.getElementById('btn-search');
+    if (searchBtn) {
+      this.addPress(searchBtn, () => {
+        this.setPipSpeech('Search: indexing tasks, calendar schedule, notes, and routines.');
+      });
+    }
+
+    const bellBtn = asset.getElementById('btn-bell');
+    if (bellBtn) {
+      this.addPress(bellBtn, () => {
+        this.hasUnreadNotification = false;
+        const badge = asset.getElementById('bell-badge') as any;
+        if (badge) {
+          badge.style = badge.style || {};
+          badge.style.display = 'none';
+          if (typeof badge.setProperties === 'function') {
+            badge.setProperties({ display: 'none' });
+          }
+        }
+        this.setPipSpeech('All notifications cleared. You are completely up to date!');
+      });
+    }
+
+    const settingsBtn = asset.getElementById('btn-settings');
+    if (settingsBtn) {
+      this.addPress(settingsBtn, () => this.toggleSettingsSheet());
+    }
+
+    const profileBtn = asset.getElementById('btn-profile');
+    if (profileBtn) {
+      this.addPress(profileBtn, () => {
+        this.setPipSpeech('Spatial Productivity Profile: Active • 7-day streak • Level 3 Garden.');
+      });
+    }
+
+    // Pip Hero Banner
+    const pipBanner = asset.getElementById('hub-pip-banner-btn');
+    if (pipBanner) {
+      this.addPress(pipBanner, () => {
+        this.handlePipWhatNext();
+      });
+    }
+
+    // 8 Navigation Tabs
+    const navTabs: NavTab[] = ['tasks', 'schedule', 'focus', 'analytics', 'garden', 'routines', 'notes', 'goals'];
+    for (const tab of navTabs) {
+      const tabBtn = asset.getElementById(`nav-${tab}`);
+      if (tabBtn) {
+        this.addPress(tabBtn, () => this.switchNavTab(tab));
       }
+    }
 
-      const rowEl = asset.getElementById(`task-row-${i}`);
-      if (rowEl) {
-        this.addPress(rowEl, () => {
+    // Schedule Day / Week / Month View Tabs
+    const tabDay = asset.getElementById('tab-day');
+    if (tabDay) {
+      this.addPress(tabDay, () => this.setScheduleView('day'));
+    }
+    const tabWeek = asset.getElementById('tab-week');
+    if (tabWeek) {
+      this.addPress(tabWeek, () => this.setScheduleView('week'));
+    }
+    const tabMonth = asset.getElementById('tab-month');
+    if (tabMonth) {
+      this.addPress(tabMonth, () => this.setScheduleView('month'));
+    }
+
+    const expandSched = asset.getElementById('btn-expand-sched');
+    if (expandSched) {
+      this.addPress(expandSched, () => {
+        this.setPipSpeech('Expanded schedule view (8:00 AM – 10:00 PM).');
+      });
+    }
+
+    // Schedule Blocks (Click to open edit sheet)
+    for (let i = 0; i < 5; i++) {
+      const blockEl = asset.getElementById(`block-${i}`);
+      if (blockEl) {
+        this.addPress(blockEl, () => {
           if (this.tasks[i]) {
             this.openEditSheet(this.tasks[i].id);
           }
         });
       }
     }
+
+    // Bottom Card 1: Task Filter Chips
+    const filterAll = asset.getElementById('chip-filter-all');
+    if (filterAll) this.addPress(filterAll, () => this.setTaskFilter('all'));
+
+    const filterHigh = asset.getElementById('chip-filter-high');
+    if (filterHigh) this.addPress(filterHigh, () => this.setTaskFilter('high'));
+
+    const filterMed = asset.getElementById('chip-filter-med');
+    if (filterMed) this.addPress(filterMed, () => this.setTaskFilter('medium'));
+
+    const filterLow = asset.getElementById('chip-filter-low');
+    if (filterLow) this.addPress(filterLow, () => this.setTaskFilter('low'));
+
+    // Task rows checkboxes in Bottom Card 1
+    for (let i = 0; i < 4; i++) {
+      const rowBtn = asset.getElementById(`hub-task-row-${i}`);
+      if (rowBtn) {
+        this.addPress(rowBtn, () => this.toggleTaskComplete(i));
+      }
+    }
+
+    // Bottom Card 2: Focus Session Play/Pause & Mode Gear
+    const focusPlayBtn = asset.getElementById('hub-focus-play-btn');
+    if (focusPlayBtn) {
+      this.addPress(focusPlayBtn, () => this.toggleFocusTimer());
+    }
+
+    const focusGear = asset.getElementById('btn-focus-settings');
+    if (focusGear) {
+      this.addPress(focusGear, () => {
+        if (this.focusMode === 'pomodoro') {
+          this.focusMode = 'short_break';
+          this.focusTotalSeconds = 5 * 60;
+          this.focusRemainingSeconds = 5 * 60;
+        } else if (this.focusMode === 'short_break') {
+          this.focusMode = 'long_break';
+          this.focusTotalSeconds = 15 * 60;
+          this.focusRemainingSeconds = 15 * 60;
+        } else {
+          this.focusMode = 'pomodoro';
+          this.focusTotalSeconds = 25 * 60;
+          this.focusRemainingSeconds = 25 * 60;
+        }
+        this.setPipSpeech(`Focus mode switched to ${this.focusMode.replace('_', ' ').toUpperCase()}.`);
+        this.refreshHubPanelUI();
+      });
+    }
+
+    // Bottom Floating Dock
+    const dockItems = [
+      { id: 'dock-timeline', label: 'Timeline View' },
+      { id: 'dock-calendar', label: 'Calendar Grid' },
+      { id: 'dock-notes', label: 'Spatial Notes' },
+      { id: 'dock-goals', label: 'Quarterly Goals' },
+      { id: 'dock-reports', label: 'Productivity Analytics' },
+      { id: 'dock-capture', label: 'Quick Capture' },
+    ];
+    for (const item of dockItems) {
+      const btn = asset.getElementById(item.id);
+      if (btn) {
+        this.addPress(btn, () => {
+          this.setPipSpeech(`Dock: Opened ${item.label}.`);
+        });
+      }
+    }
+  }
+
+  private setScheduleView(view: 'day' | 'week' | 'month') {
+    this.scheduleView = view;
+    this.setPipSpeech(`Schedule view switched to ${view.toUpperCase()}.`);
+    this.refreshHubPanelUI();
+  }
+
+  private setTaskFilter(filter: 'all' | 'high' | 'medium' | 'low') {
+    this.taskFilter = filter;
+    this.setPipSpeech(`Filtering tasks: ${filter.toUpperCase()}.`);
+    this.refreshHubPanelUI();
+  }
+
+  private switchNavTab(tab: NavTab) {
+    this.activeTab = tab;
+    this.setPipSpeech(`Switched to ${tab.toUpperCase()} tab.`);
+    this.refreshHubPanelUI();
+  }
+
+  private toggleSettingsSheet() {
+    this.soundEnabled = !this.soundEnabled;
+    this.setPipSpeech(`Sound ${this.soundEnabled ? 'Enabled' : 'Muted'}.`);
   }
 
   private toggleTaskComplete(index: number) {
@@ -349,7 +696,7 @@ export class PanelSystem extends createSystem({
 
     if (newStatus === 'completed') {
       this.gardenPoints += 20;
-      this.setPipSpeech(`Nice work finishing "${task.title}"! +20 garden points!`);
+      this.setPipSpeech(`Nice work finishing "${task.title}"! +20 garden XP!`);
       this.triggerPipEmote('celebrate');
     }
 
@@ -357,68 +704,7 @@ export class PanelSystem extends createSystem({
   }
 
   // --------------------------------------------------------------------------
-  // Hub Panel Binding
-  // --------------------------------------------------------------------------
-  private bindHubPanel() {
-    const asset = this.getAsset('panel-hub');
-    if (!asset) return;
-
-    // Header Action Buttons
-    const bellBtn = asset.getElementById('btn-bell');
-    if (bellBtn) {
-      this.addPress(bellBtn, () => this.setPipSpeech('No unread notifications.'));
-    }
-
-    const settingsBtn = asset.getElementById('btn-settings');
-    if (settingsBtn) {
-      this.addPress(settingsBtn, () => this.toggleSettingsSheet());
-    }
-
-    const profileBtn = asset.getElementById('btn-profile');
-    if (profileBtn) {
-      this.addPress(profileBtn, () => this.setPipSpeech('Logged in as Madhavan.'));
-    }
-
-    // Navigation Tiles
-    const navItems: Array<{ id: string; tab: NavTab }> = [
-      { id: 'nav-tasks', tab: 'tasks' },
-      { id: 'nav-schedule', tab: 'schedule' },
-      { id: 'nav-focus', tab: 'focus' },
-      { id: 'nav-analytics', tab: 'analytics' },
-      { id: 'nav-garden', tab: 'garden' },
-    ];
-
-    for (const item of navItems) {
-      const btn = asset.getElementById(item.id);
-      if (btn) {
-        this.addPress(btn, () => this.switchNavTab(item.tab));
-      }
-    }
-
-    // Schedule Blocks Click (opens edit sheet)
-    for (let i = 0; i < 4; i++) {
-      const blockEl = asset.getElementById(`block-${i}`);
-      if (blockEl) {
-        this.addPress(blockEl, () => {
-          if (this.tasks[i]) this.openEditSheet(this.tasks[i].id);
-        });
-      }
-    }
-  }
-
-  private switchNavTab(tab: typeof this.activeTab) {
-    this.activeTab = tab;
-    this.setPipSpeech(`Switched to ${tab.toUpperCase()} view.`);
-    this.refreshAllUI();
-  }
-
-  private toggleSettingsSheet() {
-    this.soundEnabled = !this.soundEnabled;
-    this.setPipSpeech(`Sound ${this.soundEnabled ? 'Enabled' : 'Muted'}.`);
-  }
-
-  // --------------------------------------------------------------------------
-  // Pip Panel Binding
+  // Pip Panel Binding (Right Column Top)
   // --------------------------------------------------------------------------
   private bindPipPanel() {
     const asset = this.getAsset('panel-right-pip');
@@ -426,25 +712,7 @@ export class PanelSystem extends createSystem({
 
     const chipWhatNext = asset.getElementById('chip-pip-what-next');
     if (chipWhatNext) {
-      this.addPress(chipWhatNext, () => {
-        const mappedTasks: TaskItem[] = this.tasks.map((t) => ({
-          id: t.id,
-          title: t.title,
-          priority: t.priority,
-          estimatedMinutes: t.estimatedMinutes,
-          scheduledStartMinute: t.scheduledStartMinute,
-          status: (t.status === 'in_progress' ? 'in-progress' : t.status) as any,
-          createdAt: Date.now(),
-          completedAt: t.completedAt ?? null,
-        }));
-        const rec = recommendWhatNext(mappedTasks);
-        if (rec && rec.task) {
-          this.setPipSpeech(`Recommended next: "${rec.task.title}". ${rec.rationale}`);
-          this.triggerPipEmote('thinking');
-        } else {
-          this.setPipSpeech('All caught up! Start a new task or take a rest.');
-        }
-      });
+      this.addPress(chipWhatNext, () => this.handlePipWhatNext());
     }
 
     const chipPlanDay = asset.getElementById('chip-pip-plan-day');
@@ -471,87 +739,102 @@ export class PanelSystem extends createSystem({
       });
     }
 
-    const chipRecap = asset.getElementById('chip-pip-recap');
-    if (chipRecap) {
-      this.addPress(chipRecap, () => {
-        const done = this.tasks.filter((t) => t.status === 'completed').length;
-        const total = this.tasks.length;
-        this.setPipSpeech(`Today's progress: ${done} of ${total} tasks finished. Keep momentum!`);
+    const chipOverloaded = asset.getElementById('chip-pip-overloaded');
+    if (chipOverloaded) {
+      this.addPress(chipOverloaded, () => {
+        const donut = calculateWorkloadDonut(this.tasks);
+        if (donut.isOverloaded) {
+          this.setPipSpeech(`You have ${donut.scheduledFormatted} scheduled. Consider rescheduling low priority tasks.`);
+        } else {
+          this.setPipSpeech(`You're at ${donut.percentage}% capacity (${donut.scheduledFormatted} planned). You're on track!`);
+        }
       });
     }
 
-    const chipBreak = asset.getElementById('chip-pip-break');
-    if (chipBreak) {
-      this.addPress(chipBreak, () => {
-        this.focusMode = 'short_break';
-        this.focusTotalSeconds = 5 * 60;
-        this.focusRemainingSeconds = 5 * 60;
-        this.focusRunning = true;
-        this.setPipSpeech('Taking a 5-minute breather. Stand up and stretch!');
-        this.refreshAllUI();
+    const chipStartFocus = asset.getElementById('chip-pip-start-focus');
+    if (chipStartFocus) {
+      this.addPress(chipStartFocus, () => this.toggleFocusTimer());
+    }
+
+    // Voice Mic Toggle
+    const micBtn = asset.getElementById('btn-pip-mic');
+    if (micBtn) {
+      this.addPress(micBtn, () => {
+        this.voiceListening = !this.voiceListening;
+        if (this.voiceListening) {
+          this.setPipSpeech('Listening for spatial voice commands... Speak anytime.');
+        } else {
+          this.setPipSpeech('Voice commands paused.');
+        }
+        this.refreshPipPanelUI();
       });
     }
   }
 
+  private handlePipWhatNext() {
+    const mappedTasks: TaskItem[] = this.tasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      priority: t.priority,
+      estimatedMinutes: t.estimatedMinutes,
+      scheduledStartMinute: t.scheduledStartMinute,
+      status: (t.status === 'in_progress' ? 'in-progress' : t.status) as any,
+      createdAt: Date.now(),
+      completedAt: t.completedAt ?? null,
+    }));
+    const rec = recommendWhatNext(mappedTasks);
+    if (rec && rec.task) {
+      this.setPipSpeech(`Recommended next: "${rec.task.title}". ${rec.rationale}`);
+      this.triggerPipEmote('thinking');
+    } else {
+      this.setPipSpeech('All caught up! Start a new task or take a rest.');
+    }
+  }
+
   public setPipSpeech(text: string) {
-    const asset = this.getAsset('panel-right-pip');
-    if (!asset) return;
-    const speechEl = asset.getElementById('pip-speech-text') as any;
-    if (speechEl) {
-      setText(speechEl, text);
+    const pipAsset = this.getAsset('panel-right-pip');
+    if (pipAsset) {
+      const speechEl = pipAsset.getElementById('pip-speech-text') as any;
+      if (speechEl) setText(speechEl, text);
+    }
+    const hubAsset = this.getAsset('panel-hub');
+    if (hubAsset) {
+      const hubPipText = hubAsset.getElementById('hub-pip-text') as any;
+      if (hubPipText) setText(hubPipText, `Pip: ${text}`);
     }
   }
 
   public triggerPipEmote(_emote: 'celebrate' | 'thinking' | 'idle') {}
 
   // --------------------------------------------------------------------------
-  // Focus Panel Binding
+  // Focus Panel Binding (Right Column Bottom: Habits & Deadlines)
   // --------------------------------------------------------------------------
   private bindFocusPanel() {
     const asset = this.getAsset('panel-right-focus');
     if (!asset) return;
 
-    const playBtn = asset.getElementById('btn-focus-play-pause');
-    if (playBtn) {
-      this.addPress(playBtn, () => this.toggleFocusTimer());
+    // Habits Rows
+    for (let i = 0; i < this.habits.length; i++) {
+      const habitRow = asset.getElementById(`habit-row-${i}`);
+      if (habitRow) {
+        this.addPress(habitRow, () => {
+          const habit = this.habits[i];
+          habit.completedCount = habit.completedCount >= 7 ? 0 : habit.completedCount + 1;
+          this.setPipSpeech(`Updated habit "${habit.title}": ${habit.completedCount}/7 days.`);
+          this.refreshFocusPanelUI();
+        });
+      }
     }
 
-    const minus5Btn = asset.getElementById('chip-focus-minus5');
-    if (minus5Btn) {
-      this.addPress(minus5Btn, () => {
-        this.focusRemainingSeconds = Math.max(60, this.focusRemainingSeconds - 5 * 60);
-        this.refreshAllUI();
-      });
-    }
-
-    const plus5Btn = asset.getElementById('chip-focus-plus5');
-    if (plus5Btn) {
-      this.addPress(plus5Btn, () => {
-        this.focusRemainingSeconds = Math.min(120 * 60, this.focusRemainingSeconds + 5 * 60);
-        this.refreshAllUI();
-      });
-    }
-
-    const resetBtn = asset.getElementById('chip-focus-reset');
-    if (resetBtn) {
-      this.addPress(resetBtn, () => {
-        this.focusRunning = false;
-        this.focusRemainingSeconds = 25 * 60;
-        this.focusTotalSeconds = 25 * 60;
-        this.focusMode = 'pomodoro';
-        this.refreshAllUI();
-      });
-    }
-
-    const breakBtn = asset.getElementById('chip-focus-break');
-    if (breakBtn) {
-      this.addPress(breakBtn, () => {
-        this.focusMode = 'short_break';
-        this.focusRemainingSeconds = 5 * 60;
-        this.focusTotalSeconds = 5 * 60;
-        this.focusRunning = true;
-        this.refreshAllUI();
-      });
+    // Deadlines Rows
+    for (let i = 0; i < this.deadlines.length; i++) {
+      const deadlineRow = asset.getElementById(`deadline-row-${i}`);
+      if (deadlineRow) {
+        this.addPress(deadlineRow, () => {
+          const dl = this.deadlines[i];
+          this.setPipSpeech(`Upcoming deadline: "${dl.title}" due on ${dl.dateFormatted}.`);
+        });
+      }
     }
   }
 
@@ -572,13 +855,11 @@ export class PanelSystem extends createSystem({
     const asset = this.getAsset('panel-edit-sheet');
     if (!asset) return;
 
-    // Close Button
     const closeBtn = asset.getElementById('btn-sheet-close');
     if (closeBtn) {
       this.addPress(closeBtn, () => this.closeEditSheet());
     }
 
-    // Title Presets
     const presets = ['Deep Work Sprint', 'Team Sync', 'Code Review', 'Write Report'];
     for (let i = 0; i < presets.length; i++) {
       const btn = asset.getElementById(`preset-${i}`);
@@ -590,7 +871,6 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // Duration Steppers
     const durMinus = asset.getElementById('btn-dur-minus');
     if (durMinus) {
       this.addPress(durMinus, () => {
@@ -607,7 +887,6 @@ export class PanelSystem extends createSystem({
       });
     }
 
-    // Priority Toggles
     const priLow = asset.getElementById('btn-pri-low');
     if (priLow) {
       this.addPress(priLow, () => {
@@ -632,7 +911,6 @@ export class PanelSystem extends createSystem({
       });
     }
 
-    // Time Chips
     const timeSlots = [
       { id: 'chip-time-9', minute: 9 * 60 },
       { id: 'chip-time-11', minute: 11 * 60 },
@@ -649,7 +927,6 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // Delete Button (2-tap confirm)
     const deleteBtn = asset.getElementById('btn-sheet-delete');
     if (deleteBtn) {
       this.addPress(deleteBtn, () => {
@@ -663,7 +940,6 @@ export class PanelSystem extends createSystem({
             this.updateEditSheetDisplay();
           }, 5000);
         } else {
-          // Second tap: delete
           if (this.editingTaskId) {
             const taskToDelete = this.tasks.find((t) => t.id === this.editingTaskId);
             this.tasks = this.tasks.filter((t) => t.id !== this.editingTaskId);
@@ -674,12 +950,10 @@ export class PanelSystem extends createSystem({
       });
     }
 
-    // Save Button
     const saveBtn = asset.getElementById('btn-sheet-save');
     if (saveBtn) {
       this.addPress(saveBtn, () => {
         if (this.editingTaskId) {
-          // Edit existing
           const t = this.tasks.find((x) => x.id === this.editingTaskId);
           if (t) {
             t.title = this.editDraftTitle;
@@ -689,7 +963,6 @@ export class PanelSystem extends createSystem({
           }
           this.saveTasks(true, `Updated "${this.editDraftTitle}"`);
         } else {
-          // New Task
           const newTask: GlassTask = {
             id: `task-${Date.now()}`,
             title: this.editDraftTitle,
@@ -761,41 +1034,12 @@ export class PanelSystem extends createSystem({
     if (delLbl) {
       setText(delLbl, this.deleteTapCount === 1 ? 'Confirm Delete?' : 'Delete');
     }
-
-    const delBtn = asset.getElementById('btn-sheet-delete') as any;
-    if (delBtn && typeof delBtn.setProperties === 'function') {
-      delBtn.setProperties({
-        backgroundColor: this.deleteTapCount === 1 ? 'rgba(239, 68, 68, 0.65)' : 'rgba(239, 68, 68, 0.20)',
-        borderColor: this.deleteTapCount === 1 ? '#EF4444' : 'rgba(239, 68, 68, 0.50)',
-      });
-    }
-
-    // Update priority button highlights
-    const priLow = asset.getElementById('btn-pri-low') as any;
-    const priMed = asset.getElementById('btn-pri-med') as any;
-    const priHigh = asset.getElementById('btn-pri-high') as any;
-    if (priLow && typeof priLow.setProperties === 'function') {
-      priLow.setProperties({
-        backgroundColor: this.editDraftPriority === 'low' ? 'rgba(59, 130, 246, 0.60)' : 'rgba(59, 130, 246, 0.20)',
-      });
-    }
-    if (priMed && typeof priMed.setProperties === 'function') {
-      priMed.setProperties({
-        backgroundColor: this.editDraftPriority === 'medium' ? 'rgba(245, 158, 11, 0.60)' : 'rgba(245, 158, 11, 0.20)',
-      });
-    }
-    if (priHigh && typeof priHigh.setProperties === 'function') {
-      priHigh.setProperties({
-        backgroundColor: this.editDraftPriority === 'high' ? 'rgba(239, 68, 68, 0.60)' : 'rgba(239, 68, 68, 0.20)',
-      });
-    }
   }
 
   // --------------------------------------------------------------------------
   // Update Loop & Periodic Ticks
   // --------------------------------------------------------------------------
   private tickSecond() {
-    // 1. Live dynamic Clock & Date check with real Date()
     const now = new Date();
     const currentMinute = now.getHours() * 60 + now.getMinutes();
     if (currentMinute !== this.lastClockMinute) {
@@ -803,13 +1047,14 @@ export class PanelSystem extends createSystem({
       this.updateClockAndGreeting(now);
     }
 
-    // 2. Focus countdown
     if (this.focusRunning && this.focusRemainingSeconds > 0) {
       this.focusRemainingSeconds--;
       if (this.focusRemainingSeconds === 0) {
         this.focusRunning = false;
+        this.focusSessionsCompleted++;
         this.gardenPoints += 30;
-        this.setPipSpeech('Sprint completed! Awesome deep focus session. +30 points!');
+        this.setPipSpeech('Sprint completed! Awesome deep focus session. +30 XP!');
+        this.triggerPipEmote('celebrate');
       }
       this.updateFocusDisplay();
     }
@@ -825,14 +1070,18 @@ export class PanelSystem extends createSystem({
     if (timeEl) setText(timeEl, clock.timeFormatted);
     if (dateEl) setText(dateEl, clock.dateFormatted);
 
-    const greeting = generateGreeting(now, 'Madhavan');
+    // Strictly anonymous greeting (NO user name!)
+    const greeting = generateGreeting(now, '', this.tasks);
     const greetEl = hubAsset.getElementById('hub-greeting-text') as any;
     if (greetEl) setText(greetEl, greeting.greeting);
+
+    const summaryEl = hubAsset.getElementById('hub-task-summary') as any;
+    if (summaryEl) setText(summaryEl, greeting.subtitle);
   }
 
   private updateFocusDisplay() {
-    const focusAsset = this.getAsset('panel-right-focus');
-    if (!focusAsset) return;
+    const hubAsset = this.getAsset('panel-hub');
+    if (!hubAsset) return;
 
     const ring = calculateFocusRing(
       this.focusRemainingSeconds,
@@ -841,21 +1090,17 @@ export class PanelSystem extends createSystem({
       this.focusRunning,
     );
 
-    const timeEl = focusAsset.getElementById('focus-countdown') as any;
+    const timeEl = hubAsset.getElementById('hub-focus-time') as any;
     if (timeEl) setText(timeEl, ring.timeFormatted);
 
-    const modeEl = focusAsset.getElementById('focus-mode-label') as any;
+    const modeEl = hubAsset.getElementById('hub-focus-mode') as any;
     if (modeEl) setText(modeEl, ring.modeLabel);
 
-    const playLbl = focusAsset.getElementById('focus-play-label') as any;
-    if (playLbl) setText(playLbl, this.focusRunning ? '||' : '>');
+    const playIcon = hubAsset.getElementById('hub-focus-play-icon') as any;
+    if (playIcon) setText(playIcon, this.focusRunning ? '⏸' : '▶');
 
-    const playBtn = focusAsset.getElementById('btn-focus-play-pause') as any;
-    if (playBtn && typeof playBtn.setProperties === 'function') {
-      playBtn.setProperties({
-        backgroundColor: this.focusRunning ? '#22C55E' : '#7C5CFF',
-      });
-    }
+    const sessionsEl = hubAsset.getElementById('hub-focus-sessions-count') as any;
+    if (sessionsEl) setText(sessionsEl, `⏱ ${this.focusSessionsCompleted}/8 Sessions Today`);
   }
 
   public refreshAllUI() {
@@ -863,38 +1108,65 @@ export class PanelSystem extends createSystem({
     this.updateFocusDisplay();
     this.refreshTasksPanelUI();
     this.refreshHubPanelUI();
+    this.refreshPipPanelUI();
+    this.refreshFocusPanelUI();
   }
 
   private refreshTasksPanelUI() {
     const asset = this.getAsset('panel-left-tasks');
     if (!asset) return;
 
-    const rows = tasksToRowViewModels(this.tasks);
-
-    const activeCount = rows.filter((r) => !r.isCompleted).length;
-    const countBadge = asset.getElementById('tasks-count-badge') as any;
-    if (countBadge) setText(countBadge, `${activeCount} Active`);
-
-    for (let i = 0; i < 4; i++) {
-      const row = rows[i];
-      const titleEl = asset.getElementById(`task-title-${i}`) as any;
-      const timeEl = asset.getElementById(`task-time-${i}`) as any;
-      const pillText = asset.getElementById(`task-pill-text-${i}`) as any;
-      const chkLbl = asset.getElementById(`task-chk-lbl-${i}`) as any;
-      const chkBtn = asset.getElementById(`task-chk-${i}`) as any;
-
-      if (row) {
-        if (titleEl) setText(titleEl, row.title);
-        if (timeEl) setText(timeEl, row.scheduledTimeFormatted || row.durationFormatted);
-        if (pillText) setText(pillText, row.priorityLabel);
-        if (chkLbl) setText(chkLbl, row.isCompleted ? '✓' : '');
-        if (chkBtn && typeof chkBtn.setProperties === 'function') {
-          chkBtn.setProperties({
-            backgroundColor: row.isCompleted ? 'rgba(34, 197, 94, 0.35)' : 'rgba(255, 255, 255, 0.05)',
-            borderColor: row.isCompleted ? '#22C55E' : 'rgba(255, 255, 255, 0.40)',
-          });
-        }
+    // Mini Calendar Days Highlight
+    for (let i = 0; i < 7; i++) {
+      const day = this.calendarDays[i];
+      const dayBtn = asset.getElementById(`cal-day-${i}`) as any;
+      const dayTxt = asset.getElementById(`cal-date-text-${i}`) as any;
+      if (day && dayTxt) {
+        setText(dayTxt, day.dayNumber);
       }
+      if (dayBtn && typeof dayBtn.setProperties === 'function') {
+        dayBtn.setProperties({
+          backgroundColor: day.isSelected ? '#3B82F6' : 'transparent',
+        });
+      }
+    }
+
+    // Agenda Items
+    const completedCount = this.agendaItems.filter((a) => a.isCompleted).length;
+    const badgeEl = asset.getElementById('agenda-count-badge') as any;
+    if (badgeEl) setText(badgeEl, `${completedCount}/${this.agendaItems.length} done`);
+
+    for (let i = 0; i < this.agendaItems.length; i++) {
+      const item = this.agendaItems[i];
+      const chkLbl = asset.getElementById(`agenda-chk-lbl-${i}`) as any;
+      const chkBtn = asset.getElementById(`agenda-chk-${i}`) as any;
+      const nameLbl = asset.getElementById(`agenda-name-${i}`) as any;
+
+      if (chkLbl) setText(chkLbl, item.isCompleted ? '✓' : '');
+      if (chkBtn && typeof chkBtn.setProperties === 'function') {
+        chkBtn.setProperties({
+          backgroundColor: item.isCompleted ? '#22C55E' : 'rgba(255, 255, 255, 0.05)',
+          borderColor: item.isCompleted ? '#22C55E' : 'rgba(255, 255, 255, 0.35)',
+        });
+      }
+      if (nameLbl && typeof nameLbl.setProperties === 'function') {
+        nameLbl.setProperties({
+          color: item.isCompleted ? 'rgba(255, 255, 255, 0.45)' : '#FFFFFF',
+        });
+      }
+    }
+
+    // Routines Badges
+    const morning = this.routines.find((r) => r.id === 'routine-morning');
+    const morningBadge = asset.getElementById('routine-morning-badge') as any;
+    if (morning && morningBadge) {
+      setText(morningBadge, `✓ ${morning.completedCount}/${morning.totalCount}`);
+    }
+
+    const winddown = this.routines.find((r) => r.id === 'routine-winddown');
+    const winddownBadge = asset.getElementById('routine-winddown-badge') as any;
+    if (winddown && winddownBadge) {
+      setText(winddownBadge, `${winddown.completedCount}/${winddown.totalCount}`);
     }
   }
 
@@ -902,43 +1174,30 @@ export class PanelSystem extends createSystem({
     const asset = this.getAsset('panel-hub');
     if (!asset) return;
 
-    // 1. Workload Donut
+    // 1. Workload Donut & Legend
     const donut = calculateWorkloadDonut(this.tasks);
     const donutPct = asset.getElementById('donut-percentage-text') as any;
     if (donutPct) setText(donutPct, `${donut.percentage}%`);
 
-    const schedText = asset.getElementById('legend-scheduled-text') as any;
-    if (schedText) setText(schedText, `Scheduled: ${donut.scheduledFormatted}`);
+    const plannedText = asset.getElementById('legend-planned-text') as any;
+    if (plannedText) setText(plannedText, `Planned ${donut.scheduledFormatted}`);
 
     const remText = asset.getElementById('legend-remaining-text') as any;
-    if (remText) setText(remText, `Remaining: ${donut.remainingFormatted}`);
+    if (remText) setText(remText, `Remaining ${donut.remainingFormatted}`);
 
-    // 2. Garden Progress
-    const garden = calculateGardenProgress(this.gardenPoints);
-    const gardenLvl = asset.getElementById('garden-level-text') as any;
-    if (gardenLvl) setText(gardenLvl, `Level ${garden.level}`);
-
-    const gardenSub = asset.getElementById('nav-garden-sub') as any;
-    if (gardenSub) setText(gardenSub, `Level ${garden.level}`);
-
-    const gardenBar = asset.getElementById('garden-progress-bar-fill') as any;
-    if (gardenBar) {
-      gardenBar.style = gardenBar.style || {};
-      gardenBar.style.width = `${garden.progressPercent}%`;
-      if (typeof gardenBar.setProperties === 'function') {
-        gardenBar.setProperties({ width: `${garden.progressPercent}%` });
-      }
+    const insightText = asset.getElementById('workload-insight-text') as any;
+    if (insightText) {
+      setText(
+        insightText,
+        donut.isOverloaded
+          ? '⚠️ Overloaded! Reschedule non-critical tasks.'
+          : "💡 You're on track! ~2h free after 7 PM.",
+      );
     }
 
-    // 3. Schedule Summary Capsule
+    // 2. Schedule Blocks & Timeline
     const schedBlocks = tasksToScheduleBlocks(this.tasks);
-    const summaryCapsule = asset.getElementById('schedule-summary-capsule') as any;
-    if (summaryCapsule) {
-      setText(summaryCapsule, `${donut.scheduledFormatted} planned of 8h`);
-    }
-
-    // 4. Update blocks
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
       const block = schedBlocks[i];
       const blockTitleEl = asset.getElementById(`block-title-${i}`) as any;
       const blockTimeEl = asset.getElementById(`block-time-${i}`) as any;
@@ -947,15 +1206,81 @@ export class PanelSystem extends createSystem({
         if (blockTimeEl) setText(blockTimeEl, block.timeRangeFormatted);
       }
     }
+
+    // 3. Bottom Card 1: Tasks Filter & Rows
+    const filteredTasks = this.tasks.filter((t) => {
+      if (this.taskFilter === 'all') return true;
+      return t.priority === this.taskFilter;
+    });
+
+    const tasksCount = asset.getElementById('hub-tasks-count') as any;
+    if (tasksCount) setText(tasksCount, `Tasks (${this.tasks.length})`);
+
+    for (let i = 0; i < 4; i++) {
+      const task = filteredTasks[i];
+      const titleEl = asset.getElementById(`hub-task-title-${i}`) as any;
+      const chkMark = asset.getElementById(`hub-chk-mark-${i}`) as any;
+      const chkBox = asset.getElementById(`hub-chk-box-${i}`) as any;
+
+      if (task) {
+        if (titleEl) setText(titleEl, task.title);
+        const isDone = task.status === 'completed';
+        if (chkMark) setText(chkMark, isDone ? '✓' : '');
+        if (chkBox && typeof chkBox.setProperties === 'function') {
+          chkBox.setProperties({
+            backgroundColor: isDone ? '#22C55E' : 'transparent',
+            borderColor: isDone ? '#22C55E' : 'rgba(255, 255, 255, 0.35)',
+          });
+        }
+      }
+    }
+  }
+
+  private refreshPipPanelUI() {
+    const asset = this.getAsset('panel-right-pip');
+    if (!asset) return;
+
+    // Garden Progress
+    const garden = calculateGardenProgress(this.gardenPoints);
+    const gardenLvl = asset.getElementById('garden-level-text') as any;
+    if (gardenLvl) setText(gardenLvl, `Level ${garden.level} 🌱`);
+
+    const gardenXp = asset.getElementById('garden-xp-text') as any;
+    if (gardenXp) setText(gardenXp, `${this.gardenPoints} / 1,000 XP`);
+
+    const gardenBar = asset.getElementById('garden-progress-bar-fill') as any;
+    if (gardenBar && typeof gardenBar.setProperties === 'function') {
+      const pct = Math.min(100, Math.round((this.gardenPoints / 1000) * 100));
+      gardenBar.setProperties({ width: `${pct}%` });
+    }
+
+    // Voice Mic state
+    const micBtn = asset.getElementById('btn-pip-mic') as any;
+    if (micBtn && typeof micBtn.setProperties === 'function') {
+      micBtn.setProperties({
+        backgroundColor: this.voiceListening ? '#EF4444' : 'rgba(255, 255, 255, 0.08)',
+        borderColor: this.voiceListening ? '#EF4444' : 'rgba(255, 255, 255, 0.18)',
+      });
+    }
+  }
+
+  private refreshFocusPanelUI() {
+    const asset = this.getAsset('panel-right-focus');
+    if (!asset) return;
+
+    // Habits counts
+    for (let i = 0; i < this.habits.length; i++) {
+      const countEl = asset.getElementById(`habit-count-${i}`) as any;
+      if (countEl) setText(countEl, `${this.habits[i].completedCount}/7`);
+    }
   }
 
   update(time: number, _delta: number) {
-    // 1. Dynamically bind panels as soon as UIKitML elements are mounted in DOM
     if (!this.isBound) {
       this.bindPanels();
     }
 
-    // 2. Zero per-frame allocations: update Pip robot head bobbing
+    // Pip robot head gentle bobbing (zero per-frame allocations)
     if (this.pipRig && this.pipRig.head) {
       const bob = Math.sin(time * 0.003) * 0.006;
       this.pipRig.head.position.y = 0.05 + bob;

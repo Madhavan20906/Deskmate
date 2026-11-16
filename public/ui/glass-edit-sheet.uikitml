@@ -32,6 +32,18 @@
       padding-bottom: 4px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.10);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-close:hover {
+      background-color: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.40);
+    }
+
+    .btn-close:active {
+      background-color: rgba(124, 92, 255, 0.35);
+      border-color: #A78BFA;
     }
 
     .btn-close-text {
@@ -64,6 +76,16 @@
       border-color: rgba(255, 255, 255, 0.15);
     }
 
+    .preset-chip:hover {
+      background-color: rgba(255, 255, 255, 0.20);
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .preset-chip:active {
+      background-color: rgba(124, 92, 255, 0.35);
+      border-color: #A78BFA;
+    }
+
     .preset-text {
       font-size: 12px;
       font-weight: 600;
@@ -88,8 +110,20 @@
       height: 36px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.12);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.20);
       align-items: center;
       justify-content: center;
+    }
+
+    .stepper-btn:hover {
+      background-color: rgba(255, 255, 255, 0.28);
+      border-color: #FFFFFF;
+    }
+
+    .stepper-btn:active {
+      background-color: rgba(124, 92, 255, 0.50);
+      border-color: #A78BFA;
     }
 
     .stepper-text {
@@ -118,6 +152,16 @@
       padding-bottom: 6px;
       border-radius: 999px;
       border-width: 1px;
+    }
+
+    .pri-toggle-btn:hover {
+      border-width: 2px;
+      border-color: #FFFFFF;
+    }
+
+    .pri-toggle-btn:active {
+      border-width: 2px;
+      border-color: #C4B5FD;
     }
 
     .pri-low {
@@ -153,6 +197,18 @@
       padding-bottom: 5px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .time-chip:hover {
+      background-color: rgba(255, 255, 255, 0.20);
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .time-chip:active {
+      background-color: rgba(124, 92, 255, 0.35);
+      border-color: #A78BFA;
     }
 
     .sheet-footer {
@@ -175,6 +231,16 @@
       justify-content: center;
     }
 
+    .btn-delete:hover {
+      background-color: rgba(239, 68, 68, 0.40);
+      border-color: #F87171;
+    }
+
+    .btn-delete:active {
+      background-color: rgba(239, 68, 68, 0.65);
+      border-color: #FFFFFF;
+    }
+
     .btn-delete-text {
       font-size: 13px;
       font-weight: 700;
@@ -186,8 +252,22 @@
       height: 42px;
       border-radius: 999px;
       background-color: #7C5CFF;
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.25);
       align-items: center;
       justify-content: center;
+    }
+
+    .btn-save:hover {
+      background-color: #906ffa;
+      border-color: #FFFFFF;
+      border-width: 2px;
+    }
+
+    .btn-save:active {
+      background-color: #633ef5;
+      border-color: #C4B5FD;
+      border-width: 2px;
     }
 
     .btn-save-text {

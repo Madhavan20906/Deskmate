@@ -84,8 +84,63 @@ export interface GardenProgressViewModel {
 export interface GreetingViewModel {
   greeting: string;
   subtitle: string;
-  period: 'morning' | 'afternoon' | 'evening';
+  period: 'morning' | 'afternoon' | 'evening' | 'night';
   userName: string;
+}
+
+export interface WeatherData {
+  tempC: number;
+  tempF: number;
+  city: string;
+  condition: string;
+  isCelsius: boolean;
+}
+
+export interface CalendarDayViewModel {
+  dayOfWeek: string;
+  dayNumber: number;
+  isSelected: boolean;
+  isToday: boolean;
+}
+
+export interface AgendaItemViewModel {
+  id: string;
+  timeFormatted: string;
+  title: string;
+  category: 'assignment' | 'api' | 'meeting' | 'research' | 'health';
+  isCompleted: boolean;
+}
+
+export interface RoutineItem {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+}
+
+export interface RoutineGroup {
+  id: string;
+  title: string;
+  icon: string;
+  completedCount: number;
+  totalCount: number;
+  items: RoutineItem[];
+}
+
+export interface HabitItem {
+  id: string;
+  title: string;
+  icon: string;
+  completedCount: number;
+  totalDays: number;
+  dots: boolean[];
+}
+
+export interface UpcomingDeadline {
+  id: string;
+  title: string;
+  dateFormatted: string;
+  icon: string;
+  color: string;
 }
 
 export interface ClockViewModel {
@@ -111,6 +166,71 @@ export interface FocusRingViewModel {
   modeLabel: string; // "Pomodoro"
   isRunning: boolean;
 }
+
+export const SEED_WEATHER: WeatherData = {
+  tempC: 28,
+  tempF: 82,
+  city: 'Chennai',
+  condition: 'Partly Cloudy',
+  isCelsius: true,
+};
+
+export const SEED_CALENDAR_DAYS: CalendarDayViewModel[] = [
+  { dayOfWeek: 'Sun', dayNumber: 16, isSelected: false, isToday: false },
+  { dayOfWeek: 'Mon', dayNumber: 17, isSelected: false, isToday: false },
+  { dayOfWeek: 'Tue', dayNumber: 18, isSelected: true, isToday: true },
+  { dayOfWeek: 'Wed', dayNumber: 19, isSelected: false, isToday: false },
+  { dayOfWeek: 'Thu', dayNumber: 20, isSelected: false, isToday: false },
+  { dayOfWeek: 'Fri', dayNumber: 21, isSelected: false, isToday: false },
+  { dayOfWeek: 'Sat', dayNumber: 22, isSelected: false, isToday: false },
+];
+
+export const SEED_AGENDA_ITEMS: AgendaItemViewModel[] = [
+  { id: 'agenda-1', timeFormatted: '9:00 AM', title: 'ML Assignment', category: 'assignment', isCompleted: true },
+  { id: 'agenda-2', timeFormatted: '11:00 AM', title: 'Implement API', category: 'api', isCompleted: false },
+  { id: 'agenda-3', timeFormatted: '2:00 PM', title: 'Team Meeting', category: 'meeting', isCompleted: false },
+  { id: 'agenda-4', timeFormatted: '3:30 PM', title: 'Research Paper', category: 'research', isCompleted: false },
+  { id: 'agenda-5', timeFormatted: '5:00 PM', title: 'Gym / Break', category: 'health', isCompleted: false },
+];
+
+export const SEED_ROUTINES: RoutineGroup[] = [
+  {
+    id: 'routine-morning',
+    title: 'Morning Routine',
+    icon: '☀️',
+    completedCount: 3,
+    totalCount: 3,
+    items: [
+      { id: 'm-1', title: 'Hydrate & 5m Stretch', isCompleted: true },
+      { id: 'm-2', title: 'Review Top 3 Goals', isCompleted: true },
+      { id: 'm-3', title: 'Deep Work Prep', isCompleted: true },
+    ],
+  },
+  {
+    id: 'routine-winddown',
+    title: 'Wind-down Routine',
+    icon: '🌙',
+    completedCount: 0,
+    totalCount: 3,
+    items: [
+      { id: 'w-1', title: 'Clear Inbox & Tabs', isCompleted: false },
+      { id: 'w-2', title: 'Log Daily Learnings', isCompleted: false },
+      { id: 'w-3', title: 'Plan Tomorrow', isCompleted: false },
+    ],
+  },
+];
+
+export const SEED_HABITS: HabitItem[] = [
+  { id: 'habit-plan', title: 'Plan my day', icon: '📌', completedCount: 7, totalDays: 7, dots: [true, true, true, true, true, true, true] },
+  { id: 'habit-focus', title: 'Focus (>=25m)', icon: '⏱', completedCount: 6, totalDays: 7, dots: [true, true, true, true, true, true, false] },
+  { id: 'habit-distraction', title: 'No distractions', icon: '💥', completedCount: 5, totalDays: 7, dots: [true, true, true, true, true, false, false] },
+];
+
+export const SEED_DEADLINES: UpcomingDeadline[] = [
+  { id: 'dl-1', title: 'Project Submission', dateFormatted: 'Fri, Nov 21', icon: '📅', color: '#EF4444' },
+  { id: 'dl-2', title: 'Research Paper (Draft)', dateFormatted: 'Sun, Nov 23', icon: '📙', color: '#F59E0B' },
+  { id: 'dl-3', title: 'API Integration', dateFormatted: 'Mon, Nov 24', icon: '💻', color: '#3B82F6' },
+];
 
 export const SEED_TASKS: GlassTask[] = [
   {
@@ -346,22 +466,42 @@ export function calculateGardenProgress(points: number, streakDays = 1): GardenP
   };
 }
 
-export function generateGreeting(date: Date, userName = 'Madhavan'): GreetingViewModel {
-  const hour = date.getHours();
-  let greeting = `Good Morning, ${userName}`;
-  let period: 'morning' | 'afternoon' | 'evening' = 'morning';
+export function generateGreetingSubtitle(tasks: GlassTask[] = SEED_TASKS): string {
+  const count = tasks.length;
+  const highPriorityCount = tasks.filter((t) => t.priority === 'high').length;
+  const totalMinutes = tasks.reduce((sum, t) => sum + (t.status !== 'completed' ? t.estimatedMinutes : 0), 0);
+  const plannedHours = formatMinutesDuration(totalMinutes);
+  return `You have ${count} tasks today • ${highPriorityCount} high priority • ${plannedHours} planned`;
+}
 
-  if (hour >= 12 && hour < 17) {
-    greeting = `Good Afternoon, ${userName}`;
+export function generateGreeting(
+  date: Date,
+  userName = '',
+  tasks: GlassTask[] = SEED_TASKS,
+): GreetingViewModel {
+  const hour = date.getHours();
+  let greeting: string;
+  let period: 'morning' | 'afternoon' | 'evening' | 'night';
+
+  if (hour >= 5 && hour < 12) {
+    greeting = userName ? `Good Morning, ${userName}` : 'Good Morning 👋';
+    period = 'morning';
+  } else if (hour >= 12 && hour < 17) {
+    greeting = userName ? `Good Afternoon, ${userName}` : 'Good Afternoon 👋';
     period = 'afternoon';
-  } else if (hour >= 17 || hour < 5) {
-    greeting = `Good Evening, ${userName}`;
+  } else if (hour >= 17 && hour < 22) {
+    greeting = userName ? `Good Evening, ${userName}` : 'Good Evening 👋';
     period = 'evening';
+  } else {
+    greeting = userName ? `Good Night, ${userName}` : 'Good Night 👋';
+    period = 'night';
   }
+
+  const subtitle = generateGreetingSubtitle(tasks);
 
   return {
     greeting,
-    subtitle: "Let's plan, focus and get things done today.",
+    subtitle,
     period,
     userName,
   };

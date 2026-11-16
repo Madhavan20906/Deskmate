@@ -3,14 +3,13 @@
     .glass-focus-panel {
       flex-direction: column;
       width: 340px;
-      height: 250px;
-      padding: 14px;
+      height: 330px;
+      padding: 12px;
       border-radius: 24px;
-      background-color: rgba(11, 16, 32, 0.78);
+      background-color: rgba(11, 16, 32, 0.82);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.16);
       gap: 8px;
-      align-items: center;
     }
 
     .panel-handle {
@@ -19,7 +18,7 @@
       align-items: center;
       width: 100%;
       height: 6px;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
 
     .handle-bar {
@@ -29,114 +28,217 @@
       background-color: rgba(255, 255, 255, 0.28);
     }
 
-    .focus-header {
+    /* Habits & Streaks Card */
+    .habits-card {
+      flex-direction: column;
+      width: 100%;
+      padding: 10px;
+      border-radius: 16px;
+      background-color: rgba(18, 25, 48, 0.85);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.10);
+      gap: 6px;
+    }
+
+    .habits-header-row {
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
       width: 100%;
     }
 
-    .focus-title {
-      font-size: 17px;
+    .habits-title {
+      font-size: 13px;
       font-weight: 700;
       color: #FFFFFF;
     }
 
-    .focus-mode-badge {
+    .streak-badge {
+      flex-direction: row;
+      align-items: center;
+      gap: 4px;
       padding-left: 8px;
       padding-right: 8px;
-      padding-top: 3px;
-      padding-bottom: 3px;
+      padding-top: 2px;
+      padding-bottom: 2px;
       border-radius: 999px;
-      background-color: rgba(124, 92, 255, 0.20);
+      background-color: rgba(245, 158, 11, 0.20);
       border-width: 1px;
-      border-color: rgba(124, 92, 255, 0.50);
+      border-color: rgba(245, 158, 11, 0.50);
     }
 
-    .focus-mode-text {
-      font-size: 11px;
+    .streak-text {
+      font-size: 10px;
       font-weight: 700;
-      color: #A78BFA;
+      color: #FBBF24;
     }
 
-    .focus-center-row {
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
+    .habits-list {
+      flex-direction: column;
+      gap: 5px;
       width: 100%;
+    }
+
+    .habit-row-btn {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 8px;
+      padding-right: 8px;
       padding-top: 4px;
       padding-bottom: 4px;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.04);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.08);
+      width: 100%;
     }
 
-    .focus-ring-container {
-      width: 100px;
-      height: 100px;
-      border-radius: 999px;
-      border-width: 5px;
-      border-color: #7C5CFF;
-      background-color: rgba(124, 92, 255, 0.10);
+    .habit-row-btn:hover {
+      background-color: rgba(255, 255, 255, 0.10);
+      border-color: rgba(255, 255, 255, 0.20);
+    }
+
+    .habit-row-btn:active {
+      background-color: rgba(124, 92, 255, 0.25);
+    }
+
+    .habit-left {
+      flex-direction: row;
       align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 1px;
+      gap: 6px;
     }
 
-    .focus-time-display {
-      font-size: 26px;
-      font-weight: 800;
-      color: #FFFFFF;
-      line-height: 28px;
+    .habit-icon {
+      font-size: 11px;
     }
 
-    .focus-sublabel {
+    .habit-name {
       font-size: 10px;
       font-weight: 600;
-      color: rgba(255, 255, 255, 0.65);
-    }
-
-    .play-pause-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 999px;
-      background-color: #7C5CFF;
-      align-items: center;
-      justify-content: center;
-      padding: 0px;
-    }
-
-    .play-pause-icon {
-      font-size: 18px;
-      font-weight: 800;
       color: #FFFFFF;
     }
 
-    .focus-chips-row {
+    .habit-dots-row {
       flex-direction: row;
-      gap: 6px;
-      width: 100%;
-      justify-content: center;
       align-items: center;
-      padding-top: 2px;
+      gap: 4px;
     }
 
-    .focus-chip {
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 4px;
-      padding-bottom: 4px;
+    .habit-dot {
+      width: 7px;
+      height: 7px;
       border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.08);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.15);
-      align-items: center;
-      justify-content: center;
     }
 
-    .focus-chip-text {
-      font-size: 11px;
+    .dot-done {
+      background-color: #22C55E;
+    }
+
+    .dot-pending {
+      background-color: rgba(255, 255, 255, 0.20);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.40);
+    }
+
+    .habit-score-text {
+      font-size: 9px;
       font-weight: 600;
-      color: #E2E8F0;
+      color: rgba(255, 255, 255, 0.65);
+      margin-left: 4px;
+    }
+
+    /* Upcoming & Deadlines Card */
+    .deadlines-card {
+      flex-direction: column;
+      width: 100%;
+      padding: 10px;
+      border-radius: 16px;
+      background-color: rgba(18, 25, 48, 0.85);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.10);
+      gap: 6px;
+    }
+
+    .deadlines-header-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .deadlines-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .deadlines-arrow {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.50);
+    }
+
+    .deadlines-list {
+      flex-direction: column;
+      gap: 5px;
+      width: 100%;
+    }
+
+    .deadline-item-btn {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.04);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.08);
+      width: 100%;
+    }
+
+    .deadline-item-btn:hover {
+      background-color: rgba(255, 255, 255, 0.10);
+      border-color: rgba(255, 255, 255, 0.20);
+    }
+
+    .deadline-item-btn:active {
+      background-color: rgba(124, 92, 255, 0.25);
+    }
+
+    .deadline-left {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .deadline-icon {
+      font-size: 11px;
+    }
+
+    .deadline-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    .deadline-date-badge {
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .date-badge-red {
+      color: #F87171;
+    }
+
+    .date-badge-amber {
+      color: #FBBF24;
+    }
+
+    .date-badge-blue {
+      color: #60A5FA;
     }
   </style>
 
@@ -144,36 +246,100 @@
     <div class="handle-bar"></div>
   </div>
 
-  <div class="focus-header">
-    <span class="focus-title">Focus</span>
-    <div class="focus-mode-badge">
-      <span id="focus-mode-label" class="focus-mode-text">Pomodoro</span>
+  <!-- Habits & Streaks -->
+  <div class="habits-card">
+    <div class="habits-header-row">
+      <span class="habits-title">Habits & Streaks</span>
+      <div class="streak-badge">
+        <span id="habit-streak-badge" class="streak-text">🔥 7 Day Streak</span>
+      </div>
+    </div>
+
+    <div class="habits-list">
+      <Button id="habit-row-0" class="habit-row-btn">
+        <div class="habit-left">
+          <span class="habit-icon">📌</span>
+          <ButtonLabel class="habit-name">Plan my day</ButtonLabel>
+        </div>
+        <div class="habit-dots-row">
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <span id="habit-count-0" class="habit-score-text">7/7</span>
+        </div>
+      </Button>
+
+      <Button id="habit-row-1" class="habit-row-btn">
+        <div class="habit-left">
+          <span class="habit-icon">⏱</span>
+          <ButtonLabel class="habit-name">Focus (≥25m)</ButtonLabel>
+        </div>
+        <div class="habit-dots-row">
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-pending"></div>
+          <span id="habit-count-1" class="habit-score-text">6/7</span>
+        </div>
+      </Button>
+
+      <Button id="habit-row-2" class="habit-row-btn">
+        <div class="habit-left">
+          <span class="habit-icon">💥</span>
+          <ButtonLabel class="habit-name">No distractions</ButtonLabel>
+        </div>
+        <div class="habit-dots-row">
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-done"></div>
+          <div class="habit-dot dot-pending"></div>
+          <div class="habit-dot dot-pending"></div>
+          <span id="habit-count-2" class="habit-score-text">5/7</span>
+        </div>
+      </Button>
     </div>
   </div>
 
-  <div class="focus-center-row">
-    <div class="focus-ring-container">
-      <span id="focus-countdown" class="focus-time-display">25:00</span>
-      <span class="focus-sublabel">Sprint 1 of 4</span>
+  <!-- Upcoming & Deadlines -->
+  <div class="deadlines-card">
+    <div class="deadlines-header-row">
+      <span class="deadlines-title">Upcoming & Deadlines</span>
+      <span class="deadlines-arrow">&gt;</span>
     </div>
 
-    <Button id="btn-focus-play-pause" class="play-pause-btn">
-      <ButtonLabel id="focus-play-label" class="play-pause-icon">&gt;</ButtonLabel>
-    </Button>
-  </div>
+    <div class="deadlines-list">
+      <Button id="deadline-row-0" class="deadline-item-btn">
+        <div class="deadline-left">
+          <span class="deadline-icon">📅</span>
+          <ButtonLabel class="deadline-title">Project Submission</ButtonLabel>
+        </div>
+        <span class="deadline-date-badge date-badge-red">Fri, Nov 21</span>
+      </Button>
 
-  <div class="focus-chips-row">
-    <Button id="chip-focus-minus5" class="focus-chip">
-      <ButtonLabel class="focus-chip-text">-5m</ButtonLabel>
-    </Button>
-    <Button id="chip-focus-plus5" class="focus-chip">
-      <ButtonLabel class="focus-chip-text">+5m</ButtonLabel>
-    </Button>
-    <Button id="chip-focus-reset" class="focus-chip">
-      <ButtonLabel class="focus-chip-text">Reset</ButtonLabel>
-    </Button>
-    <Button id="chip-focus-break" class="focus-chip">
-      <ButtonLabel class="focus-chip-text">Break</ButtonLabel>
-    </Button>
+      <Button id="deadline-row-1" class="deadline-item-btn">
+        <div class="deadline-left">
+          <span class="deadline-icon">📙</span>
+          <ButtonLabel class="deadline-title">Research Paper (Draft)</ButtonLabel>
+        </div>
+        <span class="deadline-date-badge date-badge-amber">Sun, Nov 23</span>
+      </Button>
+
+      <Button id="deadline-row-2" class="deadline-item-btn">
+        <div class="deadline-left">
+          <span class="deadline-icon">💻</span>
+          <ButtonLabel class="deadline-title">API Integration</ButtonLabel>
+        </div>
+        <span class="deadline-date-badge date-badge-blue">Mon, Nov 24</span>
+      </Button>
+    </div>
   </div>
 </Panel>

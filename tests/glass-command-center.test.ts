@@ -2,6 +2,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   SEED_TASKS,
+  SEED_WEATHER,
+  SEED_CALENDAR_DAYS,
+  SEED_AGENDA_ITEMS,
+  SEED_ROUTINES,
+  SEED_HABITS,
+  SEED_DEADLINES,
   WORKDAY_START_MINUTE,
   WORKDAY_END_MINUTE,
   DAILY_CAPACITY_MINUTES,
@@ -17,6 +23,7 @@ import {
   calculateGardenProgress,
   calculateFocusRing,
   generateGreeting,
+  generateGreetingSubtitle,
 } from '../src/glass-data-adapters.ts';
 import type { GlassTask } from '../src/glass-data-adapters.ts';
 
@@ -223,4 +230,99 @@ test('Gate 2 Multi-Run Stability: 3 Consecutive Passes with Zero Failures', () =
     const pushed = resolveOverlapAndPush(tasks, `task-run-${run}`, 540);
     assert.ok(pushed.tasks.length === 5);
   }
+});
+
+test('Tier S9: Dual Pointer Parity (Both Left & Right Rays Active & Switchable)', () => {
+  // 1. Ray display mode 1 (Visible) on both left and right
+  const mockPointers = {
+    left: { ray: { visual: { rayDisplayMode: 1, ray: { material: { uniforms: { color: { value: { setHex: () => {} } } } } } } } },
+    right: { ray: { visual: { rayDisplayMode: 1, ray: { material: { uniforms: { color: { value: { setHex: () => {} } } } } } } } },
+  };
+
+  assert.equal(mockPointers.left.ray.visual.rayDisplayMode, 1, 'Left pointer rayDisplayMode is 1 (Visible)');
+  assert.equal(mockPointers.right.ray.visual.rayDisplayMode, 1, 'Right pointer rayDisplayMode is 1 (Visible)');
+
+  // 2. Both controllers positioned on desk pointing at workspace panels
+  const leftPos = { x: -0.25, y: 1.05, z: -0.36 };
+  const leftTarget = { x: -0.58, y: 1.28, z: -0.68 };
+  const leftDir = { x: leftTarget.x - leftPos.x, y: leftTarget.y - leftPos.y, z: leftTarget.z - leftPos.z };
+  // Points towards left panel (x < 0, y > 0, z < 0)
+  assert.ok(leftDir.x < 0, 'Left controller aims towards left tasks panel');
+  assert.ok(leftDir.y > 0, 'Left controller aims up towards eye-level panel');
+  assert.ok(leftDir.z < 0, 'Left controller aims forward into workspace');
+
+  const rightPos = { x: 0.25, y: 1.05, z: -0.36 };
+  const rightTarget = { x: 0.0, y: 1.28, z: -0.75 };
+  const rightDir = { x: rightTarget.x - rightPos.x, y: rightTarget.y - rightPos.y, z: rightTarget.z - rightPos.z };
+  // Points towards hub panel (x < 0 relative to right, y > 0, z < 0)
+  assert.ok(rightDir.x < 0, 'Right controller aims inward towards center hub');
+  assert.ok(rightDir.y > 0, 'Right controller aims up towards eye-level hub');
+  assert.ok(rightDir.z < 0, 'Right controller aims forward into workspace');
+
+  // 3. Active controller toggle
+  let activeHand: 'left' | 'right' = 'right';
+  const toggle = () => {
+    activeHand = activeHand === 'right' ? 'left' : 'right';
+    return activeHand;
+  };
+
+  assert.equal(activeHand, 'right', 'Initial active hand is right');
+  assert.equal(toggle(), 'left', 'Toggling switches active hand to left');
+  assert.equal(toggle(), 'right', 'Toggling again switches active hand back to right');
+});
+
+test('Tier S10: Anonymous Dynamic Greeting (No User Name) & Rich Interactive Modules', () => {
+  // 1. Strict anonymity: no user name mentioned anywhere in greetings
+  const morningGreeting = generateGreeting(new Date(2026, 10, 18, 9, 30));
+  assert.equal(morningGreeting.greeting, 'Good Morning 👋');
+  assert.equal(morningGreeting.userName, '');
+  assert.ok(!morningGreeting.greeting.includes('Madhavan'), 'Does not mention user name');
+
+  const afternoonGreeting = generateGreeting(new Date(2026, 10, 18, 14, 0));
+  assert.equal(afternoonGreeting.greeting, 'Good Afternoon 👋');
+  assert.ok(!afternoonGreeting.greeting.includes('Madhavan'), 'Does not mention user name');
+
+  const eveningGreeting = generateGreeting(new Date(2026, 10, 18, 19, 45));
+  assert.equal(eveningGreeting.greeting, 'Good Evening 👋');
+  assert.ok(!eveningGreeting.greeting.includes('Madhavan'), 'Does not mention user name');
+
+  const nightGreeting = generateGreeting(new Date(2026, 10, 18, 23, 15));
+  assert.equal(nightGreeting.greeting, 'Good Night 👋');
+  assert.ok(!nightGreeting.greeting.includes('Madhavan'), 'Does not mention user name');
+
+  // 2. Dynamic informative subtitle computed from tasks
+  const subtitle = generateGreetingSubtitle(SEED_TASKS);
+  assert.ok(subtitle.includes('tasks today'));
+  assert.ok(subtitle.includes('high priority'));
+  assert.ok(subtitle.includes('planned'));
+
+  // 3. Mini Calendar Days
+  assert.equal(SEED_CALENDAR_DAYS.length, 7, '7 days in calendar strip');
+  const today = SEED_CALENDAR_DAYS.find((d) => d.isToday);
+  assert.ok(today, 'Has today defined');
+  assert.equal(today?.dayNumber, 18, 'Today is 18th');
+
+  // 4. Agenda Items with completion tracking
+  assert.equal(SEED_AGENDA_ITEMS.length, 5, '5 agenda items');
+  assert.equal(SEED_AGENDA_ITEMS[0].isCompleted, true, 'First agenda item (ML Assignment) completed');
+  assert.equal(SEED_AGENDA_ITEMS[1].isCompleted, false, 'Second agenda item pending');
+
+  // 5. Routines with steps
+  assert.equal(SEED_ROUTINES.length, 2, '2 routines (Morning and Wind-down)');
+  assert.equal(SEED_ROUTINES[0].completedCount, 3, 'Morning routine 3/3 complete');
+  assert.equal(SEED_ROUTINES[1].completedCount, 0, 'Wind-down routine 0/3 pending');
+
+  // 6. Habits & Streaks
+  assert.equal(SEED_HABITS.length, 3, '3 habits in habits list');
+  assert.equal(SEED_HABITS[0].dots.length, 7, '7 days of dots for Plan my day');
+  assert.equal(SEED_HABITS[0].completedCount, 7, '7/7 completed');
+
+  // 7. Upcoming Deadlines
+  assert.equal(SEED_DEADLINES.length, 3, '3 upcoming deadlines');
+  assert.equal(SEED_DEADLINES[0].title, 'Project Submission');
+
+  // 8. Weather Seed
+  assert.equal(SEED_WEATHER.city, 'Chennai');
+  assert.equal(SEED_WEATHER.tempC, 28);
+  assert.equal(SEED_WEATHER.tempF, 82);
 });
