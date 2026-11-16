@@ -296,7 +296,12 @@
         </div>
         <span class="pip-title">Pip</span>
       </div>
-      <span class="pip-tagline">Your Productivity Companion</span>
+      <Button id="btn-pip-back" class="pip-action-chip" style="display: none;">
+        <ButtonLabel class="pip-action-text">&lt; Back</ButtonLabel>
+      </Button>
+      <Button id="btn-zoom-pip" class="pip-action-chip">
+        <ButtonLabel class="pip-action-text">⛶ Zoom</ButtonLabel>
+      </Button>
     </div>
 
     <div class="pip-speech-bubble">

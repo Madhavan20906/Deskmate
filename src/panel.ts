@@ -9,9 +9,11 @@
  * - 5-step undo stack with 8s timer
  * - Procedural Pip 3D companion robot bob & expressions
  * - Task edit sheet with steppers, presets, priority toggle, and 2-tap delete confirmation
- * - 100% interactive controls across all modules (Mini Calendar, Agenda, Quick Add, Routines,
- *   Hub 8-tabs, Weather, Now marker, Schedule Day/Week/Month, Tasks Filter, Focus Timer,
- *   Workload Donut, Pip Smart Assistant, Habits & Streaks, Deadlines, Dock)
+ * - Section Zoom / Focus View: Clicking any section zooms it close (1.45x scale, eye-level)
+ *   with a prominent "◀ Back to Overview" button that restores the initial view without resetting any changes
+ * - Fully interactive controls: Tasks filter chips, row checkboxes, Edit buttons, Add Task,
+ *   Focus Session (+5m, -5m, Reset, Break, Play/Pause), Workload gauge, Schedule blocks,
+ *   Mini Calendar days, Routines, Habits dots, and Floating Dock.
  */
 
 import {
@@ -56,11 +58,6 @@ const STORAGE_KEY_TASKS = 'deskmate.tasks.v1';
 
 type NavTab = 'tasks' | 'schedule' | 'focus' | 'analytics' | 'garden' | 'routines' | 'notes' | 'goals';
 
-/**
- * Robust helper to set text on UIKitML elements.
- * In PMNDRS UIKit, text is a WebGL mesh updated via setProperties({ text }).
- * Fallbacks to textContent and innerText are preserved for DOM compatibility.
- */
 function setText(element: any, text: string | number) {
   if (!element) return;
   const str = String(text);
@@ -132,6 +129,9 @@ export class PanelSystem extends createSystem({
   private voiceListening = false;
   private hasUnreadNotification = true;
 
+  // Section Zoom State
+  private zoomedPanelId: string | null = null;
+
   // Active Edit Task State
   private editingTaskId: string | null = null;
   private editDraftTitle = 'New task';
@@ -154,13 +154,12 @@ export class PanelSystem extends createSystem({
 
     this.loadTasks();
 
-    // Start 1-second interval for clock check and focus countdown
+    // 1-second interval for clock check and focus countdown
     const interval = window.setInterval(() => {
       this.tickSecond();
     }, 1000);
     this.cleanupFuncs.push(() => window.clearInterval(interval));
 
-    // Bind entities when ready
     this.initPipRobotRig();
     this.bindPanels();
   }
@@ -168,13 +167,6 @@ export class PanelSystem extends createSystem({
   private lastElementPressTime = new WeakMap<any, number>();
   private lastHoverSoundTime = 0;
 
-  /**
-   * Universal press listener with 300ms debounce across both element and children.
-   * Handles BOTH hand tracking (fingertip poke / pointerdown)
-   * and controller ray (trigger select / click).
-   * Also binds to children (e.g. ButtonLabel) to prevent missed ray hits.
-   * Emits spatial hover hum on pointerenter and tactile pinch tick on click/pointerdown.
-   */
   private addPress(element: any, handler: () => void) {
     if (!element || typeof element.addEventListener !== 'function') return;
 
@@ -240,7 +232,6 @@ export class PanelSystem extends createSystem({
     } catch (err) {
       console.warn('[DeskMate] Could not load stored tasks, using seed data:', err);
     }
-    // Seed with reference data
     this.tasks = JSON.parse(JSON.stringify(SEED_TASKS));
     this.saveTasks(false);
   }
@@ -278,7 +269,6 @@ export class PanelSystem extends createSystem({
       setText(undoLabelEl, label);
     }
 
-    // Hide after 8 seconds
     this.undoTimer = window.setTimeout(() => {
       if (undoContainer) {
         undoContainer.style.display = 'none';
@@ -333,7 +323,7 @@ export class PanelSystem extends createSystem({
     const hubAsset = this.getAsset('panel-hub');
     const tasksAsset = this.getAsset('panel-left-tasks');
     if (!hubAsset?.getElementById('hub-time') || !tasksAsset?.getElementById('quick-add-task')) {
-      return; // DOM not ready yet; update() will bind as soon as elements mount
+      return;
     }
     this.isBound = true;
     this.bindTasksPanel();
@@ -345,13 +335,139 @@ export class PanelSystem extends createSystem({
   }
 
   // --------------------------------------------------------------------------
+  // Section Zoom / Focus View Mechanics
+  // --------------------------------------------------------------------------
+  public zoomSection(panelId: string, sectionTitle = 'Section View') {
+    this.zoomedPanelId = panelId;
+
+    const targetObj = this.world.getSceneObject(panelId);
+    if (targetObj) {
+      targetObj.position.set(0, 1.24, -0.44);
+      targetObj.rotation.set(0, 0, 0);
+      targetObj.scale.set(0.145, 0.145, 0.145);
+      targetObj.visible = true;
+    }
+
+    const allPanelIds = ['panel-left-tasks', 'panel-hub', 'panel-right-pip', 'panel-right-focus'];
+    for (const id of allPanelIds) {
+      if (id !== panelId) {
+        const obj = this.world.getSceneObject(id);
+        if (obj) {
+          obj.visible = false;
+        }
+      }
+    }
+
+    this.updateZoomBackButtons(panelId, sectionTitle, true);
+
+    if (this.soundEnabled && this.audio) {
+      this.audio.playPinchTick();
+    }
+    this.setPipSpeech(`Zoomed in on ${sectionTitle}. Click "◀ Back to Overview" anytime to return.`);
+  }
+
+  public resetZoom() {
+    const prevZoomed = this.zoomedPanelId;
+    this.zoomedPanelId = null;
+
+    const defaults: Record<string, { pos: [number, number, number]; rotDeg: [number, number, number]; scale: number }> = {
+      'panel-left-tasks': { pos: [-0.58, 1.28, -0.68], rotDeg: [0, 22, 0], scale: 0.10 },
+      'panel-hub': { pos: [0, 1.28, -0.72], rotDeg: [0, 0, 0], scale: 0.10 },
+      'panel-right-pip': { pos: [0.56, 1.45, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
+      'panel-right-focus': { pos: [0.56, 1.15, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
+    };
+
+    for (const [id, def] of Object.entries(defaults)) {
+      const obj = this.world.getSceneObject(id);
+      if (obj) {
+        obj.position.set(def.pos[0], def.pos[1], def.pos[2]);
+        obj.rotation.set(
+          (def.rotDeg[0] * Math.PI) / 180,
+          (def.rotDeg[1] * Math.PI) / 180,
+          (def.rotDeg[2] * Math.PI) / 180,
+        );
+        obj.scale.set(def.scale, def.scale, def.scale);
+        obj.visible = true;
+      }
+    }
+
+    this.updateZoomBackButtons(prevZoomed || '', '', false);
+
+    if (this.soundEnabled && this.audio) {
+      this.audio.playPinchTick();
+    }
+    this.setPipSpeech('Returned to full workspace overview. All changes are preserved.');
+  }
+
+  private updateZoomBackButtons(panelId: string, sectionTitle: string, isZoomed: boolean) {
+    const hubAsset = this.getAsset('panel-hub');
+    const tasksAsset = this.getAsset('panel-left-tasks');
+    const pipAsset = this.getAsset('panel-right-pip');
+    const focusAsset = this.getAsset('panel-right-focus');
+
+    const hubZoomBar = hubAsset?.getElementById('hub-zoom-bar') as any;
+    const zoomSectionLbl = hubAsset?.getElementById('zoom-section-label') as any;
+    if (hubZoomBar) {
+      const show = isZoomed && panelId === 'panel-hub';
+      hubZoomBar.style = hubZoomBar.style || {};
+      hubZoomBar.style.display = show ? 'flex' : 'none';
+      if (typeof hubZoomBar.setProperties === 'function') {
+        hubZoomBar.setProperties({ display: show ? 'flex' : 'none' });
+      }
+      if (zoomSectionLbl) {
+        setText(zoomSectionLbl, `Viewing: ${sectionTitle} (Zoomed)`);
+      }
+    }
+
+    const tasksBack = tasksAsset?.getElementById('btn-tasks-panel-back') as any;
+    if (tasksBack) {
+      const show = isZoomed && panelId === 'panel-left-tasks';
+      tasksBack.style = tasksBack.style || {};
+      tasksBack.style.display = show ? 'flex' : 'none';
+      if (typeof tasksBack.setProperties === 'function') {
+        tasksBack.setProperties({ display: show ? 'flex' : 'none' });
+      }
+    }
+
+    const pipBack = pipAsset?.getElementById('btn-pip-back') as any;
+    if (pipBack) {
+      const show = isZoomed && panelId === 'panel-right-pip';
+      pipBack.style = pipBack.style || {};
+      pipBack.style.display = show ? 'flex' : 'none';
+      if (typeof pipBack.setProperties === 'function') {
+        pipBack.setProperties({ display: show ? 'flex' : 'none' });
+      }
+    }
+
+    const habitsBack = focusAsset?.getElementById('btn-habits-back') as any;
+    if (habitsBack) {
+      const show = isZoomed && panelId === 'panel-right-focus';
+      habitsBack.style = habitsBack.style || {};
+      habitsBack.style.display = show ? 'flex' : 'none';
+      if (typeof habitsBack.setProperties === 'function') {
+        habitsBack.setProperties({ display: show ? 'flex' : 'none' });
+      }
+    }
+  }
+
+  // --------------------------------------------------------------------------
   // Left Panel: Tasks, Calendar, Agenda, Routines
   // --------------------------------------------------------------------------
   private bindTasksPanel() {
     const asset = this.getAsset('panel-left-tasks');
     if (!asset) return;
 
-    // Mini Calendar Month Navigation
+    // Zoom & Back
+    const zoomBtn = asset.getElementById('btn-zoom-tasks-panel');
+    if (zoomBtn) {
+      this.addPress(zoomBtn, () => this.zoomSection('panel-left-tasks', 'Agenda & Routines'));
+    }
+    const backBtn = asset.getElementById('btn-tasks-panel-back');
+    if (backBtn) {
+      this.addPress(backBtn, () => this.resetZoom());
+    }
+
+    // Mini Calendar Navigation
     const prevMonth = asset.getElementById('cal-prev-month');
     if (prevMonth) {
       this.addPress(prevMonth, () => {
@@ -367,7 +483,6 @@ export class PanelSystem extends createSystem({
       });
     }
 
-    // Mini Calendar Days
     for (let i = 0; i < 7; i++) {
       const dayBtn = asset.getElementById(`cal-day-${i}`);
       if (dayBtn) {
@@ -383,7 +498,7 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // Today's Agenda Checkboxes
+    // Agenda Checkboxes & Titles
     for (let i = 0; i < this.agendaItems.length; i++) {
       const chkBtn = asset.getElementById(`agenda-chk-${i}`);
       if (chkBtn) {
@@ -411,7 +526,7 @@ export class PanelSystem extends createSystem({
           title: 'Design Review & Sync',
           priority: 'medium',
           estimatedMinutes: 60,
-          scheduledStartMinute: 16 * 60, // 4 PM
+          scheduledStartMinute: 16 * 60,
           status: 'todo',
         };
         this.tasks.push(newEvent);
@@ -457,7 +572,6 @@ export class PanelSystem extends createSystem({
       });
     }
 
-    // Undo Button
     const undoBtn = asset.getElementById('undo-btn');
     if (undoBtn) {
       this.addPress(undoBtn, () => this.triggerUndo());
@@ -498,6 +612,12 @@ export class PanelSystem extends createSystem({
   private bindHubPanel() {
     const asset = this.getAsset('panel-hub');
     if (!asset) return;
+
+    // Zoom Back Button on Hub Zoom Bar
+    const zoomBackBtn = asset.getElementById('btn-zoom-back');
+    if (zoomBackBtn) {
+      this.addPress(zoomBackBtn, () => this.resetZoom());
+    }
 
     // Weather Pill Toggle
     const weatherBtn = asset.getElementById('btn-weather');
@@ -550,9 +670,7 @@ export class PanelSystem extends createSystem({
     // Pip Hero Banner
     const pipBanner = asset.getElementById('hub-pip-banner-btn');
     if (pipBanner) {
-      this.addPress(pipBanner, () => {
-        this.handlePipWhatNext();
-      });
+      this.addPress(pipBanner, () => this.handlePipWhatNext());
     }
 
     // 8 Navigation Tabs
@@ -564,25 +682,24 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // Schedule Day / Week / Month View Tabs
+    // Schedule View Tabs & Actions
     const tabDay = asset.getElementById('tab-day');
-    if (tabDay) {
-      this.addPress(tabDay, () => this.setScheduleView('day'));
-    }
+    if (tabDay) this.addPress(tabDay, () => this.setScheduleView('day'));
+
     const tabWeek = asset.getElementById('tab-week');
-    if (tabWeek) {
-      this.addPress(tabWeek, () => this.setScheduleView('week'));
-    }
+    if (tabWeek) this.addPress(tabWeek, () => this.setScheduleView('week'));
+
     const tabMonth = asset.getElementById('tab-month');
-    if (tabMonth) {
-      this.addPress(tabMonth, () => this.setScheduleView('month'));
+    if (tabMonth) this.addPress(tabMonth, () => this.setScheduleView('month'));
+
+    const addBlockBtn = asset.getElementById('btn-add-block');
+    if (addBlockBtn) {
+      this.addPress(addBlockBtn, () => this.openEditSheet(null));
     }
 
-    const expandSched = asset.getElementById('btn-expand-sched');
-    if (expandSched) {
-      this.addPress(expandSched, () => {
-        this.setPipSpeech('Expanded schedule view (8:00 AM – 10:00 PM).');
-      });
+    const zoomSchedBtn = asset.getElementById('btn-zoom-schedule');
+    if (zoomSchedBtn) {
+      this.addPress(zoomSchedBtn, () => this.zoomSection('panel-hub', "Today's Schedule"));
     }
 
     // Schedule Blocks (Click to open edit sheet)
@@ -597,7 +714,12 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // Bottom Card 1: Task Filter Chips
+    // Card 1 (Tasks): Zoom Button & Filter Chips
+    const zoomTasksBtn = asset.getElementById('btn-zoom-tasks');
+    if (zoomTasksBtn) {
+      this.addPress(zoomTasksBtn, () => this.zoomSection('panel-hub', 'Tasks List'));
+    }
+
     const filterAll = asset.getElementById('chip-filter-all');
     if (filterAll) this.addPress(filterAll, () => this.setTaskFilter('all'));
 
@@ -610,18 +732,84 @@ export class PanelSystem extends createSystem({
     const filterLow = asset.getElementById('chip-filter-low');
     if (filterLow) this.addPress(filterLow, () => this.setTaskFilter('low'));
 
-    // Task rows checkboxes in Bottom Card 1
+    // Card 1 Task Rows: Checkbox, Title, and Edit Buttons
     for (let i = 0; i < 4; i++) {
-      const rowBtn = asset.getElementById(`hub-task-row-${i}`);
-      if (rowBtn) {
-        this.addPress(rowBtn, () => this.toggleTaskComplete(i));
+      const chkBox = asset.getElementById(`hub-chk-box-${i}`);
+      if (chkBox) {
+        this.addPress(chkBox, () => this.toggleTaskComplete(i));
+      }
+
+      const taskTitle = asset.getElementById(`hub-task-title-${i}`);
+      if (taskTitle) {
+        this.addPress(taskTitle, () => {
+          const task = this.getFilteredTasks()[i];
+          if (task) this.openEditSheet(task.id);
+        });
+      }
+
+      const editBtn = asset.getElementById(`hub-task-edit-${i}`);
+      if (editBtn) {
+        this.addPress(editBtn, () => {
+          const task = this.getFilteredTasks()[i];
+          if (task) this.openEditSheet(task.id);
+        });
       }
     }
 
-    // Bottom Card 2: Focus Session Play/Pause & Mode Gear
+    const hubAddTaskBtn = asset.getElementById('hub-btn-add-task');
+    if (hubAddTaskBtn) {
+      this.addPress(hubAddTaskBtn, () => this.openEditSheet(null));
+    }
+
+    // Card 2 (Focus Session): Zoom, Play, -5m, +5m, Reset, Break, Mode Settings
+    const zoomFocusBtn = asset.getElementById('btn-zoom-focus');
+    if (zoomFocusBtn) {
+      this.addPress(zoomFocusBtn, () => this.zoomSection('panel-hub', 'Focus Session'));
+    }
+
     const focusPlayBtn = asset.getElementById('hub-focus-play-btn');
     if (focusPlayBtn) {
       this.addPress(focusPlayBtn, () => this.toggleFocusTimer());
+    }
+
+    const focusMinus5 = asset.getElementById('hub-focus-minus5');
+    if (focusMinus5) {
+      this.addPress(focusMinus5, () => {
+        this.focusRemainingSeconds = Math.max(60, this.focusRemainingSeconds - 5 * 60);
+        this.refreshHubPanelUI();
+      });
+    }
+
+    const focusPlus5 = asset.getElementById('hub-focus-plus5');
+    if (focusPlus5) {
+      this.addPress(focusPlus5, () => {
+        this.focusRemainingSeconds = Math.min(120 * 60, this.focusRemainingSeconds + 5 * 60);
+        this.refreshHubPanelUI();
+      });
+    }
+
+    const focusReset = asset.getElementById('hub-focus-reset');
+    if (focusReset) {
+      this.addPress(focusReset, () => {
+        this.focusRunning = false;
+        this.focusRemainingSeconds = 25 * 60;
+        this.focusTotalSeconds = 25 * 60;
+        this.focusMode = 'pomodoro';
+        this.setPipSpeech('Focus timer reset to 25 minutes Pomodoro.');
+        this.refreshHubPanelUI();
+      });
+    }
+
+    const focusBreak = asset.getElementById('hub-focus-break');
+    if (focusBreak) {
+      this.addPress(focusBreak, () => {
+        this.focusMode = 'short_break';
+        this.focusRemainingSeconds = 5 * 60;
+        this.focusTotalSeconds = 5 * 60;
+        this.focusRunning = true;
+        this.setPipSpeech('Starting 5-minute break! Stretch and rest your eyes.');
+        this.refreshHubPanelUI();
+      });
     }
 
     const focusGear = asset.getElementById('btn-focus-settings');
@@ -645,6 +833,27 @@ export class PanelSystem extends createSystem({
       });
     }
 
+    // Card 3 (Workload): Zoom, Gauge toggle, Insight
+    const zoomWorkloadBtn = asset.getElementById('btn-zoom-workload');
+    if (zoomWorkloadBtn) {
+      this.addPress(zoomWorkloadBtn, () => this.zoomSection('panel-hub', 'Workload Analysis'));
+    }
+
+    const gaugeToggle = asset.getElementById('btn-gauge-toggle');
+    if (gaugeToggle) {
+      this.addPress(gaugeToggle, () => {
+        const donut = calculateWorkloadDonut(this.tasks);
+        this.setPipSpeech(`Capacity analysis: ${donut.percentage}% scheduled (${donut.scheduledFormatted} of 8h capacity).`);
+      });
+    }
+
+    const workloadInsight = asset.getElementById('btn-workload-insight');
+    if (workloadInsight) {
+      this.addPress(workloadInsight, () => {
+        this.setPipSpeech("Workload Insight: You're on track! Evening schedule has ~2h free after 7 PM.");
+      });
+    }
+
     // Bottom Floating Dock
     const dockItems = [
       { id: 'dock-timeline', label: 'Timeline View' },
@@ -662,6 +871,13 @@ export class PanelSystem extends createSystem({
         });
       }
     }
+  }
+
+  private getFilteredTasks(): GlassTask[] {
+    return this.tasks.filter((t) => {
+      if (this.taskFilter === 'all') return true;
+      return t.priority === this.taskFilter;
+    });
   }
 
   private setScheduleView(view: 'day' | 'week' | 'month') {
@@ -688,8 +904,9 @@ export class PanelSystem extends createSystem({
   }
 
   private toggleTaskComplete(index: number) {
-    if (!this.tasks[index]) return;
-    const task = this.tasks[index];
+    const filtered = this.getFilteredTasks();
+    if (!filtered[index]) return;
+    const task = filtered[index];
     const newStatus = task.status === 'completed' ? 'todo' : 'completed';
     task.status = newStatus;
     task.completedAt = newStatus === 'completed' ? Date.now() : null;
@@ -709,6 +926,16 @@ export class PanelSystem extends createSystem({
   private bindPipPanel() {
     const asset = this.getAsset('panel-right-pip');
     if (!asset) return;
+
+    // Zoom & Back
+    const zoomPip = asset.getElementById('btn-zoom-pip');
+    if (zoomPip) {
+      this.addPress(zoomPip, () => this.zoomSection('panel-right-pip', 'Pip Companion & Garden'));
+    }
+    const pipBack = asset.getElementById('btn-pip-back');
+    if (pipBack) {
+      this.addPress(pipBack, () => this.resetZoom());
+    }
 
     const chipWhatNext = asset.getElementById('chip-pip-what-next');
     if (chipWhatNext) {
@@ -756,7 +983,6 @@ export class PanelSystem extends createSystem({
       this.addPress(chipStartFocus, () => this.toggleFocusTimer());
     }
 
-    // Voice Mic Toggle
     const micBtn = asset.getElementById('btn-pip-mic');
     if (micBtn) {
       this.addPress(micBtn, () => {
@@ -813,7 +1039,16 @@ export class PanelSystem extends createSystem({
     const asset = this.getAsset('panel-right-focus');
     if (!asset) return;
 
-    // Habits Rows
+    // Zoom & Back
+    const zoomHabits = asset.getElementById('btn-zoom-habits');
+    if (zoomHabits) {
+      this.addPress(zoomHabits, () => this.zoomSection('panel-right-focus', 'Habits & Deadlines'));
+    }
+    const habitsBack = asset.getElementById('btn-habits-back');
+    if (habitsBack) {
+      this.addPress(habitsBack, () => this.resetZoom());
+    }
+
     for (let i = 0; i < this.habits.length; i++) {
       const habitRow = asset.getElementById(`habit-row-${i}`);
       if (habitRow) {
@@ -826,7 +1061,6 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // Deadlines Rows
     for (let i = 0; i < this.deadlines.length; i++) {
       const deadlineRow = asset.getElementById(`deadline-row-${i}`);
       if (deadlineRow) {
@@ -1000,7 +1234,7 @@ export class PanelSystem extends createSystem({
 
     const sheetObj = this.world.getSceneObject('panel-edit-sheet');
     if (sheetObj) {
-      sheetObj.position.set(0, 1.28, -0.65);
+      sheetObj.position.set(0, 1.28, -0.60);
       sheetObj.visible = true;
     }
 
@@ -1012,7 +1246,7 @@ export class PanelSystem extends createSystem({
     this.deleteTapCount = 0;
     const sheetObj = this.world.getSceneObject('panel-edit-sheet');
     if (sheetObj) {
-      sheetObj.position.set(0, -50, 0); // Hide offscreen
+      sheetObj.position.set(0, -50, 0);
     }
   }
 
@@ -1070,7 +1304,6 @@ export class PanelSystem extends createSystem({
     if (timeEl) setText(timeEl, clock.timeFormatted);
     if (dateEl) setText(dateEl, clock.dateFormatted);
 
-    // Strictly anonymous greeting (NO user name!)
     const greeting = generateGreeting(now, '', this.tasks);
     const greetEl = hubAsset.getElementById('hub-greeting-text') as any;
     if (greetEl) setText(greetEl, greeting.greeting);
@@ -1116,7 +1349,6 @@ export class PanelSystem extends createSystem({
     const asset = this.getAsset('panel-left-tasks');
     if (!asset) return;
 
-    // Mini Calendar Days Highlight
     for (let i = 0; i < 7; i++) {
       const day = this.calendarDays[i];
       const dayBtn = asset.getElementById(`cal-day-${i}`) as any;
@@ -1131,7 +1363,6 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // Agenda Items
     const completedCount = this.agendaItems.filter((a) => a.isCompleted).length;
     const badgeEl = asset.getElementById('agenda-count-badge') as any;
     if (badgeEl) setText(badgeEl, `${completedCount}/${this.agendaItems.length} done`);
@@ -1156,7 +1387,6 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // Routines Badges
     const morning = this.routines.find((r) => r.id === 'routine-morning');
     const morningBadge = asset.getElementById('routine-morning-badge') as any;
     if (morning && morningBadge) {
@@ -1174,7 +1404,6 @@ export class PanelSystem extends createSystem({
     const asset = this.getAsset('panel-hub');
     if (!asset) return;
 
-    // 1. Workload Donut & Legend
     const donut = calculateWorkloadDonut(this.tasks);
     const donutPct = asset.getElementById('donut-percentage-text') as any;
     if (donutPct) setText(donutPct, `${donut.percentage}%`);
@@ -1195,7 +1424,6 @@ export class PanelSystem extends createSystem({
       );
     }
 
-    // 2. Schedule Blocks & Timeline
     const schedBlocks = tasksToScheduleBlocks(this.tasks);
     for (let i = 0; i < 5; i++) {
       const block = schedBlocks[i];
@@ -1207,17 +1435,12 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // 3. Bottom Card 1: Tasks Filter & Rows
-    const filteredTasks = this.tasks.filter((t) => {
-      if (this.taskFilter === 'all') return true;
-      return t.priority === this.taskFilter;
-    });
-
+    const filtered = this.getFilteredTasks();
     const tasksCount = asset.getElementById('hub-tasks-count') as any;
-    if (tasksCount) setText(tasksCount, `Tasks (${this.tasks.length})`);
+    if (tasksCount) setText(tasksCount, `Tasks (${filtered.length})`);
 
     for (let i = 0; i < 4; i++) {
-      const task = filteredTasks[i];
+      const task = filtered[i];
       const titleEl = asset.getElementById(`hub-task-title-${i}`) as any;
       const chkMark = asset.getElementById(`hub-chk-mark-${i}`) as any;
       const chkBox = asset.getElementById(`hub-chk-box-${i}`) as any;
@@ -1240,7 +1463,6 @@ export class PanelSystem extends createSystem({
     const asset = this.getAsset('panel-right-pip');
     if (!asset) return;
 
-    // Garden Progress
     const garden = calculateGardenProgress(this.gardenPoints);
     const gardenLvl = asset.getElementById('garden-level-text') as any;
     if (gardenLvl) setText(gardenLvl, `Level ${garden.level} 🌱`);
@@ -1254,7 +1476,6 @@ export class PanelSystem extends createSystem({
       gardenBar.setProperties({ width: `${pct}%` });
     }
 
-    // Voice Mic state
     const micBtn = asset.getElementById('btn-pip-mic') as any;
     if (micBtn && typeof micBtn.setProperties === 'function') {
       micBtn.setProperties({
@@ -1268,7 +1489,6 @@ export class PanelSystem extends createSystem({
     const asset = this.getAsset('panel-right-focus');
     if (!asset) return;
 
-    // Habits counts
     for (let i = 0; i < this.habits.length; i++) {
       const countEl = asset.getElementById(`habit-count-${i}`) as any;
       if (countEl) setText(countEl, `${this.habits[i].completedCount}/7`);
@@ -1280,7 +1500,6 @@ export class PanelSystem extends createSystem({
       this.bindPanels();
     }
 
-    // Pip robot head gentle bobbing (zero per-frame allocations)
     if (this.pipRig && this.pipRig.head) {
       const bob = Math.sin(time * 0.003) * 0.006;
       this.pipRig.head.position.y = 0.05 + bob;

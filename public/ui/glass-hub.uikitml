@@ -3,12 +3,12 @@
     .glass-hub-panel {
       flex-direction: column;
       width: 780px;
-      height: 700px;
+      height: 720px;
       padding: 14px;
       border-radius: 24px;
-      background-color: rgba(11, 16, 32, 0.82);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.16);
+      background-color: rgba(11, 16, 32, 0.88);
+      border-width: 1.5px;
+      border-color: rgba(255, 255, 255, 0.18);
       gap: 8px;
     }
 
@@ -26,6 +26,52 @@
       height: 4px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .hub-zoom-bar {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 6px;
+      padding-bottom: 6px;
+      border-radius: 12px;
+      background-color: rgba(124, 92, 255, 0.25);
+      border-width: 1.5px;
+      border-color: #7C5CFF;
+      width: 100%;
+    }
+
+    .zoom-back-btn {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      padding-left: 10px;
+      padding-right: 12px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      border-radius: 8px;
+      background-color: #7C5CFF;
+      border-width: 1px;
+      border-color: #DDD6FE;
+    }
+
+    .zoom-back-btn:hover {
+      background-color: #906FFA;
+      border-color: #FFFFFF;
+    }
+
+    .zoom-back-text {
+      font-size: 12px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .zoom-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #E0E7FF;
     }
 
     .hub-header {
@@ -49,16 +95,16 @@
     }
 
     .header-date {
-      font-size: 11px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.70);
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.75);
     }
 
     .header-time {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 800;
       color: #FFFFFF;
-      line-height: 24px;
+      line-height: 26px;
     }
 
     .weather-pill-btn {
@@ -80,10 +126,6 @@
       border-color: #F59E0B;
     }
 
-    .weather-pill-btn:active {
-      background-color: rgba(245, 158, 11, 0.25);
-    }
-
     .weather-icon {
       font-size: 16px;
     }
@@ -94,13 +136,13 @@
     }
 
     .weather-temp {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       color: #FFFFFF;
     }
 
     .weather-city {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 500;
       color: rgba(255, 255, 255, 0.65);
     }
@@ -118,8 +160,8 @@
     }
 
     .brand-cube {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       border-radius: 6px;
       background-color: #7C5CFF;
       align-items: center;
@@ -127,16 +169,16 @@
     }
 
     .brand-title {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 800;
       color: #FFFFFF;
       letter-spacing: 0.4px;
     }
 
     .brand-tagline {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 500;
-      color: rgba(255, 255, 255, 0.60);
+      color: rgba(255, 255, 255, 0.65);
     }
 
     .header-actions-group {
@@ -199,15 +241,15 @@
     }
 
     .greeting-title {
-      font-size: 18px;
+      font-size: 19px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
     .greeting-subtitle {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
-      color: rgba(255, 255, 255, 0.70);
+      color: rgba(255, 255, 255, 0.75);
     }
 
     .pip-speech-banner {
@@ -230,7 +272,7 @@
     }
 
     .pip-banner-text {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: #E0F2FE;
     }
@@ -260,10 +302,6 @@
     .nav-tab-pill:hover {
       background-color: rgba(255, 255, 255, 0.12);
       border-color: rgba(255, 255, 255, 0.30);
-    }
-
-    .nav-tab-pill:active {
-      background-color: rgba(124, 92, 255, 0.25);
     }
 
     .nav-tab-active {
@@ -304,7 +342,7 @@
     }
 
     .schedule-title {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       color: #FFFFFF;
     }
@@ -338,20 +376,22 @@
     }
 
     .sched-view-text {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.75);
     }
 
     .sched-view-text-active {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
-    .sched-expand-btn {
-      width: 22px;
-      height: 22px;
+    .sched-action-btn {
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 3px;
+      padding-bottom: 3px;
       border-radius: 6px;
       background-color: rgba(255, 255, 255, 0.08);
       border-width: 1px;
@@ -360,8 +400,14 @@
       justify-content: center;
     }
 
-    .sched-expand-text {
+    .sched-action-btn:hover {
+      background-color: rgba(124, 92, 255, 0.35);
+      border-color: #A78BFA;
+    }
+
+    .sched-action-text {
       font-size: 11px;
+      font-weight: 700;
       color: #FFFFFF;
     }
 
@@ -392,7 +438,7 @@
     }
 
     .now-marker-text {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 800;
       color: #FFFFFF;
     }
@@ -406,9 +452,9 @@
     }
 
     .axis-label {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
-      color: rgba(255, 255, 255, 0.50);
+      color: rgba(255, 255, 255, 0.55);
     }
 
     .timeline-track {
@@ -450,13 +496,13 @@
     }
 
     .block-title {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
     .block-time {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.85);
     }
@@ -488,10 +534,40 @@
       width: 100%;
     }
 
+    .card-title-group {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+    }
+
     .card-title {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       color: #FFFFFF;
+    }
+
+    .card-zoom-btn {
+      padding-left: 6px;
+      padding-right: 6px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-zoom-btn:hover {
+      background-color: rgba(124, 92, 255, 0.40);
+      border-color: #A78BFA;
+    }
+
+    .card-zoom-text {
+      font-size: 10px;
+      font-weight: 700;
+      color: #E2E8F0;
     }
 
     .filter-chips-row {
@@ -505,26 +581,30 @@
     .filter-chip {
       padding-left: 6px;
       padding-right: 6px;
-      padding-top: 1px;
-      padding-bottom: 1px;
+      padding-top: 2px;
+      padding-bottom: 2px;
       border-radius: 6px;
       background-color: transparent;
       border-width: 0px;
     }
 
+    .filter-chip:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+    }
+
     .filter-chip-active {
-      background-color: rgba(124, 92, 255, 0.40);
+      background-color: #7C5CFF;
     }
 
     .filter-chip-text {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.70);
     }
 
     .filter-chip-text-active {
-      font-size: 9px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 800;
       color: #FFFFFF;
     }
 
@@ -540,8 +620,8 @@
       justify-content: space-between;
       padding-left: 6px;
       padding-right: 6px;
-      padding-top: 4px;
-      padding-bottom: 4px;
+      padding-top: 3px;
+      padding-bottom: 3px;
       border-radius: 8px;
       background-color: rgba(255, 255, 255, 0.04);
       width: 100%;
@@ -555,11 +635,12 @@
       flex-direction: row;
       align-items: center;
       gap: 6px;
+      flex-grow: 1;
     }
 
     .chk-square {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       border-radius: 4px;
       border-width: 1.5px;
       border-color: rgba(255, 255, 255, 0.35);
@@ -573,21 +654,27 @@
     }
 
     .chk-square-mark {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
     .hub-task-text {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       color: #FFFFFF;
     }
 
     .hub-task-text-strike {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 500;
       color: rgba(255, 255, 255, 0.40);
+    }
+
+    .hub-task-right {
+      flex-direction: row;
+      align-items: center;
+      gap: 4px;
     }
 
     .hub-task-badge {
@@ -596,7 +683,7 @@
       padding-top: 1px;
       padding-bottom: 1px;
       border-radius: 4px;
-      font-size: 8px;
+      font-size: 9px;
       font-weight: 700;
     }
 
@@ -615,18 +702,66 @@
       color: #60A5FA;
     }
 
+    .task-edit-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background-color: rgba(255, 255, 255, 0.08);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .task-edit-btn:hover {
+      background-color: rgba(124, 92, 255, 0.45);
+    }
+
+    .task-edit-icon {
+      font-size: 10px;
+    }
+
+    .add-task-footer-btn {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 24px;
+      border-radius: 8px;
+      background-color: rgba(124, 92, 255, 0.15);
+      border-width: 1px;
+      border-color: rgba(124, 92, 255, 0.35);
+      width: 100%;
+    }
+
+    .add-task-footer-btn:hover {
+      background-color: #7C5CFF;
+    }
+
+    .add-task-footer-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
     .focus-timer-body {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 6px;
       width: 100%;
       flex-grow: 1;
     }
 
+    .timer-ring-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+    }
+
     .timer-ring {
-      width: 82px;
-      height: 82px;
+      width: 78px;
+      height: 78px;
       border-radius: 999px;
       border-width: 4px;
       border-color: #7C5CFF;
@@ -638,27 +773,27 @@
     }
 
     .timer-digits {
-      font-size: 20px;
+      font-size: 21px;
       font-weight: 800;
       color: #FFFFFF;
-      line-height: 22px;
+      line-height: 23px;
     }
 
     .timer-label {
-      font-size: 8px;
+      font-size: 9px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.65);
     }
 
     .hub-play-btn {
-      width: 34px;
-      height: 34px;
+      width: 38px;
+      height: 38px;
       border-radius: 999px;
       background-color: #7C5CFF;
       align-items: center;
       justify-content: center;
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.25);
+      border-width: 1.5px;
+      border-color: rgba(255, 255, 255, 0.30);
     }
 
     .hub-play-btn:hover {
@@ -666,18 +801,48 @@
       border-color: #FFFFFF;
     }
 
-    .hub-play-btn:active {
-      background-color: #633ef5;
-    }
-
     .hub-play-icon {
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
-    .focus-footer-text {
+    .focus-quick-chips-row {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 3px;
+      width: 100%;
+    }
+
+    .focus-quick-chip {
+      flex-grow: 1;
+      height: 24px;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+      align-items: center;
+      justify-content: center;
+      padding: 0px;
+    }
+
+    .focus-quick-chip:hover {
+      background-color: rgba(124, 92, 255, 0.35);
+      border-color: #A78BFA;
+    }
+
+    .focus-quick-chip:active {
+      background-color: #7C5CFF;
+    }
+
+    .focus-quick-chip-text {
       font-size: 10px;
+      font-weight: 700;
+      color: #E2E8F0;
+    }
+
+    .focus-footer-text {
+      font-size: 11px;
       font-weight: 600;
       color: #A78BFA;
       text-align: center;
@@ -702,7 +867,7 @@
     }
 
     .donut-gauge-text {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 800;
       color: #FFFFFF;
     }
@@ -720,37 +885,37 @@
     }
 
     .legend-dot-cyan {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 999px;
       background-color: #38BDF8;
     }
 
     .legend-dot-green {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 999px;
       background-color: #22C55E;
     }
 
     .legend-dot-gray {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.45);
     }
 
     .legend-text {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
-      color: rgba(255, 255, 255, 0.85);
+      color: rgba(255, 255, 255, 0.90);
     }
 
     .workload-insight-capsule {
       padding-left: 8px;
       padding-right: 8px;
-      padding-top: 4px;
-      padding-bottom: 4px;
+      padding-top: 5px;
+      padding-bottom: 5px;
       border-radius: 8px;
       background-color: rgba(245, 158, 11, 0.15);
       border-width: 1px;
@@ -758,8 +923,12 @@
       width: 100%;
     }
 
+    .workload-insight-capsule:hover {
+      background-color: rgba(245, 158, 11, 0.25);
+    }
+
     .workload-insight-text {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
       color: #FDE68A;
     }
@@ -796,7 +965,7 @@
     }
 
     .dock-btn-text {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.90);
     }
@@ -806,7 +975,13 @@
     <div class="handle-bar"></div>
   </div>
 
-  <!-- Top Header -->
+  <div id="hub-zoom-bar" class="hub-zoom-bar" style="display: none;">
+    <Button id="btn-zoom-back" class="zoom-back-btn">
+      <ButtonLabel class="zoom-back-text">◀ Back to Overview</ButtonLabel>
+    </Button>
+    <span id="zoom-section-label" class="zoom-section-title">Viewing Section (Zoomed)</span>
+  </div>
+
   <div class="hub-header">
     <div class="header-time-group">
       <div class="time-date-stack">
@@ -850,7 +1025,6 @@
     </div>
   </div>
 
-  <!-- Dynamic Greeting & Pip Smart Recommendation Banner -->
   <div class="hero-banner-row">
     <div class="greeting-group">
       <span id="hub-greeting-text" class="greeting-title">Good Morning 👋</span>
@@ -863,7 +1037,6 @@
     </Button>
   </div>
 
-  <!-- 8 Navigation Tabs -->
   <div class="nav-tabs-bar">
     <Button id="nav-tasks" class="nav-tab-pill">
       <Check width="13" height="13" color="#A78BFA"></Check>
@@ -904,7 +1077,6 @@
     </Button>
   </div>
 
-  <!-- Today's Schedule Card -->
   <div class="schedule-card">
     <div class="schedule-card-header">
       <span class="schedule-title">Today's Schedule (8:00 AM – 10:00 PM)</span>
@@ -920,8 +1092,11 @@
             <ButtonLabel class="sched-view-text">Month</ButtonLabel>
           </Button>
         </div>
-        <Button id="btn-expand-sched" class="sched-expand-btn">
-          <ButtonLabel class="sched-expand-text">⛶</ButtonLabel>
+        <Button id="btn-add-block" class="sched-action-btn">
+          <ButtonLabel class="sched-action-text">+ Block</ButtonLabel>
+        </Button>
+        <Button id="btn-zoom-schedule" class="sched-action-btn">
+          <ButtonLabel class="sched-action-text">⛶ Zoom</ButtonLabel>
         </Button>
       </div>
     </div>
@@ -979,12 +1154,15 @@
     </div>
   </div>
 
-  <!-- Bottom 3-Card Layout -->
   <div class="bottom-cards-row">
-    <!-- Card 1: Tasks -->
-    <div class="card-base">
+    <div class="card-base" id="card-tasks">
       <div class="card-header-row">
-        <span id="hub-tasks-count" class="card-title">Tasks (5)</span>
+        <div class="card-title-group">
+          <span id="hub-tasks-count" class="card-title">Tasks (4)</span>
+          <Button id="btn-zoom-tasks" class="card-zoom-btn">
+            <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
+          </Button>
+        </div>
         <div class="filter-chips-row">
           <Button id="chip-filter-all" class="filter-chip filter-chip-active">
             <ButtonLabel class="filter-chip-text-active">All</ButtonLabel>
@@ -993,7 +1171,7 @@
             <ButtonLabel class="filter-chip-text">High</ButtonLabel>
           </Button>
           <Button id="chip-filter-med" class="filter-chip">
-            <ButtonLabel class="filter-chip-text">Medium</ButtonLabel>
+            <ButtonLabel class="filter-chip-text">Med</ButtonLabel>
           </Button>
           <Button id="chip-filter-low" class="filter-chip">
             <ButtonLabel class="filter-chip-text">Low</ButtonLabel>
@@ -1002,81 +1180,130 @@
       </div>
 
       <div class="hub-task-rows">
-        <Button id="hub-task-row-0" class="hub-task-item">
+        <div class="hub-task-item">
+          <Button id="hub-chk-box-0" class="chk-square">
+            <ButtonLabel id="hub-chk-mark-0" class="chk-square-mark"></ButtonLabel>
+          </Button>
           <div class="hub-task-left">
-            <div id="hub-chk-box-0" class="chk-square">
-              <span id="hub-chk-mark-0" class="chk-square-mark"></span>
-            </div>
             <ButtonLabel id="hub-task-title-0" class="hub-task-text">Finish ML assignment</ButtonLabel>
           </div>
-          <span class="hub-task-badge badge-high">High 1h 30m</span>
-        </Button>
+          <div class="hub-task-right">
+            <span class="hub-task-badge badge-high">High 1h 30m</span>
+            <Button id="hub-task-edit-0" class="task-edit-btn">
+              <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
+            </Button>
+          </div>
+        </div>
 
-        <Button id="hub-task-row-1" class="hub-task-item">
+        <div class="hub-task-item">
+          <Button id="hub-chk-box-1" class="chk-square">
+            <ButtonLabel id="hub-chk-mark-1" class="chk-square-mark"></ButtonLabel>
+          </Button>
           <div class="hub-task-left">
-            <div id="hub-chk-box-1" class="chk-square">
-              <span id="hub-chk-mark-1" class="chk-square-mark"></span>
-            </div>
             <ButtonLabel id="hub-task-title-1" class="hub-task-text">Implement API</ButtonLabel>
           </div>
-          <span class="hub-task-badge badge-med">Medium 2h</span>
-        </Button>
+          <div class="hub-task-right">
+            <span class="hub-task-badge badge-med">Med 2h</span>
+            <Button id="hub-task-edit-1" class="task-edit-btn">
+              <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
+            </Button>
+          </div>
+        </div>
 
-        <Button id="hub-task-row-2" class="hub-task-item">
+        <div class="hub-task-item">
+          <Button id="hub-chk-box-2" class="chk-square">
+            <ButtonLabel id="hub-chk-mark-2" class="chk-square-mark"></ButtonLabel>
+          </Button>
           <div class="hub-task-left">
-            <div id="hub-chk-box-2" class="chk-square">
-              <span id="hub-chk-mark-2" class="chk-square-mark"></span>
-            </div>
             <ButtonLabel id="hub-task-title-2" class="hub-task-text">Team meeting</ButtonLabel>
           </div>
-          <span class="hub-task-badge badge-low">Low 30m</span>
-        </Button>
+          <div class="hub-task-right">
+            <span class="hub-task-badge badge-low">Low 30m</span>
+            <Button id="hub-task-edit-2" class="task-edit-btn">
+              <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
+            </Button>
+          </div>
+        </div>
 
-        <Button id="hub-task-row-3" class="hub-task-item">
+        <div class="hub-task-item">
+          <Button id="hub-chk-box-3" class="chk-square chk-square-checked">
+            <ButtonLabel id="hub-chk-mark-3" class="chk-square-mark">✓</ButtonLabel>
+          </Button>
           <div class="hub-task-left">
-            <div id="hub-chk-box-3" class="chk-square chk-square-checked">
-              <span id="hub-chk-mark-3" class="chk-square-mark">✓</span>
-            </div>
             <ButtonLabel id="hub-task-title-3" class="hub-task-text-strike">Read research paper</ButtonLabel>
           </div>
-          <span class="hub-task-badge badge-med">Medium 1h</span>
-        </Button>
+          <div class="hub-task-right">
+            <span class="hub-task-badge badge-med">Med 1h</span>
+            <Button id="hub-task-edit-3" class="task-edit-btn">
+              <ButtonLabel class="task-edit-icon">✏️</ButtonLabel>
+            </Button>
+          </div>
+        </div>
       </div>
+
+      <Button id="hub-btn-add-task" class="add-task-footer-btn">
+        <ButtonLabel class="add-task-footer-text">+ Add Task</ButtonLabel>
+      </Button>
     </div>
 
-    <!-- Card 2: Focus Session -->
-    <div class="card-base">
+    <div class="card-base" id="card-focus">
       <div class="card-header-row">
-        <span class="card-title">Focus Session</span>
-        <Button id="btn-focus-settings" class="cal-nav-btn">
-          <ButtonLabel class="cal-nav-text">⚙️</ButtonLabel>
+        <div class="card-title-group">
+          <span class="card-title">Focus Session</span>
+          <Button id="btn-zoom-focus" class="card-zoom-btn">
+            <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
+          </Button>
+        </div>
+        <Button id="btn-focus-settings" class="card-zoom-btn">
+          <ButtonLabel class="card-zoom-text">⚙️ Mode</ButtonLabel>
         </Button>
       </div>
 
       <div class="focus-timer-body">
-        <div class="timer-ring">
-          <span id="hub-focus-time" class="timer-digits">25:00</span>
-          <span id="hub-focus-mode" class="timer-label">Pomodoro</span>
+        <div class="timer-ring-row">
+          <div class="timer-ring">
+            <span id="hub-focus-time" class="timer-digits">25:00</span>
+            <span id="hub-focus-mode" class="timer-label">Pomodoro</span>
+          </div>
+
+          <Button id="hub-focus-play-btn" class="hub-play-btn">
+            <ButtonLabel id="hub-focus-play-icon" class="hub-play-icon">▶</ButtonLabel>
+          </Button>
         </div>
 
-        <Button id="hub-focus-play-btn" class="hub-play-btn">
-          <ButtonLabel id="hub-focus-play-icon" class="hub-play-icon">▶</ButtonLabel>
-        </Button>
+        <div class="focus-quick-chips-row">
+          <Button id="hub-focus-minus5" class="focus-quick-chip">
+            <ButtonLabel class="focus-quick-chip-text">-5m</ButtonLabel>
+          </Button>
+          <Button id="hub-focus-plus5" class="focus-quick-chip">
+            <ButtonLabel class="focus-quick-chip-text">+5m</ButtonLabel>
+          </Button>
+          <Button id="hub-focus-reset" class="focus-quick-chip">
+            <ButtonLabel class="focus-quick-chip-text">Reset</ButtonLabel>
+          </Button>
+          <Button id="hub-focus-break" class="focus-quick-chip">
+            <ButtonLabel class="focus-quick-chip-text">Break</ButtonLabel>
+          </Button>
+        </div>
       </div>
 
       <span id="hub-focus-sessions-count" class="focus-footer-text">⏱ 4/8 Sessions Today</span>
     </div>
 
-    <!-- Card 3: Workload -->
-    <div class="card-base">
+    <div class="card-base" id="card-workload">
       <div class="card-header-row">
-        <span class="card-title">Workload</span>
+        <div class="card-title-group">
+          <span class="card-title">Workload</span>
+          <Button id="btn-zoom-workload" class="card-zoom-btn">
+            <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
+          </Button>
+        </div>
       </div>
 
       <div class="workload-body">
-        <div class="donut-gauge">
-          <span id="donut-percentage-text" class="donut-gauge-text">72%</span>
-        </div>
+        <Button id="btn-gauge-toggle" class="donut-gauge">
+          <ButtonLabel id="donut-percentage-text" class="donut-gauge-text">72%</ButtonLabel>
+        </Button>
 
         <div class="workload-legend">
           <div class="legend-row">
@@ -1094,13 +1321,12 @@
         </div>
       </div>
 
-      <div class="workload-insight-capsule">
-        <span id="workload-insight-text" class="workload-insight-text">💡 You're on track! ~2h free after 7 PM.</span>
-      </div>
+      <Button id="btn-workload-insight" class="workload-insight-capsule">
+        <ButtonLabel id="workload-insight-text" class="workload-insight-text">💡 You're on track! ~2h free after 7 PM.</ButtonLabel>
+      </Button>
     </div>
   </div>
 
-  <!-- Bottom Floating Dock -->
   <div class="dock-container">
     <Button id="dock-timeline" class="dock-btn">
       <ButtonLabel class="dock-btn-text">⏱ Timeline</ButtonLabel>
