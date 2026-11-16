@@ -143,6 +143,11 @@ export class PanelSystem extends createSystem({
   private workspaceOffset = { x: 0, y: 0, z: 0 };
   private heightStepIndex = 0;
 
+  // Pip 3D Robot Rig State
+  private pipRobotObject: any = null;
+  private pipEmoteState: 'celebrate' | 'thinking' | 'idle' = 'idle';
+  private pipEmoteTimer: number | null = null;
+
   // Hub View Controls
   private activeTab: NavTab = 'schedule';
   private scheduleView: 'day' | 'week' | 'month' = 'day';
@@ -456,6 +461,7 @@ export class PanelSystem extends createSystem({
       'panel-left-tasks': { pos: [-0.58, 1.48, -0.68], rotDeg: [0, 22, 0], scale: 0.10 },
       'panel-hub': { pos: [0, 1.48, -0.72], rotDeg: [0, 0, 0], scale: 0.10 },
       'panel-right-pip': { pos: [0.56, 1.65, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
+      'pip-robot': { pos: [0.56, 1.78, -0.65], rotDeg: [0, -22, 0], scale: 0.45 },
       'panel-right-focus': { pos: [0.56, 1.35, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
     };
 
@@ -1826,7 +1832,15 @@ export class PanelSystem extends createSystem({
     }
   }
 
-  public triggerPipEmote(_emote: 'celebrate' | 'thinking' | 'idle') {}
+  public triggerPipEmote(emote: 'celebrate' | 'thinking' | 'idle') {
+    this.pipEmoteState = emote;
+    if (this.pipEmoteTimer) window.clearTimeout(this.pipEmoteTimer);
+    if (emote !== 'idle') {
+      this.pipEmoteTimer = window.setTimeout(() => {
+        this.pipEmoteState = 'idle';
+      }, 4000);
+    }
+  }
 
   // --------------------------------------------------------------------------
   // Focus Panel Binding (Right Column Bottom: Habits & Deadlines)
@@ -2461,9 +2475,40 @@ export class PanelSystem extends createSystem({
     }
   }
 
-  update(_time: number, _delta: number) {
+  update(time: number, delta: number) {
     if (!this.isBound) {
       this.bindPanels();
+    }
+
+    if (!this.pipRobotObject) {
+      this.pipRobotObject = this.world.getSceneObject('pip-robot');
+    }
+
+    if (this.pipRobotObject) {
+      const head = this.pipRobotObject.getObjectByName('pip-head');
+      const outerRing = this.pipRobotObject.getObjectByName('pip-outer-ring');
+      const innerRing = this.pipRobotObject.getObjectByName('pip-inner-ring');
+
+      if (head) {
+        if (this.pipEmoteState === 'celebrate') {
+          head.position.y = 0.05 + Math.abs(Math.sin(time * 8)) * 0.035;
+          head.rotation.y = Math.sin(time * 6) * 0.25;
+        } else if (this.pipEmoteState === 'thinking') {
+          head.position.y = 0.05 + Math.sin(time * 3) * 0.01;
+          head.rotation.z = 0.15 + Math.sin(time * 2) * 0.05;
+        } else {
+          head.position.y = 0.05 + Math.sin(time * 2.2) * 0.008;
+          head.rotation.y = Math.sin(time * 1.2) * 0.08;
+          head.rotation.z = 0;
+        }
+      }
+
+      if (outerRing) {
+        outerRing.rotation.z += delta * (this.pipEmoteState === 'celebrate' ? 2.5 : 0.8);
+      }
+      if (innerRing) {
+        innerRing.rotation.z -= delta * (this.pipEmoteState === 'celebrate' ? 3.0 : 1.1);
+      }
     }
   }
 }
