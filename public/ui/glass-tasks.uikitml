@@ -6,7 +6,7 @@
       height: 660px;
       padding: 14px;
       border-radius: 24px;
-      background-color: rgba(11, 16, 32, 0.82);
+      background-color: rgba(22, 24, 29, 0.82);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.16);
       gap: 10px;
@@ -59,12 +59,12 @@
     }
 
     .cal-nav-btn:hover {
-      background-color: rgba(124, 92, 255, 0.40);
-      border-color: #A78BFA;
+      background-color: rgba(217, 119, 54, 0.40);
+      border-color: #F3B27A;
     }
 
     .cal-nav-btn:active {
-      background-color: #7C5CFF;
+      background-color: #D97736;
     }
 
     .cal-nav-text {
@@ -118,7 +118,7 @@
     }
 
     .cal-date-btn:active {
-      background-color: rgba(124, 92, 255, 0.30);
+      background-color: rgba(217, 119, 54, 0.30);
     }
 
     .cal-date-active {
@@ -155,7 +155,7 @@
     .section-badge {
       font-size: 11px;
       font-weight: 600;
-      color: #A78BFA;
+      color: #F3B27A;
     }
 
     .agenda-list {
@@ -198,7 +198,7 @@
     .agenda-time {
       font-size: 11px;
       font-weight: 700;
-      color: #A78BFA;
+      color: #F3B27A;
       min-width: 58px;
     }
 
@@ -275,12 +275,12 @@
     }
 
     .quick-add-pill:hover {
-      background-color: rgba(124, 92, 255, 0.30);
-      border-color: #A78BFA;
+      background-color: rgba(217, 119, 54, 0.30);
+      border-color: #F3B27A;
     }
 
     .quick-add-pill:active {
-      background-color: #7C5CFF;
+      background-color: #D97736;
       border-color: #FFFFFF;
     }
 
@@ -335,7 +335,7 @@
     }
 
     .routine-row-btn:active {
-      background-color: rgba(124, 92, 255, 0.25);
+      background-color: rgba(217, 119, 54, 0.25);
     }
 
     .routine-left {
@@ -377,7 +377,7 @@
       border-radius: 12px;
       background-color: rgba(18, 25, 48, 0.95);
       border-width: 1px;
-      border-color: rgba(124, 92, 255, 0.40);
+      border-color: rgba(217, 119, 54, 0.40);
       width: 100%;
     }
 
@@ -393,7 +393,7 @@
       padding-top: 2px;
       padding-bottom: 2px;
       border-radius: 999px;
-      background-color: #7C5CFF;
+      background-color: #D97736;
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.30);
     }
@@ -413,9 +413,9 @@
       padding-top: 5px;
       padding-bottom: 5px;
       border-radius: 12px;
-      background-color: rgba(124, 92, 255, 0.25);
+      background-color: rgba(217, 119, 54, 0.25);
       border-width: 1.5px;
-      border-color: #7C5CFF;
+      border-color: #D97736;
       width: 100%;
     }
 
@@ -427,7 +427,7 @@
       padding-top: 4px;
       padding-bottom: 4px;
       border-radius: 999px;
-      background-color: #7C5CFF;
+      background-color: #D97736;
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.40);
     }
@@ -468,8 +468,8 @@
     }
 
     .card-zoom-btn:hover {
-      background-color: rgba(124, 92, 255, 0.40);
-      border-color: #A78BFA;
+      background-color: rgba(217, 119, 54, 0.40);
+      border-color: #F3B27A;
     }
 
     .card-zoom-text {

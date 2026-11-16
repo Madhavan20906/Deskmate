@@ -6,7 +6,7 @@
       height: 720px;
       padding: 14px;
       border-radius: 24px;
-      background-color: rgba(11, 16, 32, 0.88);
+      background-color: rgba(22, 24, 29, 0.84);
       border-width: 1.5px;
       border-color: rgba(255, 255, 255, 0.18);
       gap: 8px;
@@ -37,9 +37,9 @@
       padding-top: 6px;
       padding-bottom: 6px;
       border-radius: 12px;
-      background-color: rgba(124, 92, 255, 0.25);
+      background-color: rgba(217, 119, 54, 0.25);
       border-width: 1.5px;
-      border-color: #7C5CFF;
+      border-color: #D97736;
       width: 100%;
     }
 
@@ -52,7 +52,7 @@
       padding-top: 4px;
       padding-bottom: 4px;
       border-radius: 8px;
-      background-color: #7C5CFF;
+      background-color: #D97736;
       border-width: 1px;
       border-color: #DDD6FE;
     }
@@ -163,7 +163,7 @@
       width: 22px;
       height: 22px;
       border-radius: 6px;
-      background-color: #7C5CFF;
+      background-color: #D97736;
       align-items: center;
       justify-content: center;
     }
@@ -185,36 +185,89 @@
       flex-direction: row;
       align-items: center;
       gap: 6px;
-      min-width: 160px;
+      min-width: 220px;
       justify-content: flex-end;
     }
 
-    .icon-action-btn {
-      width: 32px;
-      height: 32px;
+    .header-action-pill {
+      height: 28px;
+      padding-left: 10px;
+      padding-right: 10px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.08);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.15);
       align-items: center;
       justify-content: center;
-      padding: 0px;
     }
 
-    .icon-action-btn:hover {
-      background-color: rgba(255, 255, 255, 0.22);
-      border-color: rgba(255, 255, 255, 0.50);
+    .header-action-pill:hover {
+      background-color: rgba(217, 119, 54, 0.35);
+      border-color: #D97736;
     }
 
-    .icon-action-btn:active {
-      background-color: rgba(124, 92, 255, 0.45);
-      border-color: #A78BFA;
-    }
-
-    .icon-text {
-      font-size: 13px;
+    .header-action-text {
+      font-size: 11px;
       font-weight: 700;
-      color: #FFFFFF;
+      color: #F5F2EB;
+    }
+
+    .workspace-mover-bar {
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 38px;
+      gap: 8px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      padding-left: 10px;
+      padding-right: 10px;
+      border-radius: 14px;
+      background-color: rgba(26, 29, 36, 0.75);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.12);
+      margin-top: 4px;
+    }
+
+    .mover-chip {
+      height: 28px;
+      padding-left: 10px;
+      padding-right: 10px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.06);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.12);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mover-chip:hover {
+      background-color: rgba(217, 119, 54, 0.30);
+      border-color: #D97736;
+    }
+
+    .mover-chip-handle {
+      height: 28px;
+      padding-left: 14px;
+      padding-right: 14px;
+      border-radius: 8px;
+      background-color: rgba(217, 119, 54, 0.28);
+      border-width: 1px;
+      border-color: #D97736;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mover-chip-handle:hover {
+      background-color: #D97736;
+      border-color: #F3B27A;
+    }
+
+    .mover-chip-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: #F5F2EB;
     }
 
     .badge-dot {
@@ -305,8 +358,8 @@
     }
 
     .nav-tab-active {
-      background-color: rgba(124, 92, 255, 0.22);
-      border-color: #7C5CFF;
+      background-color: rgba(217, 119, 54, 0.22);
+      border-color: #D97736;
       border-width: 1.5px;
     }
 
@@ -401,8 +454,8 @@
     }
 
     .sched-action-btn:hover {
-      background-color: rgba(124, 92, 255, 0.35);
-      border-color: #A78BFA;
+      background-color: rgba(217, 119, 54, 0.35);
+      border-color: #F3B27A;
     }
 
     .sched-action-text {
@@ -560,8 +613,8 @@
     }
 
     .card-zoom-btn:hover {
-      background-color: rgba(124, 92, 255, 0.40);
-      border-color: #A78BFA;
+      background-color: rgba(217, 119, 54, 0.40);
+      border-color: #F3B27A;
     }
 
     .card-zoom-text {
@@ -593,7 +646,7 @@
     }
 
     .filter-chip-active {
-      background-color: #7C5CFF;
+      background-color: #D97736;
     }
 
     .filter-chip-text {
@@ -712,7 +765,7 @@
     }
 
     .task-edit-btn:hover {
-      background-color: rgba(124, 92, 255, 0.45);
+      background-color: rgba(217, 119, 54, 0.45);
     }
 
     .task-edit-icon {
@@ -726,14 +779,14 @@
       gap: 4px;
       height: 24px;
       border-radius: 8px;
-      background-color: rgba(124, 92, 255, 0.15);
+      background-color: rgba(217, 119, 54, 0.15);
       border-width: 1px;
-      border-color: rgba(124, 92, 255, 0.35);
+      border-color: rgba(217, 119, 54, 0.35);
       width: 100%;
     }
 
     .add-task-footer-btn:hover {
-      background-color: #7C5CFF;
+      background-color: #D97736;
     }
 
     .add-task-footer-text {
@@ -764,8 +817,8 @@
       height: 78px;
       border-radius: 999px;
       border-width: 4px;
-      border-color: #7C5CFF;
-      background-color: rgba(124, 92, 255, 0.12);
+      border-color: #D97736;
+      background-color: rgba(217, 119, 54, 0.12);
       align-items: center;
       justify-content: center;
       flex-direction: column;
@@ -789,7 +842,7 @@
       width: 38px;
       height: 38px;
       border-radius: 999px;
-      background-color: #7C5CFF;
+      background-color: #D97736;
       align-items: center;
       justify-content: center;
       border-width: 1.5px;
@@ -827,12 +880,12 @@
     }
 
     .focus-quick-chip:hover {
-      background-color: rgba(124, 92, 255, 0.35);
-      border-color: #A78BFA;
+      background-color: rgba(217, 119, 54, 0.35);
+      border-color: #F3B27A;
     }
 
     .focus-quick-chip:active {
-      background-color: #7C5CFF;
+      background-color: #D97736;
     }
 
     .focus-quick-chip-text {
@@ -844,7 +897,7 @@
     .focus-footer-text {
       font-size: 11px;
       font-weight: 600;
-      color: #A78BFA;
+      color: #F3B27A;
       text-align: center;
     }
 
@@ -957,11 +1010,11 @@
 
     .dock-btn:hover {
       background-color: rgba(255, 255, 255, 0.16);
-      border-color: #7C5CFF;
+      border-color: #D97736;
     }
 
     .dock-btn:active {
-      background-color: rgba(124, 92, 255, 0.35);
+      background-color: rgba(217, 119, 54, 0.35);
     }
 
     .dock-btn-text {
@@ -1004,7 +1057,7 @@
       padding-top: 4px;
       padding-bottom: 4px;
       border-radius: 999px;
-      background-color: #7C5CFF;
+      background-color: #D97736;
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.40);
     }
@@ -1059,8 +1112,8 @@
     }
 
     .week-day-col-active {
-      background-color: rgba(124, 92, 255, 0.15);
-      border-color: #7C5CFF;
+      background-color: rgba(217, 119, 54, 0.15);
+      border-color: #D97736;
     }
 
     .week-day-header-btn {
@@ -1074,7 +1127,7 @@
     }
 
     .week-day-header-btn:hover {
-      background-color: rgba(124, 92, 255, 0.35);
+      background-color: rgba(217, 119, 54, 0.35);
     }
 
     .week-day-name {
@@ -1086,7 +1139,7 @@
     .week-day-date {
       font-size: 10px;
       font-weight: 600;
-      color: #A78BFA;
+      color: #F3B27A;
     }
 
     .week-day-tasks {
@@ -1124,8 +1177,8 @@
     }
 
     .week-add-btn:hover {
-      background-color: rgba(124, 92, 255, 0.40);
-      border-color: #A78BFA;
+      background-color: rgba(217, 119, 54, 0.40);
+      border-color: #F3B27A;
     }
 
     .week-add-text {
@@ -1177,13 +1230,13 @@
     }
 
     .month-date-tile:hover {
-      background-color: rgba(124, 92, 255, 0.25);
-      border-color: #A78BFA;
+      background-color: rgba(217, 119, 54, 0.25);
+      border-color: #F3B27A;
     }
 
     .month-date-tile-active {
-      background-color: rgba(124, 92, 255, 0.35);
-      border-color: #7C5CFF;
+      background-color: rgba(217, 119, 54, 0.35);
+      border-color: #D97736;
       border-width: 1.5px;
     }
 
@@ -1260,7 +1313,7 @@
 
     .interactive-card-item:hover {
       background-color: rgba(255, 255, 255, 0.12);
-      border-color: #7C5CFF;
+      border-color: #D97736;
     }
 
     .interactive-card-text {
@@ -1308,18 +1361,18 @@
     </div>
 
     <div class="header-actions-group">
-      <Button id="btn-search" class="icon-action-btn">
-        <ButtonLabel class="icon-text">🔍</ButtonLabel>
+      <Button id="btn-search" class="header-action-pill">
+        <ButtonLabel class="header-action-text">Search</ButtonLabel>
       </Button>
-      <Button id="btn-bell" class="icon-action-btn">
-        <ButtonLabel class="icon-text">🔔</ButtonLabel>
+      <Button id="btn-bell" class="header-action-pill">
+        <ButtonLabel id="btn-bell-label" class="header-action-text">Alerts (3)</ButtonLabel>
         <div id="bell-badge" class="badge-dot"></div>
       </Button>
-      <Button id="btn-settings" class="icon-action-btn">
-        <ButtonLabel class="icon-text">⚙️</ButtonLabel>
+      <Button id="btn-settings" class="header-action-pill">
+        <ButtonLabel class="header-action-text">Studio</ButtonLabel>
       </Button>
-      <Button id="btn-profile" class="icon-action-btn">
-        <ButtonLabel class="icon-text">👤</ButtonLabel>
+      <Button id="btn-profile" class="header-action-pill">
+        <ButtonLabel class="header-action-text">Stats</ButtonLabel>
       </Button>
     </div>
   </div>
@@ -1338,7 +1391,7 @@
 
   <div class="nav-tabs-bar">
     <Button id="nav-tasks" class="nav-tab-pill">
-      <Check width="13" height="13" color="#A78BFA"></Check>
+      <Check width="13" height="13" color="#F3B27A"></Check>
       <ButtonLabel class="nav-tab-label">Tasks</ButtonLabel>
     </Button>
 
@@ -1885,7 +1938,7 @@
       <!-- Duration Steppers & Quick Chips -->
       <div style="flex-direction: row; justify-content: space-between; align-items: center; width: 100%;">
         <span class="greeting-subtitle" style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.60);">DURATION</span>
-        <span id="ed-duration-display" class="subview-title" style="font-size: 15px; color: #A78BFA; font-weight: 800;">60m</span>
+        <span id="ed-duration-display" class="subview-title" style="font-size: 15px; color: #F3B27A; font-weight: 800;">60m</span>
       </div>
       <div style="flex-direction: row; gap: 6px; width: 100%; align-items: center;">
         <Button id="ed-dur-minus15" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-15m</ButtonLabel></Button>
@@ -1928,7 +1981,7 @@
         <Button id="ed-btn-delete" class="subview-back-btn" style="background-color: rgba(239, 68, 68, 0.30); border-color: #EF4444;">
           <ButtonLabel id="ed-btn-delete-label" class="subview-back-text" style="color: #FCA5A5;">Delete Task</ButtonLabel>
         </Button>
-        <Button id="ed-btn-save-bottom" class="subview-back-btn" style="background-color: #7C5CFF; border-color: #A78BFA; padding-left: 18px; padding-right: 18px;">
+        <Button id="ed-btn-save-bottom" class="subview-back-btn" style="background-color: #D97736; border-color: #F3B27A; padding-left: 18px; padding-right: 18px;">
           <ButtonLabel class="subview-back-text">Save Task</ButtonLabel>
         </Button>
       </div>
@@ -1947,7 +2000,7 @@
       </Button>
     </div>
     <div class="subview-body" style="align-items: center; justify-content: center; gap: 10px;">
-      <span id="focus-studio-timer" class="subview-title" style="font-size: 36px; font-weight: 800; color: #A78BFA;">25:00</span>
+      <span id="focus-studio-timer" class="subview-title" style="font-size: 36px; font-weight: 800; color: #F3B27A;">25:00</span>
       <span id="focus-studio-mode" class="greeting-subtitle" style="font-size: 14px;">Pomodoro Focus Mode • 4/8 Sessions Today</span>
       <div class="focus-quick-chips-row" style="width: 480px; flex-wrap: wrap; justify-content: center; gap: 6px;">
         <Button id="focus-studio-minus1" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-1m</ButtonLabel></Button>
@@ -2106,6 +2159,145 @@
     </div>
   </div>
 
+  <!-- Subview: Search & Smart Filter -->
+  <div id="view-search" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-search-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">Search &amp; Smart Filter</span>
+      <span id="search-results-count" class="subview-back-text" style="color: #D97736;">5 Tasks Found</span>
+    </div>
+    <div class="subview-body" style="gap: 8px;">
+      <div style="flex-direction: row; gap: 6px; width: 100%;">
+        <Button id="search-filter-all" class="focus-quick-chip" style="background-color: rgba(217, 119, 54, 0.25); border-color: #D97736;"><ButtonLabel class="focus-quick-chip-text">All Items</ButtonLabel></Button>
+        <Button id="search-filter-high" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">High Priority</ButtonLabel></Button>
+        <Button id="search-filter-today" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">Scheduled Today</ButtonLabel></Button>
+        <Button id="search-filter-completed" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">Completed</ButtonLabel></Button>
+      </div>
+      <div id="search-results-list" style="flex-direction: column; gap: 6px; width: 100%;">
+        <Button id="search-item-0" class="interactive-card-item">
+          <ButtonLabel id="search-item-title-0" class="interactive-card-text">Finish ML assignment • 9:00 AM</ButtonLabel>
+          <span id="search-item-badge-0" class="hub-task-badge badge-high">High</span>
+        </Button>
+        <Button id="search-item-1" class="interactive-card-item">
+          <ButtonLabel id="search-item-title-1" class="interactive-card-text">Implement API • 11:00 AM</ButtonLabel>
+          <span id="search-item-badge-1" class="hub-task-badge badge-med">Med</span>
+        </Button>
+        <Button id="search-item-2" class="interactive-card-item">
+          <ButtonLabel id="search-item-title-2" class="interactive-card-text">Team meeting • 2:00 PM</ButtonLabel>
+          <span id="search-item-badge-2" class="hub-task-badge badge-low">Low</span>
+        </Button>
+        <Button id="search-item-3" class="interactive-card-item">
+          <ButtonLabel id="search-item-title-3" class="interactive-card-text">Read research paper • 3:30 PM</ButtonLabel>
+          <span id="search-item-badge-3" class="hub-task-badge badge-med">Med</span>
+        </Button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subview: Spatial Notifications -->
+  <div id="view-notifications" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-notifs-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">Spatial Alerts &amp; Activity</span>
+      <Button id="btn-clear-notifs" class="subview-back-btn" style="background-color: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.15);">
+        <ButtonLabel class="subview-back-text">Clear All</ButtonLabel>
+      </Button>
+    </div>
+    <div class="subview-body" style="gap: 8px;">
+      <div id="notif-item-0" class="interactive-card-item" style="padding: 10px; border-color: rgba(217, 119, 54, 0.40);">
+        <div style="flex-direction: column; gap: 2px;">
+          <span class="interactive-card-text" style="font-weight: 700; color: #F3B27A;">Upcoming Deadline: Project Submission</span>
+          <span class="legend-text" style="color: rgba(245, 242, 235, 0.65);">Scheduled for Friday, Nov 21 at 5:00 PM. High priority milestone.</span>
+        </div>
+      </div>
+      <div id="notif-item-1" class="interactive-card-item" style="padding: 10px; border-color: rgba(78, 135, 98, 0.40);">
+        <div style="flex-direction: column; gap: 2px;">
+          <span class="interactive-card-text" style="font-weight: 700; color: #8BC49E;">Focus Session Completed</span>
+          <span class="legend-text" style="color: rgba(245, 242, 235, 0.65);">25m Pomodoro sprint finished. +30 Garden XP awarded to Great Oak.</span>
+        </div>
+      </div>
+      <div id="notif-item-2" class="interactive-card-item" style="padding: 10px;">
+        <div style="flex-direction: column; gap: 2px;">
+          <span class="interactive-card-text" style="font-weight: 700; color: #F5F2EB;">Schedule Buffer Optimization</span>
+          <span class="legend-text" style="color: rgba(245, 242, 235, 0.65);">All tasks paced with 10m rest buffers. Evening free after 7:00 PM.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subview: Studio Settings & Themes -->
+  <div id="view-settings" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-settings-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">Spatial Studio &amp; Environment</span>
+      <span class="subview-back-text" style="color: #4E8762;">Active</span>
+    </div>
+    <div class="subview-body" style="gap: 10px;">
+      <div class="interactive-card-item" style="justify-content: space-between; align-items: center; padding: 10px;">
+        <div style="flex-direction: column;">
+          <span class="interactive-card-text" style="font-weight: 700;">Spatial Audio Feedback</span>
+          <span class="legend-text" style="color: rgba(245, 242, 235, 0.60);">Tactile pinch ticks, focus bells, and subtle binaural room audio</span>
+        </div>
+        <Button id="btn-setting-audio-toggle" class="focus-quick-chip" style="background-color: #D97736; border-color: #F3B27A;">
+          <ButtonLabel id="btn-setting-audio-label" class="focus-quick-chip-text">Audio: Active</ButtonLabel>
+        </Button>
+      </div>
+
+      <div class="interactive-card-item" style="flex-direction: column; gap: 6px; padding: 10px;">
+        <span class="interactive-card-text" style="font-weight: 700;">Desk Viewing Distance</span>
+        <div style="flex-direction: row; gap: 8px; width: 100%;">
+          <Button id="btn-setting-dist-near" class="focus-quick-chip" style="flex-grow: 1;"><ButtonLabel class="focus-quick-chip-text">Near (60cm)</ButtonLabel></Button>
+          <Button id="btn-setting-dist-norm" class="focus-quick-chip" style="flex-grow: 1; background-color: rgba(217, 119, 54, 0.35); border-color: #D97736;"><ButtonLabel class="focus-quick-chip-text">Normal (75cm)</ButtonLabel></Button>
+          <Button id="btn-setting-dist-far" class="focus-quick-chip" style="flex-grow: 1;"><ButtonLabel class="focus-quick-chip-text">Far (95cm)</ButtonLabel></Button>
+        </div>
+      </div>
+
+      <div class="interactive-card-item" style="flex-direction: column; gap: 6px; padding: 10px;">
+        <span class="interactive-card-text" style="font-weight: 700;">Natural Material Theme</span>
+        <div style="flex-direction: row; gap: 8px; width: 100%;">
+          <Button id="btn-setting-theme-glass" class="focus-quick-chip" style="flex-grow: 1; background-color: rgba(217, 119, 54, 0.35); border-color: #D97736;"><ButtonLabel class="focus-quick-chip-text">Warm Sunlit Glass</ButtonLabel></Button>
+          <Button id="btn-setting-theme-titanium" class="focus-quick-chip" style="flex-grow: 1;"><ButtonLabel class="focus-quick-chip-text">Dark Titanium</ButtonLabel></Button>
+          <Button id="btn-setting-theme-timber" class="focus-quick-chip" style="flex-grow: 1;"><ButtonLabel class="focus-quick-chip-text">Nordic Timber</ButtonLabel></Button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subview: Productivity Profile & Stats -->
+  <div id="view-profile" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-profile-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Back to Dashboard</ButtonLabel>
+      </Button>
+      <span class="subview-title">Productivity Profile &amp; Stats</span>
+      <span class="subview-back-text" style="color: #F3B27A;">Top 5% Focus</span>
+    </div>
+    <div class="subview-body" style="gap: 8px;">
+      <div class="interactive-card-item" style="justify-content: space-between; align-items: center; padding: 10px;">
+        <span class="interactive-card-text">Weekly Efficiency Score</span>
+        <span class="subview-title" style="font-size: 16px; color: #4E8762;">94%</span>
+      </div>
+      <div class="interactive-card-item" style="justify-content: space-between; align-items: center; padding: 10px;">
+        <span class="interactive-card-text">Today's Focus Sprint Time</span>
+        <span class="subview-title" style="font-size: 16px; color: #D97736;">2h 45m / 6h target</span>
+      </div>
+      <div class="interactive-card-item" style="justify-content: space-between; align-items: center; padding: 10px;">
+        <span class="interactive-card-text">Continuous Daily Streak</span>
+        <span class="subview-title" style="font-size: 16px; color: #F3B27A;">7 Days Consistency</span>
+      </div>
+      <div class="interactive-card-item" style="justify-content: space-between; align-items: center; padding: 10px;">
+        <span class="interactive-card-text">Tasks Completed This Week</span>
+        <span class="subview-title" style="font-size: 16px; color: #8BC49E;">18 Tasks</span>
+      </div>
+    </div>
+  </div>
+
   <div class="dock-container">
     <Button id="dock-timeline" class="dock-btn">
       <ButtonLabel class="dock-btn-text">⏱ Timeline</ButtonLabel>
@@ -2124,6 +2316,25 @@
     </Button>
     <Button id="dock-capture" class="dock-btn">
       <ButtonLabel class="dock-btn-text">📷 Capture</ButtonLabel>
+    </Button>
+  </div>
+
+  <!-- Spatial DeskMate Workspace Mover Handle -->
+  <div class="workspace-mover-bar" id="workspace-mover-bar">
+    <Button id="btn-mover-closer" class="mover-chip">
+      <ButtonLabel class="mover-chip-text">⟵ Pull Closer (-15cm)</ButtonLabel>
+    </Button>
+    <Button id="btn-mover-drag-handle" class="mover-chip-handle">
+      <ButtonLabel class="mover-chip-text">⠿ Move DeskMate ⠿</ButtonLabel>
+    </Button>
+    <Button id="btn-mover-farther" class="mover-chip">
+      <ButtonLabel class="mover-chip-text">⟶ Push Back (+15cm)</ButtonLabel>
+    </Button>
+    <Button id="btn-mover-height" class="mover-chip">
+      <ButtonLabel id="btn-mover-height-label" class="mover-chip-text">⬍ Height (+10cm)</ButtonLabel>
+    </Button>
+    <Button id="btn-mover-reset" class="mover-chip">
+      <ButtonLabel class="mover-chip-text">↺ Reset</ButtonLabel>
     </Button>
   </div>
 </Panel>

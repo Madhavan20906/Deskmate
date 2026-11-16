@@ -68,7 +68,11 @@ export type HubContentView =
   | 'garden'
   | 'routines'
   | 'notes'
-  | 'goals';
+  | 'goals'
+  | 'search'
+  | 'notifications'
+  | 'settings'
+  | 'profile';
 
 function setText(element: any, text: string | number) {
   if (!element) return;
@@ -126,6 +130,7 @@ export class PanelSystem extends createSystem({
   // Interactive Models
   private weather: WeatherData = { ...SEED_WEATHER };
   private calendarDays: CalendarDayViewModel[] = JSON.parse(JSON.stringify(SEED_CALENDAR_DAYS));
+  private calendarStartDay = 16;
   private selectedDayNumber = 18;
   private selectedMonthIndex = 10; // November
   private readonly monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -133,6 +138,10 @@ export class PanelSystem extends createSystem({
   private routines: RoutineGroup[] = JSON.parse(JSON.stringify(SEED_ROUTINES));
   private habits: HabitItem[] = JSON.parse(JSON.stringify(SEED_HABITS));
   private deadlines: UpcomingDeadline[] = JSON.parse(JSON.stringify(SEED_DEADLINES));
+
+  // Workspace Position & Depth Offset (Movable/Draggable in 3D space)
+  private workspaceOffset = { x: 0, y: 0, z: 0 };
+  private heightStepIndex = 0;
 
   // Hub View Controls
   private activeTab: NavTab = 'schedule';
@@ -183,6 +192,17 @@ export class PanelSystem extends createSystem({
 
     this.loadTasks();
 
+    try {
+      const storedOffset = window.localStorage.getItem('deskmate.workspace-offset.v1');
+      if (storedOffset) {
+        const parsed = JSON.parse(storedOffset);
+        if (parsed && typeof parsed.x === 'number') {
+          this.workspaceOffset = parsed;
+        }
+      }
+    } catch {}
+    this.applyWorkspaceOffset();
+
     // 1-second interval for clock check and focus countdown
     const interval = window.setInterval(() => {
       this.tickSecond();
@@ -220,12 +240,16 @@ export class PanelSystem extends createSystem({
     element.addEventListener('pointerenter', onEnter);
     element.addEventListener('click', trigger);
     element.addEventListener('pointerdown', trigger);
+    element.addEventListener('select', trigger);
+    element.addEventListener('raydown', trigger);
 
     this.cleanupFuncs.push(() => {
       try {
         element.removeEventListener('pointerenter', onEnter);
         element.removeEventListener('click', trigger);
         element.removeEventListener('pointerdown', trigger);
+        element.removeEventListener('select', trigger);
+        element.removeEventListener('raydown', trigger);
       } catch {}
     });
 
@@ -235,11 +259,15 @@ export class PanelSystem extends createSystem({
           child.addEventListener('pointerenter', onEnter);
           child.addEventListener('click', trigger);
           child.addEventListener('pointerdown', trigger);
+          child.addEventListener('select', trigger);
+          child.addEventListener('raydown', trigger);
           this.cleanupFuncs.push(() => {
             try {
               child.removeEventListener('pointerenter', onEnter);
               child.removeEventListener('click', trigger);
               child.removeEventListener('pointerdown', trigger);
+              child.removeEventListener('select', trigger);
+              child.removeEventListener('raydown', trigger);
             } catch {}
           });
         }
@@ -423,7 +451,7 @@ export class PanelSystem extends createSystem({
   // --------------------------------------------------------------------------
   // Section Zoom & In-Place Subview Mechanics (Zero 3D Camera Zoom)
   // --------------------------------------------------------------------------
-  public resetPanelTransforms() {
+  public applyWorkspaceOffset() {
     const defaults: Record<string, { pos: [number, number, number]; rotDeg: [number, number, number]; scale: number }> = {
       'panel-left-tasks': { pos: [-0.58, 1.48, -0.68], rotDeg: [0, 22, 0], scale: 0.10 },
       'panel-hub': { pos: [0, 1.48, -0.72], rotDeg: [0, 0, 0], scale: 0.10 },
@@ -434,7 +462,11 @@ export class PanelSystem extends createSystem({
     for (const [id, def] of Object.entries(defaults)) {
       const obj = this.world.getSceneObject(id);
       if (obj) {
-        obj.position.set(def.pos[0], def.pos[1], def.pos[2]);
+        obj.position.set(
+          def.pos[0] + this.workspaceOffset.x,
+          def.pos[1] + this.workspaceOffset.y,
+          def.pos[2] + this.workspaceOffset.z,
+        );
         obj.rotation.set(
           (def.rotDeg[0] * Math.PI) / 180,
           (def.rotDeg[1] * Math.PI) / 180,
@@ -444,6 +476,14 @@ export class PanelSystem extends createSystem({
         obj.visible = true;
       }
     }
+
+    try {
+      window.localStorage.setItem('deskmate.workspace-offset.v1', JSON.stringify(this.workspaceOffset));
+    } catch {}
+  }
+
+  public resetPanelTransforms() {
+    this.applyWorkspaceOffset();
   }
 
   public zoomSection(panelId: string, sectionTitle = 'Section View', _offsetY = 1.25, _zoomScale = 0.155) {
@@ -512,6 +552,10 @@ export class PanelSystem extends createSystem({
       { id: 'view-routines', view: 'routines' },
       { id: 'view-notes', view: 'notes' },
       { id: 'view-goals', view: 'goals' },
+      { id: 'view-search', view: 'search' },
+      { id: 'view-notifications', view: 'notifications' },
+      { id: 'view-settings', view: 'settings' },
+      { id: 'view-profile', view: 'profile' },
     ];
 
     for (const v of allViews) {
@@ -526,7 +570,7 @@ export class PanelSystem extends createSystem({
       }
     }
 
-    // Update active nav tab styling
+    // Update active nav tab styling with natural warm architectural glass palette
     const navTabs: NavTab[] = ['tasks', 'schedule', 'focus', 'analytics', 'garden', 'routines', 'notes', 'goals'];
     for (const tab of navTabs) {
       const tabEl = hubAsset.getElementById(`nav-${tab}`) as any;
@@ -535,8 +579,8 @@ export class PanelSystem extends createSystem({
           (tab === 'schedule' && (view === 'overview' || view === 'week' || view === 'month')) ||
           tab === view;
         tabEl.setProperties({
-          backgroundColor: isActive ? 'rgba(124, 92, 255, 0.40)' : 'rgba(255, 255, 255, 0.05)',
-          borderColor: isActive ? '#7C5CFF' : 'rgba(255, 255, 255, 0.12)',
+          backgroundColor: isActive ? 'rgba(217, 119, 54, 0.35)' : 'rgba(255, 255, 255, 0.05)',
+          borderColor: isActive ? '#D97736' : 'rgba(255, 255, 255, 0.12)',
         });
       }
     }
@@ -612,19 +656,23 @@ export class PanelSystem extends createSystem({
       this.addPress(backBtn, () => this.resetZoom());
     }
 
-    // Mini Calendar Navigation
+    // Mini Calendar Navigation (Multi-week live date shifting)
     const prevMonth = asset.getElementById('cal-prev-month');
     if (prevMonth) {
       this.addPress(prevMonth, () => {
-        this.selectedMonthIndex = (this.selectedMonthIndex - 1 + 12) % 12;
-        this.updateCalendarHeader();
+        this.calendarStartDay = Math.max(1, this.calendarStartDay - 7);
+        this.updateCalendarDays();
+        this.refreshTasksPanelUI();
+        this.refreshHubPanelUI();
       });
     }
     const nextMonth = asset.getElementById('cal-next-month');
     if (nextMonth) {
       this.addPress(nextMonth, () => {
-        this.selectedMonthIndex = (this.selectedMonthIndex + 1) % 12;
-        this.updateCalendarHeader();
+        this.calendarStartDay = Math.min(25, this.calendarStartDay + 7);
+        this.updateCalendarDays();
+        this.refreshTasksPanelUI();
+        this.refreshHubPanelUI();
       });
     }
 
@@ -632,12 +680,14 @@ export class PanelSystem extends createSystem({
       const dayBtn = asset.getElementById(`cal-day-${i}`);
       if (dayBtn) {
         this.addPress(dayBtn, () => {
-          this.calendarDays.forEach((d, idx) => {
-            d.isSelected = idx === i;
-          });
           const selected = this.calendarDays[i];
+          if (!selected) return;
           this.selectedDayNumber = selected.dayNumber;
-          this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, Nov ${selected.dayNumber}.`);
+          this.calendarDays.forEach((d) => {
+            d.isSelected = d.dayNumber === this.selectedDayNumber;
+          });
+          const count = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber).length;
+          this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, Nov ${selected.dayNumber} (${count} tasks). Tasks added will be scheduled for this day.`);
           this.refreshTasksPanelUI();
           this.refreshHubPanelUI();
         });
@@ -725,14 +775,30 @@ export class PanelSystem extends createSystem({
     }
   }
 
+  private updateCalendarDays() {
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    this.calendarDays = [];
+    for (let i = 0; i < 7; i++) {
+      const dayNum = this.calendarStartDay + i;
+      this.calendarDays.push({
+        dayOfWeek: daysOfWeek[i % 7],
+        dayNumber: dayNum,
+        isToday: dayNum === 18,
+        isSelected: dayNum === this.selectedDayNumber,
+      });
+    }
+    this.updateCalendarHeader();
+  }
+
   private updateCalendarHeader() {
     const asset = this.getAsset('panel-left-tasks');
     if (!asset) return;
     const monthLabel = asset.getElementById('cal-month-label') as any;
     if (monthLabel) {
-      setText(monthLabel, `${this.monthNames[this.selectedMonthIndex]} 2026`);
+      const endDay = this.calendarStartDay + 6;
+      setText(monthLabel, `Nov ${this.calendarStartDay} - ${endDay}`);
     }
-    this.setPipSpeech(`Switched calendar to ${this.monthNames[this.selectedMonthIndex]} 2026.`);
+    this.setPipSpeech(`Switched calendar week to Nov ${this.calendarStartDay} - ${this.calendarStartDay + 6}, 2026.`);
   }
 
   private toggleAgendaItem(index: number) {
@@ -782,7 +848,8 @@ export class PanelSystem extends createSystem({
     const searchBtn = asset.getElementById('btn-search');
     if (searchBtn) {
       this.addPress(searchBtn, () => {
-        this.setPipSpeech('Search: indexing tasks, calendar schedule, notes, and routines.');
+        this.setHubView('search');
+        this.setPipSpeech('Spatial Search Studio: Filter and jump to any task, event, or project.');
       });
     }
 
@@ -798,19 +865,24 @@ export class PanelSystem extends createSystem({
             badge.setProperties({ display: 'none' });
           }
         }
-        this.setPipSpeech('All notifications cleared. You are completely up to date!');
+        this.setHubView('notifications');
+        this.setPipSpeech('Spatial Notification Center: Review recent milestones and alerts.');
       });
     }
 
     const settingsBtn = asset.getElementById('btn-settings');
     if (settingsBtn) {
-      this.addPress(settingsBtn, () => this.toggleSettingsSheet());
+      this.addPress(settingsBtn, () => {
+        this.setHubView('settings');
+        this.setPipSpeech('Spatial Studio Settings: Ergonomics, audio, and architectural themes.');
+      });
     }
 
     const profileBtn = asset.getElementById('btn-profile');
     if (profileBtn) {
       this.addPress(profileBtn, () => {
-        this.setPipSpeech('Spatial Productivity Profile: Active • 7-day streak • Level 3 Garden.');
+        this.setHubView('profile');
+        this.setPipSpeech('Productivity Profile: 94% efficiency, 7-day consistency streak.');
       });
     }
 
@@ -1084,6 +1156,10 @@ export class PanelSystem extends createSystem({
       'btn-routines-back',
       'btn-notes-back',
       'btn-goals-back',
+      'btn-search-back',
+      'btn-notifs-back',
+      'btn-settings-back',
+      'btn-profile-back',
     ];
     for (const bId of subviewBackBtns) {
       const btn = asset.getElementById(bId);
@@ -1432,6 +1508,142 @@ export class PanelSystem extends createSystem({
     if (notesAdd) {
       this.addPress(notesAdd, () => {
         this.setPipSpeech('Quick Note added to spatial scratchpad.');
+      });
+    }
+
+    // Search Subview Controls
+    const searchFilterAll = asset.getElementById('search-filter-all');
+    if (searchFilterAll) this.addPress(searchFilterAll, () => this.setPipSpeech('Search filter: All items.'));
+    const searchFilterHigh = asset.getElementById('search-filter-high');
+    if (searchFilterHigh) this.addPress(searchFilterHigh, () => this.setPipSpeech('Search filter: High priority tasks.'));
+    const searchFilterToday = asset.getElementById('search-filter-today');
+    if (searchFilterToday) this.addPress(searchFilterToday, () => this.setPipSpeech('Search filter: Tasks scheduled for today.'));
+    const searchFilterDone = asset.getElementById('search-filter-completed');
+    if (searchFilterDone) this.addPress(searchFilterDone, () => this.setPipSpeech('Search filter: Completed tasks.'));
+
+    for (let i = 0; i < 4; i++) {
+      const sItem = asset.getElementById(`search-item-${i}`);
+      if (sItem) {
+        this.addPress(sItem, () => {
+          const t = this.tasks[i];
+          if (t) this.openEditSheet(t.id);
+        });
+      }
+    }
+
+    // Notifications Subview Controls
+    const clearNotifs = asset.getElementById('btn-clear-notifs');
+    if (clearNotifs) {
+      this.addPress(clearNotifs, () => {
+        this.hasUnreadNotification = false;
+        const bellBadge = asset.getElementById('bell-badge') as any;
+        if (bellBadge && typeof bellBadge.setProperties === 'function') {
+          bellBadge.setProperties({ display: 'none' });
+        }
+        this.setPipSpeech('Spatial Notification Center: All notifications cleared.');
+      });
+    }
+
+    // Settings Subview Controls
+    const audioToggle = asset.getElementById('btn-setting-audio-toggle');
+    if (audioToggle) {
+      this.addPress(audioToggle, () => {
+        this.soundEnabled = !this.soundEnabled;
+        const audioLbl = asset.getElementById('btn-setting-audio-label') as any;
+        if (audioLbl) setText(audioLbl, this.soundEnabled ? 'Audio: Active' : 'Audio: Muted');
+        this.setPipSpeech(`Spatial Audio ${this.soundEnabled ? 'Enabled' : 'Muted'}.`);
+      });
+    }
+
+    const distNear = asset.getElementById('btn-setting-dist-near');
+    if (distNear) {
+      this.addPress(distNear, () => {
+        this.workspaceOffset.z = 0.20;
+        this.applyWorkspaceOffset();
+        this.setPipSpeech('Desk viewing distance set to Near (60cm).');
+      });
+    }
+
+    const distNorm = asset.getElementById('btn-setting-dist-norm');
+    if (distNorm) {
+      this.addPress(distNorm, () => {
+        this.workspaceOffset.z = 0.00;
+        this.applyWorkspaceOffset();
+        this.setPipSpeech('Desk viewing distance set to Normal (75cm).');
+      });
+    }
+
+    const distFar = asset.getElementById('btn-setting-dist-far');
+    if (distFar) {
+      this.addPress(distFar, () => {
+        this.workspaceOffset.z = -0.20;
+        this.applyWorkspaceOffset();
+        this.setPipSpeech('Desk viewing distance set to Far (95cm).');
+      });
+    }
+
+    const themeGlass = asset.getElementById('btn-setting-theme-glass');
+    if (themeGlass) this.addPress(themeGlass, () => this.setPipSpeech('Material theme: Warm Sunlit Glass.'));
+    const themeTitanium = asset.getElementById('btn-setting-theme-titanium');
+    if (themeTitanium) this.addPress(themeTitanium, () => this.setPipSpeech('Material theme: Dark Titanium.'));
+    const themeTimber = asset.getElementById('btn-setting-theme-timber');
+    if (themeTimber) this.addPress(themeTimber, () => this.setPipSpeech('Material theme: Nordic Timber.'));
+
+    // Spatial DeskMate Workspace Mover Dock Controls
+    const moverCloser = asset.getElementById('btn-mover-closer');
+    if (moverCloser) {
+      this.addPress(moverCloser, () => {
+        this.workspaceOffset.z = Math.min(0.40, Number((this.workspaceOffset.z + 0.15).toFixed(2)));
+        this.applyWorkspaceOffset();
+        this.setPipSpeech(`Pulled DeskMate closer (Z: ${(this.workspaceOffset.z * 100).toFixed(0)}cm).`);
+      });
+    }
+
+    const moverFarther = asset.getElementById('btn-mover-farther');
+    if (moverFarther) {
+      this.addPress(moverFarther, () => {
+        this.workspaceOffset.z = Math.max(-0.45, Number((this.workspaceOffset.z - 0.15).toFixed(2)));
+        this.applyWorkspaceOffset();
+        this.setPipSpeech(`Pushed DeskMate back (Z: ${(this.workspaceOffset.z * 100).toFixed(0)}cm).`);
+      });
+    }
+
+    const moverHeight = asset.getElementById('btn-mover-height');
+    if (moverHeight) {
+      this.addPress(moverHeight, () => {
+        this.heightStepIndex = (this.heightStepIndex + 1) % 3;
+        const steps = [0, 0.10, -0.10];
+        const labels = ['⬍ Height (Default)', '⬍ Height (+10cm)', '⬍ Height (-10cm)'];
+        this.workspaceOffset.y = steps[this.heightStepIndex];
+        this.applyWorkspaceOffset();
+        const hLabel = asset.getElementById('btn-mover-height-label') as any;
+        if (hLabel) setText(hLabel, labels[this.heightStepIndex]);
+        this.setPipSpeech(`Adjusted DeskMate height (${labels[this.heightStepIndex]}).`);
+      });
+    }
+
+    const moverReset = asset.getElementById('btn-mover-reset');
+    if (moverReset) {
+      this.addPress(moverReset, () => {
+        this.workspaceOffset = { x: 0, y: 0, z: 0 };
+        this.heightStepIndex = 0;
+        this.applyWorkspaceOffset();
+        const hLabel = asset.getElementById('btn-mover-height-label') as any;
+        if (hLabel) setText(hLabel, '⬍ Height (+10cm)');
+        this.setPipSpeech('DeskMate returned to standard position.');
+      });
+    }
+
+    const moverHandle = asset.getElementById('btn-mover-drag-handle');
+    if (moverHandle) {
+      this.addPress(moverHandle, () => {
+        this.workspaceOffset.z = this.workspaceOffset.z > 0.05 ? 0 : 0.20;
+        this.applyWorkspaceOffset();
+        this.setPipSpeech(
+          this.workspaceOffset.z > 0.05
+            ? 'DeskMate brought into close focus distance.'
+            : 'DeskMate returned to standard distance.',
+        );
       });
     }
   }
@@ -1997,10 +2209,24 @@ export class PanelSystem extends createSystem({
       if (day && dayTxt) {
         setText(dayTxt, day.dayNumber);
       }
-      if (dayBtn && typeof dayBtn.setProperties === 'function') {
-        dayBtn.setProperties({
-          backgroundColor: day.isSelected ? '#3B82F6' : 'transparent',
-        });
+      if (day && dayBtn && typeof dayBtn.setProperties === 'function') {
+        const hasTasks = this.tasks.some((t) => (t.dayNumber ?? 18) === day.dayNumber);
+        if (day.isSelected) {
+          dayBtn.setProperties({
+            backgroundColor: '#D97736',
+            borderColor: '#F3B27A',
+          });
+        } else if (hasTasks) {
+          dayBtn.setProperties({
+            backgroundColor: 'rgba(217, 119, 54, 0.22)',
+            borderColor: 'rgba(217, 119, 54, 0.50)',
+          });
+        } else {
+          dayBtn.setProperties({
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+          });
+        }
       }
     }
 
@@ -2119,8 +2345,8 @@ export class PanelSystem extends createSystem({
       if (colEl && typeof colEl.setProperties === 'function') {
         const isSelected = dayNum === this.selectedDayNumber;
         colEl.setProperties({
-          backgroundColor: isSelected ? 'rgba(124, 92, 255, 0.20)' : 'rgba(255, 255, 255, 0.04)',
-          borderColor: isSelected ? '#7C5CFF' : 'rgba(255, 255, 255, 0.08)',
+          backgroundColor: isSelected ? 'rgba(217, 119, 54, 0.25)' : 'rgba(255, 255, 255, 0.04)',
+          borderColor: isSelected ? '#D97736' : 'rgba(255, 255, 255, 0.08)',
         });
       }
     }
@@ -2163,8 +2389,8 @@ export class PanelSystem extends createSystem({
       if (tile && typeof tile.setProperties === 'function') {
         const isSelected = d === this.selectedDayNumber;
         tile.setProperties({
-          backgroundColor: isSelected ? 'rgba(124, 92, 255, 0.35)' : 'rgba(255, 255, 255, 0.05)',
-          borderColor: isSelected ? '#7C5CFF' : 'rgba(255, 255, 255, 0.12)',
+          backgroundColor: isSelected ? 'rgba(217, 119, 54, 0.35)' : 'rgba(255, 255, 255, 0.05)',
+          borderColor: isSelected ? '#D97736' : 'rgba(255, 255, 255, 0.12)',
         });
       }
     }
