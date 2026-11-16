@@ -1,429 +1,429 @@
 <Panel class="glass-focus-panel" id="glass-focus-root">
-  <style>
-    .glass-focus-panel {
-      flex-direction: column;
-      width: 340px;
-      height: 330px;
-      padding: 12px;
-      border-radius: 24px;
-      background-color: rgba(22, 24, 29, 0.82);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.16);
-      gap: 8px;
-    }
+ <style>
+ .glass-focus-panel {
+ flex-direction: column;
+ width: 340px;
+ height: 330px;
+ padding: 12px;
+ border-radius: 24px;
+ background-color: rgba(22, 24, 29, 0.82);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.16);
+ gap: 8px;
+ }
 
-    .panel-handle {
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 6px;
-      margin-bottom: 1px;
-    }
+ .panel-handle {
+ flex-direction: row;
+ justify-content: center;
+ align-items: center;
+ width: 100%;
+ height: 6px;
+ margin-bottom: 1px;
+ }
 
-    .handle-bar {
-      width: 44px;
-      height: 4px;
-      border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.28);
-    }
+ .handle-bar {
+ width: 44px;
+ height: 4px;
+ border-radius: 999px;
+ background-color: rgba(255, 255, 255, 0.28);
+ }
 
-    .habits-card {
-      flex-direction: column;
-      width: 100%;
-      padding: 10px;
-      border-radius: 16px;
-      background-color: rgba(18, 25, 48, 0.85);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.10);
-      gap: 6px;
-    }
+ .habits-card {
+ flex-direction: column;
+ width: 100%;
+ padding: 10px;
+ border-radius: 16px;
+ background-color: rgba(18, 25, 48, 0.85);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.10);
+ gap: 6px;
+ }
 
-    .habits-header-row {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
+ .habits-header-row {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ width: 100%;
+ }
 
-    .habits-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
+ .habits-title {
+ font-size: 13px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
 
-    .streak-badge {
-      flex-direction: row;
-      align-items: center;
-      gap: 4px;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 2px;
-      padding-bottom: 2px;
-      border-radius: 999px;
-      background-color: rgba(245, 158, 11, 0.20);
-      border-width: 1px;
-      border-color: rgba(245, 158, 11, 0.50);
-    }
+ .streak-badge {
+ flex-direction: row;
+ align-items: center;
+ gap: 4px;
+ padding-left: 8px;
+ padding-right: 8px;
+ padding-top: 2px;
+ padding-bottom: 2px;
+ border-radius: 999px;
+ background-color: rgba(245, 158, 11, 0.20);
+ border-width: 1px;
+ border-color: rgba(245, 158, 11, 0.50);
+ }
 
-    .streak-text {
-      font-size: 10px;
-      font-weight: 700;
-      color: #FBBF24;
-    }
+ .streak-text {
+ font-size: 10px;
+ font-weight: 700;
+ color: #FBBF24;
+ }
 
-    .habits-list {
-      flex-direction: column;
-      gap: 5px;
-      width: 100%;
-    }
+ .habits-list {
+ flex-direction: column;
+ gap: 5px;
+ width: 100%;
+ }
 
-    .habit-row-btn {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 4px;
-      padding-bottom: 4px;
-      border-radius: 10px;
-      background-color: rgba(255, 255, 255, 0.04);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.08);
-      width: 100%;
-    }
+ .habit-row-btn {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ padding-left: 8px;
+ padding-right: 8px;
+ padding-top: 4px;
+ padding-bottom: 4px;
+ border-radius: 10px;
+ background-color: rgba(255, 255, 255, 0.04);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.08);
+ width: 100%;
+ }
 
-    .habit-row-btn:hover {
-      background-color: rgba(255, 255, 255, 0.10);
-      border-color: rgba(255, 255, 255, 0.20);
-    }
+ .habit-row-btn:hover {
+ background-color: rgba(255, 255, 255, 0.10);
+ border-color: rgba(255, 255, 255, 0.20);
+ }
 
-    .habit-row-btn:active {
-      background-color: rgba(217, 119, 54, 0.25);
-    }
+ .habit-row-btn:active {
+ background-color: rgba(217, 119, 54, 0.25);
+ }
 
-    .habit-left {
-      flex-direction: row;
-      align-items: center;
-      gap: 6px;
-    }
+ .habit-left {
+ flex-direction: row;
+ align-items: center;
+ gap: 6px;
+ }
 
-    .habit-icon {
-      font-size: 11px;
-    }
+ .habit-icon {
+ font-size: 11px;
+ }
 
-    .habit-name {
-      font-size: 10px;
-      font-weight: 600;
-      color: #FFFFFF;
-    }
+ .habit-name {
+ font-size: 10px;
+ font-weight: 600;
+ color: #FFFFFF;
+ }
 
-    .habit-dots-row {
-      flex-direction: row;
-      align-items: center;
-      gap: 4px;
-    }
+ .habit-dots-row {
+ flex-direction: row;
+ align-items: center;
+ gap: 4px;
+ }
 
-    .habit-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-    }
+ .habit-dot {
+ width: 7px;
+ height: 7px;
+ border-radius: 999px;
+ }
 
-    .dot-done {
-      background-color: #22C55E;
-    }
+ .dot-done {
+ background-color: #22C55E;
+ }
 
-    .dot-pending {
-      background-color: rgba(255, 255, 255, 0.20);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.40);
-    }
+ .dot-pending {
+ background-color: rgba(255, 255, 255, 0.20);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.40);
+ }
 
-    .habit-score-text {
-      font-size: 9px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.65);
-      margin-left: 4px;
-    }
+ .habit-score-text {
+ font-size: 9px;
+ font-weight: 600;
+ color: rgba(255, 255, 255, 0.65);
+ margin-left: 4px;
+ }
 
-    .deadlines-card {
-      flex-direction: column;
-      width: 100%;
-      padding: 10px;
-      border-radius: 16px;
-      background-color: rgba(18, 25, 48, 0.85);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.10);
-      gap: 6px;
-    }
+ .deadlines-card {
+ flex-direction: column;
+ width: 100%;
+ padding: 10px;
+ border-radius: 16px;
+ background-color: rgba(18, 25, 48, 0.85);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.10);
+ gap: 6px;
+ }
 
-    .deadlines-header-row {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
+ .deadlines-header-row {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ width: 100%;
+ }
 
-    .deadlines-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
+ .deadlines-title {
+ font-size: 13px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
 
-    .deadlines-arrow {
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.50);
-    }
+ .deadlines-arrow {
+ font-size: 11px;
+ color: rgba(255, 255, 255, 0.50);
+ }
 
-    .deadlines-list {
-      flex-direction: column;
-      gap: 5px;
-      width: 100%;
-    }
+ .deadlines-list {
+ flex-direction: column;
+ gap: 5px;
+ width: 100%;
+ }
 
-    .deadline-item-btn {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-      border-radius: 10px;
-      background-color: rgba(255, 255, 255, 0.04);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.08);
-      width: 100%;
-    }
+ .deadline-item-btn {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ padding-left: 8px;
+ padding-right: 8px;
+ padding-top: 5px;
+ padding-bottom: 5px;
+ border-radius: 10px;
+ background-color: rgba(255, 255, 255, 0.04);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.08);
+ width: 100%;
+ }
 
-    .deadline-item-btn:hover {
-      background-color: rgba(255, 255, 255, 0.10);
-      border-color: rgba(255, 255, 255, 0.20);
-    }
+ .deadline-item-btn:hover {
+ background-color: rgba(255, 255, 255, 0.10);
+ border-color: rgba(255, 255, 255, 0.20);
+ }
 
-    .deadline-item-btn:active {
-      background-color: rgba(217, 119, 54, 0.25);
-    }
+ .deadline-item-btn:active {
+ background-color: rgba(217, 119, 54, 0.25);
+ }
 
-    .deadline-left {
-      flex-direction: row;
-      align-items: center;
-      gap: 6px;
-    }
+ .deadline-left {
+ flex-direction: row;
+ align-items: center;
+ gap: 6px;
+ }
 
-    .deadline-icon {
-      font-size: 11px;
-    }
+ .deadline-icon {
+ font-size: 11px;
+ }
 
-    .deadline-title {
-      font-size: 10px;
-      font-weight: 600;
-      color: #FFFFFF;
-    }
+ .deadline-title {
+ font-size: 10px;
+ font-weight: 600;
+ color: #FFFFFF;
+ }
 
-    .deadline-date-badge {
-      font-size: 9px;
-      font-weight: 700;
-    }
+ .deadline-date-badge {
+ font-size: 9px;
+ font-weight: 700;
+ }
 
-    .date-badge-red {
-      color: #F87171;
-    }
+ .date-badge-red {
+ color: #F87171;
+ }
 
-    .date-badge-amber {
-      color: #FBBF24;
-    }
+ .date-badge-amber {
+ color: #FBBF24;
+ }
 
-    .date-badge-blue {
-      color: #60A5FA;
-    }
+ .date-badge-blue {
+ color: #60A5FA;
+ }
 
-    .zoom-top-bar {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-      border-radius: 12px;
-      background-color: rgba(217, 119, 54, 0.25);
-      border-width: 1.5px;
-      border-color: #D97736;
-      width: 100%;
-    }
+ .zoom-top-bar {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ padding-left: 8px;
+ padding-right: 8px;
+ padding-top: 5px;
+ padding-bottom: 5px;
+ border-radius: 12px;
+ background-color: rgba(217, 119, 54, 0.25);
+ border-width: 1.5px;
+ border-color: #D97736;
+ width: 100%;
+ }
 
-    .zoom-back-btn {
-      flex-direction: row;
-      align-items: center;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 4px;
-      padding-bottom: 4px;
-      border-radius: 999px;
-      background-color: #D97736;
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.40);
-    }
+ .zoom-back-btn {
+ flex-direction: row;
+ align-items: center;
+ padding-left: 10px;
+ padding-right: 10px;
+ padding-top: 4px;
+ padding-bottom: 4px;
+ border-radius: 999px;
+ background-color: #D97736;
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.40);
+ }
 
-    .zoom-back-btn:hover {
-      background-color: #906ffa;
-      border-color: #FFFFFF;
-      border-width: 2px;
-    }
+ .zoom-back-btn:hover {
+ background-color: #906ffa;
+ border-color: #FFFFFF;
+ border-width: 2px;
+ }
 
-    .zoom-back-btn:active {
-      background-color: #633ef5;
-    }
+ .zoom-back-btn:active {
+ background-color: #633ef5;
+ }
 
-    .zoom-back-text {
-      font-size: 11px;
-      font-weight: 800;
-      color: #FFFFFF;
-    }
+ .zoom-back-text {
+ font-size: 11px;
+ font-weight: 800;
+ color: #FFFFFF;
+ }
 
-    .zoom-section-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: #C4B5FD;
-    }
+ .zoom-section-title {
+ font-size: 11px;
+ font-weight: 700;
+ color: #C4B5FD;
+ }
 
-    .card-zoom-btn {
-      padding-left: 6px;
-      padding-right: 6px;
-      padding-top: 2px;
-      padding-bottom: 2px;
-      border-radius: 6px;
-      background-color: rgba(255, 255, 255, 0.08);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.15);
-      align-items: center;
-      justify-content: center;
-    }
+ .card-zoom-btn {
+ padding-left: 6px;
+ padding-right: 6px;
+ padding-top: 2px;
+ padding-bottom: 2px;
+ border-radius: 6px;
+ background-color: rgba(255, 255, 255, 0.08);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.15);
+ align-items: center;
+ justify-content: center;
+ }
 
-    .card-zoom-btn:hover {
-      background-color: rgba(217, 119, 54, 0.40);
-      border-color: #F3B27A;
-    }
+ .card-zoom-btn:hover {
+ background-color: rgba(217, 119, 54, 0.40);
+ border-color: #F3B27A;
+ }
 
-    .card-zoom-text {
-      font-size: 10px;
-      font-weight: 700;
-      color: #E2E8F0;
-    }
-  </style>
+ .card-zoom-text {
+ font-size: 10px;
+ font-weight: 700;
+ color: #E2E8F0;
+ }
+ </style>
 
-  <div class="panel-handle">
-    <div class="handle-bar"></div>
-  </div>
+ <div class="panel-handle">
+ <div class="handle-bar"></div>
+ </div>
 
-  <div id="focus-zoom-bar" class="zoom-top-bar" style="display: none;">
-    <Button id="btn-habits-back" class="zoom-back-btn">
-      <ButtonLabel class="zoom-back-text">◀ Back to Overview</ButtonLabel>
-    </Button>
-    <span id="focus-zoom-label" class="zoom-section-title">Viewing Section (Zoomed)</span>
-  </div>
+ <div id="focus-zoom-bar" class="zoom-top-bar" style="display: none;">
+ <Button id="btn-habits-back" class="zoom-back-btn">
+ <ButtonLabel class="zoom-back-text">Back to Overview</ButtonLabel>
+ </Button>
+ <span id="focus-zoom-label" class="zoom-section-title">Viewing Section (Zoomed)</span>
+ </div>
 
-  <!-- Habits & Streaks -->
-  <div id="card-habits" class="habits-card">
-    <div class="habits-header-row">
-      <span class="habits-title">Habits &amp; Streaks</span>
-      <Button id="btn-zoom-habits" class="card-zoom-btn">
-        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-      </Button>
-      <div class="streak-badge">
-        <span id="habit-streak-badge" class="streak-text">🔥 7 Day Streak</span>
-      </div>
-    </div>
+ <!-- Habits & Streaks -->
+ <div id="card-habits" class="habits-card">
+ <div class="habits-header-row">
+ <span class="habits-title">Habits &amp; Streaks</span>
+ <Button id="btn-zoom-habits" class="card-zoom-btn">
+ <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ </Button>
+ <div class="streak-badge">
+ <span id="habit-streak-badge" class="streak-text">Streak: 7 Day Streak</span>
+ </div>
+ </div>
 
-    <div class="habits-list">
-      <Button id="habit-row-0" class="habit-row-btn">
-        <div class="habit-left">
-          <span class="habit-icon">📌</span>
-          <ButtonLabel class="habit-name">Plan my day</ButtonLabel>
-        </div>
-        <div class="habit-dots-row">
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <span id="habit-count-0" class="habit-score-text">7/7</span>
-        </div>
-      </Button>
+ <div class="habits-list">
+ <Button id="habit-row-0" class="habit-row-btn">
+ <div class="habit-left">
+ <span class="habit-icon">*</span>
+ <ButtonLabel class="habit-name">Plan my day</ButtonLabel>
+ </div>
+ <div class="habit-dots-row">
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <span id="habit-count-0" class="habit-score-text">7/7</span>
+ </div>
+ </Button>
 
-      <Button id="habit-row-1" class="habit-row-btn">
-        <div class="habit-left">
-          <span class="habit-icon">⏱</span>
-          <ButtonLabel class="habit-name">Focus (≥25m)</ButtonLabel>
-        </div>
-        <div class="habit-dots-row">
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-pending"></div>
-          <span id="habit-count-1" class="habit-score-text">6/7</span>
-        </div>
-      </Button>
+ <Button id="habit-row-1" class="habit-row-btn">
+ <div class="habit-left">
+ <span class="habit-icon"></span>
+ <ButtonLabel class="habit-name">Focus (>=25m)</ButtonLabel>
+ </div>
+ <div class="habit-dots-row">
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-pending"></div>
+ <span id="habit-count-1" class="habit-score-text">6/7</span>
+ </div>
+ </Button>
 
-      <Button id="habit-row-2" class="habit-row-btn">
-        <div class="habit-left">
-          <span class="habit-icon">💥</span>
-          <ButtonLabel class="habit-name">No distractions</ButtonLabel>
-        </div>
-        <div class="habit-dots-row">
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-done"></div>
-          <div class="habit-dot dot-pending"></div>
-          <div class="habit-dot dot-pending"></div>
-          <span id="habit-count-2" class="habit-score-text">5/7</span>
-        </div>
-      </Button>
-    </div>
-  </div>
+ <Button id="habit-row-2" class="habit-row-btn">
+ <div class="habit-left">
+ <span class="habit-icon">*</span>
+ <ButtonLabel class="habit-name">No distractions</ButtonLabel>
+ </div>
+ <div class="habit-dots-row">
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-done"></div>
+ <div class="habit-dot dot-pending"></div>
+ <div class="habit-dot dot-pending"></div>
+ <span id="habit-count-2" class="habit-score-text">5/7</span>
+ </div>
+ </Button>
+ </div>
+ </div>
 
-  <!-- Upcoming & Deadlines -->
-  <div id="card-deadlines" class="deadlines-card">
-    <div class="deadlines-header-row">
-      <span class="deadlines-title">Upcoming & Deadlines</span>
-      <Button id="btn-zoom-deadlines" class="card-zoom-btn">
-        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-      </Button>
-    </div>
+ <!-- Upcoming & Deadlines -->
+ <div id="card-deadlines" class="deadlines-card">
+ <div class="deadlines-header-row">
+ <span class="deadlines-title">Upcoming & Deadlines</span>
+ <Button id="btn-zoom-deadlines" class="card-zoom-btn">
+ <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ </Button>
+ </div>
 
-    <div class="deadlines-list">
-      <Button id="deadline-row-0" class="deadline-item-btn">
-        <div class="deadline-left">
-          <span class="deadline-icon">📅</span>
-          <ButtonLabel class="deadline-title">Project Submission</ButtonLabel>
-        </div>
-        <span class="deadline-date-badge date-badge-red">Fri, Nov 21</span>
-      </Button>
+ <div class="deadlines-list">
+ <Button id="deadline-row-0" class="deadline-item-btn">
+ <div class="deadline-left">
+ <span class="deadline-icon"></span>
+ <ButtonLabel class="deadline-title">Project Submission</ButtonLabel>
+ </div>
+ <span class="deadline-date-badge date-badge-red">Fri, Nov 21</span>
+ </Button>
 
-      <Button id="deadline-row-1" class="deadline-item-btn">
-        <div class="deadline-left">
-          <span class="deadline-icon">📙</span>
-          <ButtonLabel class="deadline-title">Research Paper (Draft)</ButtonLabel>
-        </div>
-        <span class="deadline-date-badge date-badge-amber">Sun, Nov 23</span>
-      </Button>
+ <Button id="deadline-row-1" class="deadline-item-btn">
+ <div class="deadline-left">
+ <span class="deadline-icon"></span>
+ <ButtonLabel class="deadline-title">Research Paper (Draft)</ButtonLabel>
+ </div>
+ <span class="deadline-date-badge date-badge-amber">Sun, Nov 23</span>
+ </Button>
 
-      <Button id="deadline-row-2" class="deadline-item-btn">
-        <div class="deadline-left">
-          <span class="deadline-icon">💻</span>
-          <ButtonLabel class="deadline-title">API Integration</ButtonLabel>
-        </div>
-        <span class="deadline-date-badge date-badge-blue">Mon, Nov 24</span>
-      </Button>
-    </div>
-  </div>
+ <Button id="deadline-row-2" class="deadline-item-btn">
+ <div class="deadline-left">
+ <span class="deadline-icon"></span>
+ <ButtonLabel class="deadline-title">API Integration</ButtonLabel>
+ </div>
+ <span class="deadline-date-badge date-badge-blue">Mon, Nov 24</span>
+ </Button>
+ </div>
+ </div>
 </Panel>

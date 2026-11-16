@@ -26,7 +26,7 @@ import type { GlassTask } from '../src/glass-data-adapters.ts';
 
 test('1.1 Pure View-Models: tasksToRowViewModels', () => {
   const rows = tasksToRowViewModels(SEED_TASKS);
-  assert.equal(rows.length, 4);
+  assert.equal(rows.length, 8);
 
   // Check high priority row formatting
   assert.equal(rows[0].title, 'Finish ML assignment');
@@ -52,7 +52,7 @@ test('1.1 Pure View-Models: tasksToRowViewModels', () => {
 
 test('1.1 Pure View-Models: tasksToScheduleBlocks & boundaries', () => {
   const blocks = tasksToScheduleBlocks(SEED_TASKS);
-  assert.equal(blocks.length, 4);
+  assert.equal(blocks.length, 6);
 
   // 09:00 to 10:30 (starts at 540m, duration 90m)
   // Workday 480m to 1080m (600m total). 540-480 = 60m. 60/600 = 10%
@@ -97,13 +97,13 @@ test('1.1 Pure View-Models: calculateWorkloadDonut (empty, partial, overloaded)'
   assert.equal(emptyDonut.remainingCapacityMinutes, 480);
   assert.equal(emptyDonut.isOverloaded, false);
 
-  // Seed tasks: 90 + 120 + 30 + 60 = 300 minutes (5 hours)
+  // Seed tasks: 90 + 90 + 30 + 45 + 60 + 45 = 360 minutes (6 hours)
   const seedDonut = calculateWorkloadDonut(SEED_TASKS);
-  assert.equal(seedDonut.scheduledMinutes, 300);
-  assert.equal(seedDonut.percentage, 63); // 300 / 480 = 62.5% -> 63%
-  assert.equal(seedDonut.scheduledFormatted, '5h');
-  assert.equal(seedDonut.remainingCapacityMinutes, 180);
-  assert.equal(seedDonut.remainingFormatted, '3h');
+  assert.equal(seedDonut.scheduledMinutes, 360);
+  assert.equal(seedDonut.percentage, 75); // 360 / 480 = 75%
+  assert.equal(seedDonut.scheduledFormatted, '6h');
+  assert.equal(seedDonut.remainingCapacityMinutes, 120);
+  assert.equal(seedDonut.remainingFormatted, '2h');
   assert.equal(seedDonut.isOverloaded, false);
 
   // Overloaded day (500 minutes > 480)
@@ -256,7 +256,7 @@ test('1.2 Pure Interaction Logic: UndoStack (5 steps, 8s timer, persistence roun
   // Persistence roundtrip serialization check
   const serialized = JSON.stringify(undone?.state);
   const parsed: GlassTask[] = JSON.parse(serialized);
-  assert.equal(parsed.length, 4);
+  assert.equal(parsed.length, 8);
   assert.equal(parsed[0].id, SEED_TASKS[0].id);
 });
 
