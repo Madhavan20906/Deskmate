@@ -29,22 +29,12 @@ type PlacementLoadResult = {
 const PLACEMENT_STORAGE_KEY = 'deskmate.workspace-placement.v1';
 const DEFAULT_WORKSPACE_POSITION = [0, 0, 0] as const;
 const WORKSPACE_NODE_IDS = [
-  'workspace-desk',
-  'desk-ruler',
-  'pip-companion',
-  'sprint-dial',
-  'desk-plant',
-  'focus-lamp',
-  'marbles-jar',
-  'ghost-companion',
-  'workspace-dashboard',
-  'task-card-roadmap',
-  'task-card-design-review',
-  'task-card-inbox',
-  'task-card-slot-4',
-  'task-card-slot-5',
-  'task-card-slot-6',
-  'welcome-panel',
+  'panel-left-tasks',
+  'panel-hub',
+  'panel-right-pip',
+  'pip-robot',
+  'panel-right-focus',
+  'panel-edit-sheet',
 ] as const;
 
 const isFiniteTuple = <T extends number>(
