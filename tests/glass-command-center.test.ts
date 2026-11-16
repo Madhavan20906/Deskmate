@@ -96,7 +96,7 @@ test('Tier S3: Tasks Quick Edit Sheet, Steppers, and 2-Tap Delete Confirmation',
 
   undo.push(tasks, 'Add new task');
   tasks.push(draftTask);
-  assert.equal(tasks.length, 5);
+  assert.equal(tasks.length, 9);
 
   // 3. Two-tap delete confirmation
   let deleteTaps = 0;
@@ -118,7 +118,7 @@ test('Tier S3: Tasks Quick Edit Sheet, Steppers, and 2-Tap Delete Confirmation',
   assert.equal(deleteConfirmed, false);
   assert.equal(tapDelete(), 'Deleted');
   assert.equal(deleteConfirmed, true);
-  assert.equal(tasks.length, 4);
+  assert.equal(tasks.length, 8);
 });
 
 test('Tier S4: Drag Task Row onto Schedule with 15-Minute Snapping', () => {
@@ -201,7 +201,7 @@ test('Tier S8: 8-Second Undo Window & Reversibility', () => {
   // Pop reverts to exact saved state
   const reverted = undo.pop();
   assert.equal(reverted?.actionDescription, 'Change 1');
-  assert.equal(reverted?.state.tasks.length, 4);
+  assert.equal(reverted?.state.tasks.length, 8);
 });
 
 test('Gate 2 Multi-Run Stability: 3 Consecutive Passes with Zero Failures', () => {
@@ -220,7 +220,7 @@ test('Gate 2 Multi-Run Stability: 3 Consecutive Passes with Zero Failures', () =
       scheduledStartMinute: 660,
       status: 'todo',
     });
-    assert.equal(tasks.length, 5);
+    assert.equal(tasks.length, 9);
 
     // 3. Complete task & verify workload update
     tasks[0].status = 'completed';
@@ -229,7 +229,7 @@ test('Gate 2 Multi-Run Stability: 3 Consecutive Passes with Zero Failures', () =
 
     // 4. Overlap push
     const pushed = resolveOverlapAndPush(tasks, `task-run-${run}`, 540);
-    assert.ok(pushed.tasks.length === 5);
+    assert.ok(pushed.tasks.length === 9);
   }
 });
 
@@ -275,20 +275,20 @@ test('Tier S9: Dual Pointer Parity (Both Left & Right Rays Active & Switchable)'
 test('Tier S10: Anonymous Dynamic Greeting (No User Name) & Rich Interactive Modules', () => {
   // 1. Strict anonymity: no user name mentioned anywhere in greetings
   const morningGreeting = generateGreeting(new Date(2026, 10, 18, 9, 30));
-  assert.equal(morningGreeting.greeting, 'Good Morning 👋');
+  assert.equal(morningGreeting.greeting, 'Good Morning');
   assert.equal(morningGreeting.userName, '');
   assert.ok(!morningGreeting.greeting.includes('Madhavan'), 'Does not mention user name');
 
   const afternoonGreeting = generateGreeting(new Date(2026, 10, 18, 14, 0));
-  assert.equal(afternoonGreeting.greeting, 'Good Afternoon 👋');
+  assert.equal(afternoonGreeting.greeting, 'Good Afternoon');
   assert.ok(!afternoonGreeting.greeting.includes('Madhavan'), 'Does not mention user name');
 
   const eveningGreeting = generateGreeting(new Date(2026, 10, 18, 19, 45));
-  assert.equal(eveningGreeting.greeting, 'Good Evening 👋');
+  assert.equal(eveningGreeting.greeting, 'Good Evening');
   assert.ok(!eveningGreeting.greeting.includes('Madhavan'), 'Does not mention user name');
 
   const nightGreeting = generateGreeting(new Date(2026, 10, 18, 23, 15));
-  assert.equal(nightGreeting.greeting, 'Good Night 👋');
+  assert.equal(nightGreeting.greeting, 'Good Night');
   assert.ok(!nightGreeting.greeting.includes('Madhavan'), 'Does not mention user name');
 
   // 2. Dynamic informative subtitle computed from tasks

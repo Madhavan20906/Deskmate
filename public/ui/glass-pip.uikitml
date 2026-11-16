@@ -1,449 +1,449 @@
 <Panel class="glass-pip-panel" id="glass-pip-root">
-  <style>
-    .glass-pip-panel {
-      flex-direction: column;
-      width: 340px;
-      height: 330px;
-      padding: 12px;
-      border-radius: 24px;
-      background-color: rgba(22, 24, 29, 0.82);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.16);
-      gap: 8px;
-    }
+ <style>
+ .glass-pip-panel {
+ flex-direction: column;
+ width: 340px;
+ height: 330px;
+ padding: 12px;
+ border-radius: 24px;
+ background-color: rgba(22, 24, 29, 0.82);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.16);
+ gap: 8px;
+ }
 
-    .panel-handle {
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 6px;
-      margin-bottom: 1px;
-    }
+ .panel-handle {
+ flex-direction: row;
+ justify-content: center;
+ align-items: center;
+ width: 100%;
+ height: 6px;
+ margin-bottom: 1px;
+ }
 
-    .handle-bar {
-      width: 44px;
-      height: 4px;
-      border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.28);
-    }
+ .handle-bar {
+ width: 44px;
+ height: 4px;
+ border-radius: 999px;
+ background-color: rgba(255, 255, 255, 0.28);
+ }
 
-    .pip-card {
-      flex-direction: column;
-      width: 100%;
-      padding: 10px;
-      border-radius: 16px;
-      background-color: rgba(18, 25, 48, 0.85);
-      border-width: 1px;
-      border-color: rgba(6, 182, 212, 0.25);
-      gap: 6px;
-    }
+ .pip-card {
+ flex-direction: column;
+ width: 100%;
+ padding: 10px;
+ border-radius: 16px;
+ background-color: rgba(18, 25, 48, 0.85);
+ border-width: 1px;
+ border-color: rgba(6, 182, 212, 0.25);
+ gap: 6px;
+ }
 
-    .pip-header-row {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
+ .pip-header-row {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ width: 100%;
+ }
 
-    .pip-title-group {
-      flex-direction: row;
-      align-items: center;
-      gap: 6px;
-    }
+ .pip-title-group {
+ flex-direction: row;
+ align-items: center;
+ gap: 6px;
+ }
 
-    .pip-avatar-circle {
-      width: 22px;
-      height: 22px;
-      border-radius: 999px;
-      background-color: rgba(6, 182, 212, 0.25);
-      border-width: 1px;
-      border-color: #06B6D4;
-      align-items: center;
-      justify-content: center;
-    }
+ .pip-avatar-circle {
+ width: 22px;
+ height: 22px;
+ border-radius: 999px;
+ background-color: rgba(6, 182, 212, 0.25);
+ border-width: 1px;
+ border-color: #06B6D4;
+ align-items: center;
+ justify-content: center;
+ }
 
-    .pip-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
+ .pip-title {
+ font-size: 13px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
 
-    .pip-tagline {
-      font-size: 10px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.60);
-    }
+ .pip-tagline {
+ font-size: 10px;
+ font-weight: 500;
+ color: rgba(255, 255, 255, 0.60);
+ }
 
-    .pip-speech-bubble {
-      flex-direction: row;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-      border-radius: 10px;
-      background-color: rgba(11, 16, 32, 0.85);
-      border-width: 1px;
-      border-color: rgba(6, 182, 212, 0.35);
-      width: 100%;
-    }
+ .pip-speech-bubble {
+ flex-direction: row;
+ padding-left: 8px;
+ padding-right: 8px;
+ padding-top: 5px;
+ padding-bottom: 5px;
+ border-radius: 10px;
+ background-color: rgba(11, 16, 32, 0.85);
+ border-width: 1px;
+ border-color: rgba(6, 182, 212, 0.35);
+ width: 100%;
+ }
 
-    .pip-speech-text {
-      font-size: 10px;
-      font-weight: 600;
-      color: #E0F2FE;
-    }
+ .pip-speech-text {
+ font-size: 10px;
+ font-weight: 600;
+ color: #E0F2FE;
+ }
 
-    .pip-action-grid {
-      flex-direction: column;
-      gap: 4px;
-      width: 100%;
-    }
+ .pip-action-grid {
+ flex-direction: column;
+ gap: 4px;
+ width: 100%;
+ }
 
-    .pip-action-row {
-      flex-direction: row;
-      justify-content: space-between;
-      gap: 4px;
-      width: 100%;
-    }
+ .pip-action-row {
+ flex-direction: row;
+ justify-content: space-between;
+ gap: 4px;
+ width: 100%;
+ }
 
-    .pip-action-chip {
-      flex-direction: row;
-      flex-grow: 1;
-      height: 26px;
-      border-radius: 8px;
-      background-color: rgba(255, 255, 255, 0.06);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.12);
-      align-items: center;
-      justify-content: center;
-      padding-left: 6px;
-      padding-right: 6px;
-    }
+ .pip-action-chip {
+ flex-direction: row;
+ flex-grow: 1;
+ height: 26px;
+ border-radius: 8px;
+ background-color: rgba(255, 255, 255, 0.06);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.12);
+ align-items: center;
+ justify-content: center;
+ padding-left: 6px;
+ padding-right: 6px;
+ }
 
-    .pip-action-chip:hover {
-      background-color: rgba(6, 182, 212, 0.30);
-      border-color: #06B6D4;
-    }
+ .pip-action-chip:hover {
+ background-color: rgba(6, 182, 212, 0.30);
+ border-color: #06B6D4;
+ }
 
-    .pip-action-chip:active {
-      background-color: rgba(6, 182, 212, 0.55);
-      border-color: #FFFFFF;
-    }
+ .pip-action-chip:active {
+ background-color: rgba(6, 182, 212, 0.55);
+ border-color: #FFFFFF;
+ }
 
-    .pip-action-text {
-      font-size: 10px;
-      font-weight: 600;
-      color: #E2E8F0;
-    }
+ .pip-action-text {
+ font-size: 10px;
+ font-weight: 600;
+ color: #E2E8F0;
+ }
 
-    .pip-voice-bar {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      padding-top: 2px;
-    }
+ .pip-voice-bar {
+ flex-direction: row;
+ align-items: center;
+ justify-content: space-between;
+ width: 100%;
+ padding-top: 2px;
+ }
 
-    .waveform-visual {
-      flex-direction: row;
-      align-items: center;
-      gap: 3px;
-      flex-grow: 1;
-      height: 20px;
-      padding-left: 6px;
-    }
+ .waveform-visual {
+ flex-direction: row;
+ align-items: center;
+ gap: 3px;
+ flex-grow: 1;
+ height: 20px;
+ padding-left: 6px;
+ }
 
-    .wave-bar {
-      width: 3px;
-      height: 8px;
-      border-radius: 999px;
-      background-color: rgba(6, 182, 212, 0.60);
-    }
+ .wave-bar {
+ width: 3px;
+ height: 8px;
+ border-radius: 999px;
+ background-color: rgba(6, 182, 212, 0.60);
+ }
 
-    .wave-bar-tall {
-      height: 14px;
-      background-color: #06B6D4;
-    }
+ .wave-bar-tall {
+ height: 14px;
+ background-color: #06B6D4;
+ }
 
-    .mic-btn {
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.08);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.18);
-      align-items: center;
-      justify-content: center;
-    }
+ .mic-btn {
+ width: 26px;
+ height: 26px;
+ border-radius: 999px;
+ background-color: rgba(255, 255, 255, 0.08);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.18);
+ align-items: center;
+ justify-content: center;
+ }
 
-    .mic-btn:hover {
-      background-color: rgba(6, 182, 212, 0.40);
-      border-color: #06B6D4;
-    }
+ .mic-btn:hover {
+ background-color: rgba(6, 182, 212, 0.40);
+ border-color: #06B6D4;
+ }
 
-    .mic-btn-active {
-      background-color: #EF4444;
-      border-color: #EF4444;
-    }
+ .mic-btn-active {
+ background-color: #EF4444;
+ border-color: #EF4444;
+ }
 
-    .mic-icon-text {
-      font-size: 11px;
-      color: #FFFFFF;
-    }
+ .mic-icon-text {
+ font-size: 11px;
+ color: #FFFFFF;
+ }
 
-    .garden-card {
-      flex-direction: column;
-      width: 100%;
-      padding: 10px;
-      border-radius: 16px;
-      background-color: rgba(18, 25, 48, 0.85);
-      border-width: 1px;
-      border-color: rgba(34, 197, 94, 0.25);
-      gap: 6px;
-    }
+ .garden-card {
+ flex-direction: column;
+ width: 100%;
+ padding: 10px;
+ border-radius: 16px;
+ background-color: rgba(18, 25, 48, 0.85);
+ border-width: 1px;
+ border-color: rgba(34, 197, 94, 0.25);
+ gap: 6px;
+ }
 
-    .garden-header-row {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
+ .garden-header-row {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ width: 100%;
+ }
 
-    .garden-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
+ .garden-title {
+ font-size: 13px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
 
-    .garden-badge {
-      font-size: 11px;
-      font-weight: 700;
-      color: #4ADE80;
-    }
+ .garden-badge {
+ font-size: 11px;
+ font-weight: 700;
+ color: #4ADE80;
+ }
 
-    .garden-body-row {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      width: 100%;
-    }
+ .garden-body-row {
+ flex-direction: row;
+ align-items: center;
+ justify-content: space-between;
+ gap: 8px;
+ width: 100%;
+ }
 
-    .garden-details {
-      flex-direction: column;
-      gap: 4px;
-      flex-grow: 1;
-    }
+ .garden-details {
+ flex-direction: column;
+ gap: 4px;
+ flex-grow: 1;
+ }
 
-    .garden-level-text {
-      font-size: 13px;
-      font-weight: 800;
-      color: #FFFFFF;
-    }
+ .garden-level-text {
+ font-size: 13px;
+ font-weight: 800;
+ color: #FFFFFF;
+ }
 
-    .garden-streak-text {
-      font-size: 10px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.70);
-    }
+ .garden-streak-text {
+ font-size: 10px;
+ font-weight: 500;
+ color: rgba(255, 255, 255, 0.70);
+ }
 
-    .garden-xp-row {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
+ .garden-xp-row {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ width: 100%;
+ }
 
-    .garden-xp-label {
-      font-size: 10px;
-      font-weight: 700;
-      color: #86EFAC;
-    }
+ .garden-xp-label {
+ font-size: 10px;
+ font-weight: 700;
+ color: #86EFAC;
+ }
 
-    .garden-bar-bg {
-      width: 100%;
-      height: 6px;
-      border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.10);
-      overflow: hidden;
-    }
+ .garden-bar-bg {
+ width: 100%;
+ height: 6px;
+ border-radius: 999px;
+ background-color: rgba(255, 255, 255, 0.10);
+ overflow: hidden;
+ }
 
-    .garden-bar-fill {
-      width: 60%;
-      height: 100%;
-      border-radius: 999px;
-      background-color: #22C55E;
-    }
+ .garden-bar-fill {
+ width: 60%;
+ height: 100%;
+ border-radius: 999px;
+ background-color: #22C55E;
+ }
 
-    .garden-tree-icon {
-      font-size: 32px;
-      align-items: center;
-      justify-content: center;
-    }
+ .garden-tree-icon {
+ font-size: 32px;
+ align-items: center;
+ justify-content: center;
+ }
 
-    .zoom-top-bar {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-      border-radius: 12px;
-      background-color: rgba(217, 119, 54, 0.25);
-      border-width: 1.5px;
-      border-color: #D97736;
-      width: 100%;
-    }
+ .zoom-top-bar {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ padding-left: 8px;
+ padding-right: 8px;
+ padding-top: 5px;
+ padding-bottom: 5px;
+ border-radius: 12px;
+ background-color: rgba(217, 119, 54, 0.25);
+ border-width: 1.5px;
+ border-color: #D97736;
+ width: 100%;
+ }
 
-    .zoom-back-btn {
-      flex-direction: row;
-      align-items: center;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 4px;
-      padding-bottom: 4px;
-      border-radius: 999px;
-      background-color: #D97736;
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.40);
-    }
+ .zoom-back-btn {
+ flex-direction: row;
+ align-items: center;
+ padding-left: 10px;
+ padding-right: 10px;
+ padding-top: 4px;
+ padding-bottom: 4px;
+ border-radius: 999px;
+ background-color: #D97736;
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.40);
+ }
 
-    .zoom-back-btn:hover {
-      background-color: #906ffa;
-      border-color: #FFFFFF;
-      border-width: 2px;
-    }
+ .zoom-back-btn:hover {
+ background-color: #906ffa;
+ border-color: #FFFFFF;
+ border-width: 2px;
+ }
 
-    .zoom-back-btn:active {
-      background-color: #633ef5;
-    }
+ .zoom-back-btn:active {
+ background-color: #633ef5;
+ }
 
-    .zoom-back-text {
-      font-size: 11px;
-      font-weight: 800;
-      color: #FFFFFF;
-    }
+ .zoom-back-text {
+ font-size: 11px;
+ font-weight: 800;
+ color: #FFFFFF;
+ }
 
-    .zoom-section-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: #C4B5FD;
-    }
+ .zoom-section-title {
+ font-size: 11px;
+ font-weight: 700;
+ color: #C4B5FD;
+ }
 
-    .card-zoom-btn {
-      padding-left: 6px;
-      padding-right: 6px;
-      padding-top: 2px;
-      padding-bottom: 2px;
-      border-radius: 6px;
-      background-color: rgba(255, 255, 255, 0.08);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.15);
-      align-items: center;
-      justify-content: center;
-    }
+ .card-zoom-btn {
+ padding-left: 6px;
+ padding-right: 6px;
+ padding-top: 2px;
+ padding-bottom: 2px;
+ border-radius: 6px;
+ background-color: rgba(255, 255, 255, 0.08);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.15);
+ align-items: center;
+ justify-content: center;
+ }
 
-    .card-zoom-btn:hover {
-      background-color: rgba(217, 119, 54, 0.40);
-      border-color: #F3B27A;
-    }
+ .card-zoom-btn:hover {
+ background-color: rgba(217, 119, 54, 0.40);
+ border-color: #F3B27A;
+ }
 
-    .card-zoom-text {
-      font-size: 10px;
-      font-weight: 700;
-      color: #E2E8F0;
-    }
-  </style>
+ .card-zoom-text {
+ font-size: 10px;
+ font-weight: 700;
+ color: #E2E8F0;
+ }
+ </style>
 
-  <div class="panel-handle">
-    <div class="handle-bar"></div>
-  </div>
+ <div class="panel-handle">
+ <div class="handle-bar"></div>
+ </div>
 
-  <div id="pip-zoom-bar" class="zoom-top-bar" style="display: none;">
-    <Button id="btn-pip-back" class="zoom-back-btn">
-      <ButtonLabel class="zoom-back-text">◀ Back to Overview</ButtonLabel>
-    </Button>
-    <span id="pip-zoom-label" class="zoom-section-title">Viewing Section (Zoomed)</span>
-  </div>
+ <div id="pip-zoom-bar" class="zoom-top-bar" style="display: none;">
+ <Button id="btn-pip-back" class="zoom-back-btn">
+ <ButtonLabel class="zoom-back-text">Back to Overview</ButtonLabel>
+ </Button>
+ <span id="pip-zoom-label" class="zoom-section-title">Viewing Section (Zoomed)</span>
+ </div>
 
-  <!-- Pip Companion -->
-  <div id="card-pip" class="pip-card">
-    <div class="pip-header-row">
-      <div class="pip-title-group">
-        <div class="pip-avatar-circle">
-          <Bot width="13" height="13" color="#06B6D4"></Bot>
-        </div>
-        <span class="pip-title">Pip</span>
-      </div>
-      <Button id="btn-zoom-pip" class="card-zoom-btn">
-        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-      </Button>
-    </div>
+ <!-- Pip Companion -->
+ <div id="card-pip" class="pip-card">
+ <div class="pip-header-row">
+ <div class="pip-title-group">
+ <div class="pip-avatar-circle">
+ <Bot width="13" height="13" color="#06B6D4"></Bot>
+ </div>
+ <span class="pip-title">Pip</span>
+ </div>
+ <Button id="btn-zoom-pip" class="card-zoom-btn">
+ <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ </Button>
+ </div>
 
-    <div class="pip-speech-bubble">
-      <span id="pip-speech-text" class="pip-speech-text">Ready to focus! Finish ML assignment is up next.</span>
-    </div>
+ <div class="pip-speech-bubble">
+ <span id="pip-speech-text" class="pip-speech-text">Ready to focus! Finish ML assignment is up next.</span>
+ </div>
 
-    <div class="pip-action-grid">
-      <div class="pip-action-row">
-        <Button id="chip-pip-plan-day" class="pip-action-chip">
-          <ButtonLabel class="pip-action-text">📅 Plan my day</ButtonLabel>
-        </Button>
-        <Button id="chip-pip-what-next" class="pip-action-chip">
-          <ButtonLabel class="pip-action-text">💬 What's next?</ButtonLabel>
-        </Button>
-      </div>
-      <div class="pip-action-row">
-        <Button id="chip-pip-overloaded" class="pip-action-chip">
-          <ButtonLabel class="pip-action-text">📊 Am I overloaded?</ButtonLabel>
-        </Button>
-        <Button id="chip-pip-start-focus" class="pip-action-chip">
-          <ButtonLabel class="pip-action-text">▶ Start focus session</ButtonLabel>
-        </Button>
-      </div>
-    </div>
+ <div class="pip-action-grid">
+ <div class="pip-action-row">
+ <Button id="chip-pip-plan-day" class="pip-action-chip">
+ <ButtonLabel class="pip-action-text"> Plan my day</ButtonLabel>
+ </Button>
+ <Button id="chip-pip-what-next" class="pip-action-chip">
+ <ButtonLabel class="pip-action-text">Ask What's next?</ButtonLabel>
+ </Button>
+ </div>
+ <div class="pip-action-row">
+ <Button id="chip-pip-overloaded" class="pip-action-chip">
+ <ButtonLabel class="pip-action-text">Stats Am I overloaded?</ButtonLabel>
+ </Button>
+ <Button id="chip-pip-start-focus" class="pip-action-chip">
+ <ButtonLabel class="pip-action-text">> Start focus session</ButtonLabel>
+ </Button>
+ </div>
+ </div>
 
-    <div class="pip-voice-bar">
-      <div class="waveform-visual">
-        <div class="wave-bar"></div>
-        <div class="wave-bar wave-bar-tall"></div>
-        <div class="wave-bar"></div>
-        <div class="wave-bar wave-bar-tall"></div>
-        <div class="wave-bar"></div>
-        <div class="wave-bar wave-bar-tall"></div>
-        <div class="wave-bar"></div>
-      </div>
-      <Button id="btn-pip-mic" class="mic-btn">
-        <ButtonLabel id="pip-mic-icon" class="mic-icon-text">🎙️</ButtonLabel>
-      </Button>
-    </div>
-  </div>
+ <div class="pip-voice-bar">
+ <div class="waveform-visual">
+ <div class="wave-bar"></div>
+ <div class="wave-bar wave-bar-tall"></div>
+ <div class="wave-bar"></div>
+ <div class="wave-bar wave-bar-tall"></div>
+ <div class="wave-bar"></div>
+ <div class="wave-bar wave-bar-tall"></div>
+ <div class="wave-bar"></div>
+ </div>
+ <Button id="btn-pip-mic" class="mic-btn">
+ <ButtonLabel id="pip-mic-icon" class="mic-icon-text">Mic </ButtonLabel>
+ </Button>
+ </div>
+ </div>
 
-  <!-- Productivity Garden -->
-  <div id="card-garden" class="garden-card">
-    <div class="garden-header-row">
-      <span class="garden-title">Productivity Garden</span>
-      <span class="garden-badge">Active</span>
-      <Button id="btn-zoom-garden" class="card-zoom-btn">
-        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-      </Button>
-    </div>
+ <!-- Productivity Garden -->
+ <div id="card-garden" class="garden-card">
+ <div class="garden-header-row">
+ <span class="garden-title">Productivity Garden</span>
+ <span class="garden-badge">Active</span>
+ <Button id="btn-zoom-garden" class="card-zoom-btn">
+ <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ </Button>
+ </div>
 
-    <div class="garden-body-row">
-      <div class="garden-details">
-        <span id="garden-level-text" class="garden-level-text">Level 3 🌱</span>
-        <span class="garden-streak-text">Keep the streak!</span>
-        <div class="garden-xp-row">
-          <span id="garden-xp-text" class="garden-xp-label">600 / 1,000 XP</span>
-        </div>
-        <div class="garden-bar-bg">
-          <div id="garden-progress-bar-fill" class="garden-bar-fill"></div>
-        </div>
-      </div>
+ <div class="garden-body-row">
+ <div class="garden-details">
+ <span id="garden-level-text" class="garden-level-text">Level 3 </span>
+ <span class="garden-streak-text">Keep the streak!</span>
+ <div class="garden-xp-row">
+ <span id="garden-xp-text" class="garden-xp-label">600 / 1,000 XP</span>
+ </div>
+ <div class="garden-bar-bg">
+ <div id="garden-progress-bar-fill" class="garden-bar-fill"></div>
+ </div>
+ </div>
 
-      <div class="garden-tree-icon">🌳</div>
-    </div>
-  </div>
+ <div class="garden-tree-icon"></div>
+ </div>
+ </div>
 </Panel>

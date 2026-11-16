@@ -1,659 +1,659 @@
 <Panel class="glass-panel" id="glass-tasks-root">
-  <style>
-    .glass-panel {
-      flex-direction: column;
-      width: 360px;
-      height: 660px;
-      padding: 14px;
-      border-radius: 24px;
-      background-color: rgba(22, 24, 29, 0.82);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.16);
-      gap: 10px;
-    }
-
-    .panel-handle {
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      height: 6px;
-      margin-bottom: 1px;
-    }
-
-    .handle-bar {
-      width: 48px;
-      height: 4px;
-      border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.28);
-    }
-
-    .calendar-card {
-      flex-direction: column;
-      width: 100%;
-      padding: 10px;
-      border-radius: 16px;
-      background-color: rgba(18, 25, 48, 0.85);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.10);
-      gap: 6px;
-    }
-
-    .calendar-header {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .cal-nav-btn {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.08);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.15);
-      align-items: center;
-      justify-content: center;
-      padding: 0px;
-    }
-
-    .cal-nav-btn:hover {
-      background-color: rgba(217, 119, 54, 0.40);
-      border-color: #F3B27A;
-    }
-
-    .cal-nav-btn:active {
-      background-color: #D97736;
-    }
-
-    .cal-nav-text {
-      font-size: 11px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-
-    .calendar-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #FFFFFF;
-      letter-spacing: 0.3px;
-    }
-
-    .calendar-days-row {
-      flex-direction: row;
-      justify-content: space-between;
-      width: 100%;
-    }
-
-    .cal-day-header {
-      font-size: 10px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.50);
-      width: 38px;
-      text-align: center;
-    }
-
-    .calendar-dates-row {
-      flex-direction: row;
-      justify-content: space-between;
-      width: 100%;
-    }
-
-    .cal-date-btn {
-      width: 38px;
-      height: 32px;
-      border-radius: 12px;
-      background-color: transparent;
-      border-width: 1px;
-      border-color: transparent;
-      align-items: center;
-      justify-content: center;
-      padding: 0px;
-    }
-
-    .cal-date-btn:hover {
-      background-color: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.25);
-    }
-
-    .cal-date-btn:active {
-      background-color: rgba(217, 119, 54, 0.30);
-    }
-
-    .cal-date-active {
-      background-color: #3B82F6;
-      border-color: rgba(255, 255, 255, 0.40);
-    }
-
-    .cal-date-text {
-      font-size: 12px;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.90);
-    }
-
-    .cal-date-text-active {
-      font-size: 12px;
-      font-weight: 800;
-      color: #FFFFFF;
-    }
-
-    .section-header-row {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      padding-top: 2px;
-    }
-
-    .section-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-
-    .section-badge {
-      font-size: 11px;
-      font-weight: 600;
-      color: #F3B27A;
-    }
-
-    .agenda-list {
-      flex-direction: column;
-      gap: 6px;
-      width: 100%;
-    }
-
-    .agenda-row {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 6px;
-      padding-bottom: 6px;
-      border-radius: 14px;
-      background-color: rgba(18, 25, 48, 0.85);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.10);
-      width: 100%;
-    }
-
-    .agenda-row:hover {
-      background-color: rgba(30, 42, 78, 0.95);
-      border-color: rgba(167, 139, 250, 0.60);
-    }
-
-    .agenda-row:active {
-      background-color: rgba(45, 60, 110, 1.0);
-      border-color: #C4B5FD;
-    }
-
-    .agenda-left {
-      flex-direction: row;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .agenda-time {
-      font-size: 11px;
-      font-weight: 700;
-      color: #F3B27A;
-      min-width: 58px;
-    }
-
-    .agenda-name {
-      font-size: 12px;
-      font-weight: 600;
-      color: #FFFFFF;
-    }
-
-    .agenda-name-completed {
-      font-size: 12px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.45);
-    }
-
-    .chk-icon-btn {
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      border-width: 1.5px;
-      border-color: rgba(255, 255, 255, 0.35);
-      background-color: rgba(255, 255, 255, 0.05);
-      align-items: center;
-      justify-content: center;
-      padding: 0px;
-    }
-
-    .chk-icon-btn:hover {
-      border-color: #22C55E;
-      background-color: rgba(34, 197, 94, 0.20);
-    }
-
-    .chk-icon-btn-checked {
-      background-color: #22C55E;
-      border-color: #22C55E;
-    }
-
-    .chk-mark {
-      font-size: 12px;
-      font-weight: 800;
-      color: #FFFFFF;
-    }
-
-    .quick-add-group {
-      flex-direction: column;
-      gap: 6px;
-      width: 100%;
-    }
-
-    .quick-add-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-
-    .quick-add-pills-row {
-      flex-direction: row;
-      justify-content: space-between;
-      gap: 6px;
-      width: 100%;
-    }
-
-    .quick-add-pill {
-      flex-direction: row;
-      flex-grow: 1;
-      height: 34px;
-      border-radius: 12px;
-      background-color: rgba(255, 255, 255, 0.07);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.12);
-      align-items: center;
-      justify-content: center;
-      padding: 0px;
-    }
-
-    .quick-add-pill:hover {
-      background-color: rgba(217, 119, 54, 0.30);
-      border-color: #F3B27A;
-    }
-
-    .quick-add-pill:active {
-      background-color: #D97736;
-      border-color: #FFFFFF;
-    }
-
-    .quick-add-text {
-      font-size: 11px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-
-    .routines-card {
-      flex-direction: column;
-      width: 100%;
-      padding: 10px;
-      border-radius: 16px;
-      background-color: rgba(18, 25, 48, 0.85);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.10);
-      gap: 8px;
-    }
-
-    .routines-header-row {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .routines-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-
-    .routine-row-btn {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 6px;
-      padding-bottom: 6px;
-      border-radius: 10px;
-      background-color: rgba(255, 255, 255, 0.04);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.08);
-      width: 100%;
-    }
-
-    .routine-row-btn:hover {
-      background-color: rgba(255, 255, 255, 0.10);
-      border-color: rgba(255, 255, 255, 0.20);
-    }
-
-    .routine-row-btn:active {
-      background-color: rgba(217, 119, 54, 0.25);
-    }
-
-    .routine-left {
-      flex-direction: row;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .routine-icon {
-      font-size: 13px;
-    }
-
-    .routine-name {
-      font-size: 11px;
-      font-weight: 600;
-      color: #FFFFFF;
-    }
-
-    .routine-badge-complete {
-      font-size: 11px;
-      font-weight: 700;
-      color: #4ADE80;
-    }
-
-    .routine-badge-pending {
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.60);
-    }
-
-    .undo-bar {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 6px;
-      padding-bottom: 6px;
-      border-radius: 12px;
-      background-color: rgba(18, 25, 48, 0.95);
-      border-width: 1px;
-      border-color: rgba(217, 119, 54, 0.40);
-      width: 100%;
-    }
-
-    .undo-text {
-      font-size: 11px;
-      font-weight: 600;
-      color: #E0E7FF;
-    }
-
-    .undo-action-btn {
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 2px;
-      padding-bottom: 2px;
-      border-radius: 999px;
-      background-color: #D97736;
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.30);
-    }
-
-    .undo-action-text {
-      font-size: 10px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-
-    .zoom-top-bar {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-      border-radius: 12px;
-      background-color: rgba(217, 119, 54, 0.25);
-      border-width: 1.5px;
-      border-color: #D97736;
-      width: 100%;
-    }
-
-    .zoom-back-btn {
-      flex-direction: row;
-      align-items: center;
-      padding-left: 10px;
-      padding-right: 10px;
-      padding-top: 4px;
-      padding-bottom: 4px;
-      border-radius: 999px;
-      background-color: #D97736;
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.40);
-    }
-
-    .zoom-back-btn:hover {
-      background-color: #906ffa;
-      border-color: #FFFFFF;
-      border-width: 2px;
-    }
-
-    .zoom-back-btn:active {
-      background-color: #633ef5;
-    }
-
-    .zoom-back-text {
-      font-size: 11px;
-      font-weight: 800;
-      color: #FFFFFF;
-    }
-
-    .zoom-section-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: #C4B5FD;
-    }
-
-    .card-zoom-btn {
-      padding-left: 6px;
-      padding-right: 6px;
-      padding-top: 2px;
-      padding-bottom: 2px;
-      border-radius: 6px;
-      background-color: rgba(255, 255, 255, 0.08);
-      border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.15);
-      align-items: center;
-      justify-content: center;
-    }
-
-    .card-zoom-btn:hover {
-      background-color: rgba(217, 119, 54, 0.40);
-      border-color: #F3B27A;
-    }
-
-    .card-zoom-text {
-      font-size: 10px;
-      font-weight: 700;
-      color: #E2E8F0;
-    }
-  </style>
-
-  <div class="panel-handle">
-    <div class="handle-bar"></div>
-  </div>
-
-  <div id="tasks-zoom-bar" class="zoom-top-bar" style="display: none;">
-    <Button id="btn-tasks-panel-back" class="zoom-back-btn">
-      <ButtonLabel class="zoom-back-text">◀ Back to Overview</ButtonLabel>
-    </Button>
-    <span id="tasks-zoom-label" class="zoom-section-title">Viewing Section (Zoomed)</span>
-  </div>
-
-  <!-- Mini Calendar Date Strip -->
-  <div id="card-calendar" class="calendar-card">
-    <div class="calendar-header">
-      <Button id="cal-prev-month" class="cal-nav-btn">
-        <ButtonLabel class="cal-nav-text">&lt;</ButtonLabel>
-      </Button>
-      <span id="cal-month-label" class="calendar-title">November 2026</span>
-      <Button id="cal-next-month" class="cal-nav-btn">
-        <ButtonLabel class="cal-nav-text">&gt;</ButtonLabel>
-      </Button>
-      <Button id="btn-zoom-calendar" class="card-zoom-btn">
-        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-      </Button>
-    </div>
-
-    <div class="calendar-days-row">
-      <span class="cal-day-header">Sun</span>
-      <span class="cal-day-header">Mon</span>
-      <span class="cal-day-header">Tue</span>
-      <span class="cal-day-header">Wed</span>
-      <span class="cal-day-header">Thu</span>
-      <span class="cal-day-header">Fri</span>
-      <span class="cal-day-header">Sat</span>
-    </div>
-
-    <div class="calendar-dates-row">
-      <Button id="cal-day-0" class="cal-date-btn">
-        <ButtonLabel id="cal-date-text-0" class="cal-date-text">16</ButtonLabel>
-      </Button>
-      <Button id="cal-day-1" class="cal-date-btn">
-        <ButtonLabel id="cal-date-text-1" class="cal-date-text">17</ButtonLabel>
-      </Button>
-      <Button id="cal-day-2" class="cal-date-btn cal-date-active">
-        <ButtonLabel id="cal-date-text-2" class="cal-date-text-active">18</ButtonLabel>
-      </Button>
-      <Button id="cal-day-3" class="cal-date-btn">
-        <ButtonLabel id="cal-date-text-3" class="cal-date-text">19</ButtonLabel>
-      </Button>
-      <Button id="cal-day-4" class="cal-date-btn">
-        <ButtonLabel id="cal-date-text-4" class="cal-date-text">20</ButtonLabel>
-      </Button>
-      <Button id="cal-day-5" class="cal-date-btn">
-        <ButtonLabel id="cal-date-text-5" class="cal-date-text">21</ButtonLabel>
-      </Button>
-      <Button id="cal-day-6" class="cal-date-btn">
-        <ButtonLabel id="cal-date-text-6" class="cal-date-text">22</ButtonLabel>
-      </Button>
-    </div>
-  </div>
-
-  <!-- Today's Agenda -->
-  <div id="card-agenda-header" class="section-header-row">
-    <span class="section-title">Today's Agenda</span>
-    <span id="agenda-count-badge" class="section-badge">5 items</span>
-    <Button id="btn-zoom-agenda" class="card-zoom-btn">
-      <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-    </Button>
-  </div>
-
-  <div id="card-agenda-list" class="agenda-list">
-    <div class="agenda-row">
-      <div class="agenda-left">
-        <span class="agenda-time">9:00 AM</span>
-        <ButtonLabel id="agenda-name-0" class="agenda-name-completed">ML Assignment</ButtonLabel>
-      </div>
-      <Button id="agenda-chk-0" class="chk-icon-btn chk-icon-btn-checked">
-        <ButtonLabel id="agenda-chk-lbl-0" class="chk-mark">✓</ButtonLabel>
-      </Button>
-    </div>
-
-    <div class="agenda-row">
-      <div class="agenda-left">
-        <span class="agenda-time">11:00 AM</span>
-        <ButtonLabel id="agenda-name-1" class="agenda-name">Implement API</ButtonLabel>
-      </div>
-      <Button id="agenda-chk-1" class="chk-icon-btn">
-        <ButtonLabel id="agenda-chk-lbl-1" class="chk-mark"></ButtonLabel>
-      </Button>
-    </div>
-
-    <div class="agenda-row">
-      <div class="agenda-left">
-        <span class="agenda-time">2:00 PM</span>
-        <ButtonLabel id="agenda-name-2" class="agenda-name">Team Meeting</ButtonLabel>
-      </div>
-      <Button id="agenda-chk-2" class="chk-icon-btn">
-        <ButtonLabel id="agenda-chk-lbl-2" class="chk-mark"></ButtonLabel>
-      </Button>
-    </div>
-
-    <div class="agenda-row">
-      <div class="agenda-left">
-        <span class="agenda-time">3:30 PM</span>
-        <ButtonLabel id="agenda-name-3" class="agenda-name">Research Paper</ButtonLabel>
-      </div>
-      <Button id="agenda-chk-3" class="chk-icon-btn">
-        <ButtonLabel id="agenda-chk-lbl-3" class="chk-mark"></ButtonLabel>
-      </Button>
-    </div>
-
-    <div class="agenda-row">
-      <div class="agenda-left">
-        <span class="agenda-time">5:00 PM</span>
-        <ButtonLabel id="agenda-name-4" class="agenda-name">Gym / Break</ButtonLabel>
-      </div>
-      <Button id="agenda-chk-4" class="chk-icon-btn">
-        <ButtonLabel id="agenda-chk-lbl-4" class="chk-mark"></ButtonLabel>
-      </Button>
-    </div>
-  </div>
-
-  <!-- Quick Add Bar -->
-  <div id="card-quickadd" class="quick-add-group">
-    <div class="section-header-row">
-      <span class="quick-add-title">Quick Add</span>
-      <Button id="btn-zoom-quickadd" class="card-zoom-btn">
-        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-      </Button>
-    </div>
-    <div class="quick-add-pills-row">
-      <Button id="quick-add-task" class="quick-add-pill">
-        <ButtonLabel class="quick-add-text">+ Task</ButtonLabel>
-      </Button>
-      <Button id="quick-add-event" class="quick-add-pill">
-        <ButtonLabel class="quick-add-text">📅 Event</ButtonLabel>
-      </Button>
-      <Button id="quick-add-focus" class="quick-add-pill">
-        <ButtonLabel class="quick-add-text">▶ Focus</ButtonLabel>
-      </Button>
-    </div>
-  </div>
-
-  <!-- Routines Card -->
-  <div id="card-routines" class="routines-card">
-    <div class="routines-header-row">
-      <span class="routines-title">Routines</span>
-      <span id="routines-total-badge" class="section-badge">1 active</span>
-      <Button id="btn-zoom-routines" class="card-zoom-btn">
-        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
-      </Button>
-    </div>
-
-    <Button id="routine-morning-row" class="routine-row-btn">
-      <div class="routine-left">
-        <span class="routine-icon">☀️</span>
-        <ButtonLabel class="routine-name">Morning Routine</ButtonLabel>
-      </div>
-      <ButtonLabel id="routine-morning-badge" class="routine-badge-complete">✓ 3/3</ButtonLabel>
-    </Button>
-
-    <Button id="routine-winddown-row" class="routine-row-btn">
-      <div class="routine-left">
-        <span class="routine-icon">🌙</span>
-        <ButtonLabel class="routine-name">Wind-down Routine</ButtonLabel>
-      </div>
-      <ButtonLabel id="routine-winddown-badge" class="routine-badge-pending">0/3</ButtonLabel>
-    </Button>
-  </div>
-
-  <!-- Undo bar -->
-  <div id="undo-container" class="undo-bar" style="display: none">
-    <span id="undo-label" class="undo-text">Action completed</span>
-    <Button id="undo-btn" class="undo-action-btn">
-      <ButtonLabel class="undo-action-text">Undo (8s)</ButtonLabel>
-    </Button>
-  </div>
+ <style>
+ .glass-panel {
+ flex-direction: column;
+ width: 360px;
+ height: 660px;
+ padding: 14px;
+ border-radius: 24px;
+ background-color: rgba(22, 24, 29, 0.82);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.16);
+ gap: 10px;
+ }
+
+ .panel-handle {
+ flex-direction: row;
+ justify-content: center;
+ align-items: center;
+ width: 100%;
+ height: 6px;
+ margin-bottom: 1px;
+ }
+
+ .handle-bar {
+ width: 48px;
+ height: 4px;
+ border-radius: 999px;
+ background-color: rgba(255, 255, 255, 0.28);
+ }
+
+ .calendar-card {
+ flex-direction: column;
+ width: 100%;
+ padding: 10px;
+ border-radius: 16px;
+ background-color: rgba(18, 25, 48, 0.85);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.10);
+ gap: 6px;
+ }
+
+ .calendar-header {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ width: 100%;
+ }
+
+ .cal-nav-btn {
+ width: 24px;
+ height: 24px;
+ border-radius: 999px;
+ background-color: rgba(255, 255, 255, 0.08);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.15);
+ align-items: center;
+ justify-content: center;
+ padding: 0px;
+ }
+
+ .cal-nav-btn:hover {
+ background-color: rgba(217, 119, 54, 0.40);
+ border-color: #F3B27A;
+ }
+
+ .cal-nav-btn:active {
+ background-color: #D97736;
+ }
+
+ .cal-nav-text {
+ font-size: 11px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
+
+ .calendar-title {
+ font-size: 13px;
+ font-weight: 700;
+ color: #FFFFFF;
+ letter-spacing: 0.3px;
+ }
+
+ .calendar-days-row {
+ flex-direction: row;
+ justify-content: space-between;
+ width: 100%;
+ }
+
+ .cal-day-header {
+ font-size: 10px;
+ font-weight: 600;
+ color: rgba(255, 255, 255, 0.50);
+ width: 38px;
+ text-align: center;
+ }
+
+ .calendar-dates-row {
+ flex-direction: row;
+ justify-content: space-between;
+ width: 100%;
+ }
+
+ .cal-date-btn {
+ width: 38px;
+ height: 32px;
+ border-radius: 12px;
+ background-color: transparent;
+ border-width: 1px;
+ border-color: transparent;
+ align-items: center;
+ justify-content: center;
+ padding: 0px;
+ }
+
+ .cal-date-btn:hover {
+ background-color: rgba(255, 255, 255, 0.12);
+ border-color: rgba(255, 255, 255, 0.25);
+ }
+
+ .cal-date-btn:active {
+ background-color: rgba(217, 119, 54, 0.30);
+ }
+
+ .cal-date-active {
+ background-color: #3B82F6;
+ border-color: rgba(255, 255, 255, 0.40);
+ }
+
+ .cal-date-text {
+ font-size: 12px;
+ font-weight: 700;
+ color: rgba(255, 255, 255, 0.90);
+ }
+
+ .cal-date-text-active {
+ font-size: 12px;
+ font-weight: 800;
+ color: #FFFFFF;
+ }
+
+ .section-header-row {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ width: 100%;
+ padding-top: 2px;
+ }
+
+ .section-title {
+ font-size: 14px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
+
+ .section-badge {
+ font-size: 11px;
+ font-weight: 600;
+ color: #F3B27A;
+ }
+
+ .agenda-list {
+ flex-direction: column;
+ gap: 6px;
+ width: 100%;
+ }
+
+ .agenda-row {
+ flex-direction: row;
+ align-items: center;
+ justify-content: space-between;
+ padding-left: 10px;
+ padding-right: 10px;
+ padding-top: 6px;
+ padding-bottom: 6px;
+ border-radius: 14px;
+ background-color: rgba(18, 25, 48, 0.85);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.10);
+ width: 100%;
+ }
+
+ .agenda-row:hover {
+ background-color: rgba(30, 42, 78, 0.95);
+ border-color: rgba(167, 139, 250, 0.60);
+ }
+
+ .agenda-row:active {
+ background-color: rgba(45, 60, 110, 1.0);
+ border-color: #C4B5FD;
+ }
+
+ .agenda-left {
+ flex-direction: row;
+ align-items: center;
+ gap: 8px;
+ }
+
+ .agenda-time {
+ font-size: 11px;
+ font-weight: 700;
+ color: #F3B27A;
+ min-width: 58px;
+ }
+
+ .agenda-name {
+ font-size: 12px;
+ font-weight: 600;
+ color: #FFFFFF;
+ }
+
+ .agenda-name-completed {
+ font-size: 12px;
+ font-weight: 500;
+ color: rgba(255, 255, 255, 0.45);
+ }
+
+ .chk-icon-btn {
+ width: 24px;
+ height: 24px;
+ border-radius: 999px;
+ border-width: 1.5px;
+ border-color: rgba(255, 255, 255, 0.35);
+ background-color: rgba(255, 255, 255, 0.05);
+ align-items: center;
+ justify-content: center;
+ padding: 0px;
+ }
+
+ .chk-icon-btn:hover {
+ border-color: #22C55E;
+ background-color: rgba(34, 197, 94, 0.20);
+ }
+
+ .chk-icon-btn-checked {
+ background-color: #22C55E;
+ border-color: #22C55E;
+ }
+
+ .chk-mark {
+ font-size: 12px;
+ font-weight: 800;
+ color: #FFFFFF;
+ }
+
+ .quick-add-group {
+ flex-direction: column;
+ gap: 6px;
+ width: 100%;
+ }
+
+ .quick-add-title {
+ font-size: 13px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
+
+ .quick-add-pills-row {
+ flex-direction: row;
+ justify-content: space-between;
+ gap: 6px;
+ width: 100%;
+ }
+
+ .quick-add-pill {
+ flex-direction: row;
+ flex-grow: 1;
+ height: 34px;
+ border-radius: 12px;
+ background-color: rgba(255, 255, 255, 0.07);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.12);
+ align-items: center;
+ justify-content: center;
+ padding: 0px;
+ }
+
+ .quick-add-pill:hover {
+ background-color: rgba(217, 119, 54, 0.30);
+ border-color: #F3B27A;
+ }
+
+ .quick-add-pill:active {
+ background-color: #D97736;
+ border-color: #FFFFFF;
+ }
+
+ .quick-add-text {
+ font-size: 11px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
+
+ .routines-card {
+ flex-direction: column;
+ width: 100%;
+ padding: 10px;
+ border-radius: 16px;
+ background-color: rgba(18, 25, 48, 0.85);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.10);
+ gap: 8px;
+ }
+
+ .routines-header-row {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ width: 100%;
+ }
+
+ .routines-title {
+ font-size: 13px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
+
+ .routine-row-btn {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ padding-left: 8px;
+ padding-right: 8px;
+ padding-top: 6px;
+ padding-bottom: 6px;
+ border-radius: 10px;
+ background-color: rgba(255, 255, 255, 0.04);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.08);
+ width: 100%;
+ }
+
+ .routine-row-btn:hover {
+ background-color: rgba(255, 255, 255, 0.10);
+ border-color: rgba(255, 255, 255, 0.20);
+ }
+
+ .routine-row-btn:active {
+ background-color: rgba(217, 119, 54, 0.25);
+ }
+
+ .routine-left {
+ flex-direction: row;
+ align-items: center;
+ gap: 6px;
+ }
+
+ .routine-icon {
+ font-size: 13px;
+ }
+
+ .routine-name {
+ font-size: 11px;
+ font-weight: 600;
+ color: #FFFFFF;
+ }
+
+ .routine-badge-complete {
+ font-size: 11px;
+ font-weight: 700;
+ color: #4ADE80;
+ }
+
+ .routine-badge-pending {
+ font-size: 11px;
+ font-weight: 600;
+ color: rgba(255, 255, 255, 0.60);
+ }
+
+ .undo-bar {
+ flex-direction: row;
+ align-items: center;
+ justify-content: space-between;
+ padding-left: 10px;
+ padding-right: 10px;
+ padding-top: 6px;
+ padding-bottom: 6px;
+ border-radius: 12px;
+ background-color: rgba(18, 25, 48, 0.95);
+ border-width: 1px;
+ border-color: rgba(217, 119, 54, 0.40);
+ width: 100%;
+ }
+
+ .undo-text {
+ font-size: 11px;
+ font-weight: 600;
+ color: #E0E7FF;
+ }
+
+ .undo-action-btn {
+ padding-left: 8px;
+ padding-right: 8px;
+ padding-top: 2px;
+ padding-bottom: 2px;
+ border-radius: 999px;
+ background-color: #D97736;
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.30);
+ }
+
+ .undo-action-text {
+ font-size: 10px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
+
+ .zoom-top-bar {
+ flex-direction: row;
+ justify-content: space-between;
+ align-items: center;
+ padding-left: 8px;
+ padding-right: 8px;
+ padding-top: 5px;
+ padding-bottom: 5px;
+ border-radius: 12px;
+ background-color: rgba(217, 119, 54, 0.25);
+ border-width: 1.5px;
+ border-color: #D97736;
+ width: 100%;
+ }
+
+ .zoom-back-btn {
+ flex-direction: row;
+ align-items: center;
+ padding-left: 10px;
+ padding-right: 10px;
+ padding-top: 4px;
+ padding-bottom: 4px;
+ border-radius: 999px;
+ background-color: #D97736;
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.40);
+ }
+
+ .zoom-back-btn:hover {
+ background-color: #906ffa;
+ border-color: #FFFFFF;
+ border-width: 2px;
+ }
+
+ .zoom-back-btn:active {
+ background-color: #633ef5;
+ }
+
+ .zoom-back-text {
+ font-size: 11px;
+ font-weight: 800;
+ color: #FFFFFF;
+ }
+
+ .zoom-section-title {
+ font-size: 11px;
+ font-weight: 700;
+ color: #C4B5FD;
+ }
+
+ .card-zoom-btn {
+ padding-left: 6px;
+ padding-right: 6px;
+ padding-top: 2px;
+ padding-bottom: 2px;
+ border-radius: 6px;
+ background-color: rgba(255, 255, 255, 0.08);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.15);
+ align-items: center;
+ justify-content: center;
+ }
+
+ .card-zoom-btn:hover {
+ background-color: rgba(217, 119, 54, 0.40);
+ border-color: #F3B27A;
+ }
+
+ .card-zoom-text {
+ font-size: 10px;
+ font-weight: 700;
+ color: #E2E8F0;
+ }
+ </style>
+
+ <div class="panel-handle">
+ <div class="handle-bar"></div>
+ </div>
+
+ <div id="tasks-zoom-bar" class="zoom-top-bar" style="display: none;">
+ <Button id="btn-tasks-panel-back" class="zoom-back-btn">
+ <ButtonLabel class="zoom-back-text">Back to Overview</ButtonLabel>
+ </Button>
+ <span id="tasks-zoom-label" class="zoom-section-title">Viewing Section (Zoomed)</span>
+ </div>
+
+ <!-- Mini Calendar Date Strip -->
+ <div id="card-calendar" class="calendar-card">
+ <div class="calendar-header">
+ <Button id="cal-prev-month" class="cal-nav-btn">
+ <ButtonLabel class="cal-nav-text">&lt;</ButtonLabel>
+ </Button>
+ <span id="cal-month-label" class="calendar-title">November 2026</span>
+ <Button id="cal-next-month" class="cal-nav-btn">
+ <ButtonLabel class="cal-nav-text">&gt;</ButtonLabel>
+ </Button>
+ <Button id="btn-zoom-calendar" class="card-zoom-btn">
+ <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ </Button>
+ </div>
+
+ <div class="calendar-days-row">
+ <span class="cal-day-header">Sun</span>
+ <span class="cal-day-header">Mon</span>
+ <span class="cal-day-header">Tue</span>
+ <span class="cal-day-header">Wed</span>
+ <span class="cal-day-header">Thu</span>
+ <span class="cal-day-header">Fri</span>
+ <span class="cal-day-header">Sat</span>
+ </div>
+
+ <div class="calendar-dates-row">
+ <Button id="cal-day-0" class="cal-date-btn">
+ <ButtonLabel id="cal-date-text-0" class="cal-date-text">16</ButtonLabel>
+ </Button>
+ <Button id="cal-day-1" class="cal-date-btn">
+ <ButtonLabel id="cal-date-text-1" class="cal-date-text">17</ButtonLabel>
+ </Button>
+ <Button id="cal-day-2" class="cal-date-btn cal-date-active">
+ <ButtonLabel id="cal-date-text-2" class="cal-date-text-active">18</ButtonLabel>
+ </Button>
+ <Button id="cal-day-3" class="cal-date-btn">
+ <ButtonLabel id="cal-date-text-3" class="cal-date-text">19</ButtonLabel>
+ </Button>
+ <Button id="cal-day-4" class="cal-date-btn">
+ <ButtonLabel id="cal-date-text-4" class="cal-date-text">20</ButtonLabel>
+ </Button>
+ <Button id="cal-day-5" class="cal-date-btn">
+ <ButtonLabel id="cal-date-text-5" class="cal-date-text">21</ButtonLabel>
+ </Button>
+ <Button id="cal-day-6" class="cal-date-btn">
+ <ButtonLabel id="cal-date-text-6" class="cal-date-text">22</ButtonLabel>
+ </Button>
+ </div>
+ </div>
+
+ <!-- Today's Agenda -->
+ <div id="card-agenda-header" class="section-header-row">
+ <span class="section-title">Today's Agenda</span>
+ <span id="agenda-count-badge" class="section-badge">5 items</span>
+ <Button id="btn-zoom-agenda" class="card-zoom-btn">
+ <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ </Button>
+ </div>
+
+ <div id="card-agenda-list" class="agenda-list">
+ <div class="agenda-row">
+ <div class="agenda-left">
+ <span class="agenda-time">9:00 AM</span>
+ <ButtonLabel id="agenda-name-0" class="agenda-name-completed">ML Assignment</ButtonLabel>
+ </div>
+ <Button id="agenda-chk-0" class="chk-icon-btn chk-icon-btn-checked">
+ <ButtonLabel id="agenda-chk-lbl-0" class="chk-mark">[x]</ButtonLabel>
+ </Button>
+ </div>
+
+ <div class="agenda-row">
+ <div class="agenda-left">
+ <span class="agenda-time">11:00 AM</span>
+ <ButtonLabel id="agenda-name-1" class="agenda-name">Implement API</ButtonLabel>
+ </div>
+ <Button id="agenda-chk-1" class="chk-icon-btn">
+ <ButtonLabel id="agenda-chk-lbl-1" class="chk-mark"></ButtonLabel>
+ </Button>
+ </div>
+
+ <div class="agenda-row">
+ <div class="agenda-left">
+ <span class="agenda-time">2:00 PM</span>
+ <ButtonLabel id="agenda-name-2" class="agenda-name">Team Meeting</ButtonLabel>
+ </div>
+ <Button id="agenda-chk-2" class="chk-icon-btn">
+ <ButtonLabel id="agenda-chk-lbl-2" class="chk-mark"></ButtonLabel>
+ </Button>
+ </div>
+
+ <div class="agenda-row">
+ <div class="agenda-left">
+ <span class="agenda-time">3:30 PM</span>
+ <ButtonLabel id="agenda-name-3" class="agenda-name">Research Paper</ButtonLabel>
+ </div>
+ <Button id="agenda-chk-3" class="chk-icon-btn">
+ <ButtonLabel id="agenda-chk-lbl-3" class="chk-mark"></ButtonLabel>
+ </Button>
+ </div>
+
+ <div class="agenda-row">
+ <div class="agenda-left">
+ <span class="agenda-time">5:00 PM</span>
+ <ButtonLabel id="agenda-name-4" class="agenda-name">Gym / Break</ButtonLabel>
+ </div>
+ <Button id="agenda-chk-4" class="chk-icon-btn">
+ <ButtonLabel id="agenda-chk-lbl-4" class="chk-mark"></ButtonLabel>
+ </Button>
+ </div>
+ </div>
+
+ <!-- Quick Add Bar -->
+ <div id="card-quickadd" class="quick-add-group">
+ <div class="section-header-row">
+ <span class="quick-add-title">Quick Add</span>
+ <Button id="btn-zoom-quickadd" class="card-zoom-btn">
+ <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ </Button>
+ </div>
+ <div class="quick-add-pills-row">
+ <Button id="quick-add-task" class="quick-add-pill">
+ <ButtonLabel class="quick-add-text">+ Task</ButtonLabel>
+ </Button>
+ <Button id="quick-add-event" class="quick-add-pill">
+ <ButtonLabel class="quick-add-text"> Event</ButtonLabel>
+ </Button>
+ <Button id="quick-add-focus" class="quick-add-pill">
+ <ButtonLabel class="quick-add-text">> Focus</ButtonLabel>
+ </Button>
+ </div>
+ </div>
+
+ <!-- Routines Card -->
+ <div id="card-routines" class="routines-card">
+ <div class="routines-header-row">
+ <span class="routines-title">Routines</span>
+ <span id="routines-total-badge" class="section-badge">1 active</span>
+ <Button id="btn-zoom-routines" class="card-zoom-btn">
+ <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ </Button>
+ </div>
+
+ <Button id="routine-morning-row" class="routine-row-btn">
+ <div class="routine-left">
+ <span class="routine-icon">Sun </span>
+ <ButtonLabel class="routine-name">Morning Routine</ButtonLabel>
+ </div>
+ <ButtonLabel id="routine-morning-badge" class="routine-badge-complete">[x] 3/3</ButtonLabel>
+ </Button>
+
+ <Button id="routine-winddown-row" class="routine-row-btn">
+ <div class="routine-left">
+ <span class="routine-icon">Moon</span>
+ <ButtonLabel class="routine-name">Wind-down Routine</ButtonLabel>
+ </div>
+ <ButtonLabel id="routine-winddown-badge" class="routine-badge-pending">0/3</ButtonLabel>
+ </Button>
+ </div>
+
+ <!-- Undo bar -->
+ <div id="undo-container" class="undo-bar" style="display: none">
+ <span id="undo-label" class="undo-text">Action completed</span>
+ <Button id="undo-btn" class="undo-action-btn">
+ <ButtonLabel class="undo-action-text">Undo (8s)</ButtonLabel>
+ </Button>
+ </div>
 </Panel>

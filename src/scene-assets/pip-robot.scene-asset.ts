@@ -56,22 +56,22 @@ export function buildPipRobotMesh(): PipRobotRig {
   });
 
   const blueMetalMaterial = new MeshStandardMaterial({
-    color: 0x3b82f6,
+    color: 0x5a738e, // Warm Slate Blue
     roughness: 0.35,
     metalness: 0.65,
   });
 
   const cyanEmissiveMaterial = new MeshBasicMaterial({
-    color: new Color(0x06b6d4),
+    color: new Color(0xe6a23c), // Warm Soft Amber
   });
 
   const ringGlowMaterial1 = new MeshBasicMaterial({
-    color: new Color(0x06b6d4),
+    color: new Color(0xd97736), // Architectural Terracotta
     wireframe: false,
   });
 
   const ringGlowMaterial2 = new MeshBasicMaterial({
-    color: new Color(0x7c5cff),
+    color: new Color(0x5a738e), // Warm Slate Blue
     wireframe: false,
   });
 

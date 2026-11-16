@@ -127,7 +127,7 @@
       "transform": {
         "position": [
           0.56,
-          1.65,
+          1.66,
           -0.68
         ],
         "rotationDeg": [
@@ -152,9 +152,9 @@
       "name": "Pip 3D Robot Companion",
       "transform": {
         "position": [
-          0.56,
-          1.78,
-          -0.65
+          0.60,
+          1.84,
+          -0.48
         ],
         "rotationDeg": [
           0,
@@ -178,7 +178,7 @@
       "transform": {
         "position": [
           0.56,
-          1.35,
+          1.28,
           -0.68
         ],
         "rotationDeg": [
