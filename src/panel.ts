@@ -132,6 +132,8 @@ export class PanelSystem extends createSystem({
  private calendarDays: CalendarDayViewModel[] = JSON.parse(JSON.stringify(SEED_CALENDAR_DAYS));
  private calendarStartDay = 16;
  private calendarDate = new Date(2026, 10, 16);
+  public isPipMuted = false;
+  private pulledPanels: Record<string, boolean> = {};
  private selectedDayNumber = 18;
  private selectedMonthIndex = 10; // November
  private readonly monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -488,7 +490,21 @@ export class PanelSystem extends createSystem({
   this.setPipSpeech(`Workspace layout switched to ${preset} preset.`);
  }
 
- public applyWorkspaceOffset() {
+ public togglePanelPull(panelId: string) {
+    const obj = this.world.getSceneObject(panelId);
+    if (!obj) return;
+    this.pulledPanels[panelId] = !this.pulledPanels[panelId];
+    if (this.pulledPanels[panelId]) {
+      obj.position.set(0, 1.45, -0.50);
+      obj.rotation.set(0, 0, 0);
+      this.setPipSpeech(`Pulled ${panelId} directly in front of you. Squeeze or pinch to move anywhere in the room!`);
+    } else {
+      this.applyWorkspaceOffset();
+      this.setPipSpeech(`Returned ${panelId} to workspace position.`);
+    }
+  }
+
+  public applyWorkspaceOffset() {
   const presets: Record<string, Record<string, { pos: [number, number, number]; rotDeg: [number, number, number]; scale: number }>> = {
    Arc: {
     'panel-left-tasks': { pos: [-0.72, 1.48, -0.72], rotDeg: [0, 26, 0], scale: 0.10 },
@@ -725,47 +741,53 @@ export class PanelSystem extends createSystem({
  this.addPress(backBtn, () => this.resetZoom());
  }
 
- // Mini Calendar Navigation (Multi-week live date shifting)
- const prevMonth = asset.getElementById('cal-prev-month');
- if (prevMonth) {
- this.addPress(prevMonth, () => {
- this.calendarDate = new Date(this.calendarDate.getTime() - 7 * 24 * 60 * 60 * 1000);
- this.calendarStartDay = this.calendarDate.getDate();
- this.updateCalendarDays();
- this.refreshTasksPanelUI();
- this.refreshHubPanelUI();
- });
- }
- const nextMonth = asset.getElementById('cal-next-month');
- if (nextMonth) {
- this.addPress(nextMonth, () => {
- this.calendarDate = new Date(this.calendarDate.getTime() + 7 * 24 * 60 * 60 * 1000);
- this.calendarStartDay = this.calendarDate.getDate();
- this.updateCalendarDays();
- this.refreshTasksPanelUI();
- this.refreshHubPanelUI();
- });
- }
+ // Interactive panel handle
+    const handleTasks = asset.getElementById('handle-bar-tasks');
+    if (handleTasks) {
+      this.addPress(handleTasks, () => this.togglePanelPull('panel-left-tasks'));
+    }
 
- for (let i = 0; i < 7; i++) {
- const dayBtn = asset.getElementById(`cal-day-${i}`);
- if (dayBtn) {
- this.addPress(dayBtn, () => {
- const selected = this.calendarDays[i];
- if (!selected) return;
- this.selectedDayNumber = selected.dayNumber;
- this.calendarDays.forEach((d) => {
- d.isSelected = d.dayNumber === this.selectedDayNumber;
- });
- const count = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber).length;
- const d = new Date(this.calendarDate.getTime() + i * 24 * 60 * 60 * 1000);
- const mName = this.monthNames[d.getMonth()] || 'Nov';
- this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, ${mName} ${selected.dayNumber} (${count} tasks). Tasks added will be scheduled for this day.`);
- this.refreshTasksPanelUI();
- this.refreshHubPanelUI();
- });
- }
- }
+    // 3-Date Calendar Navigation (1 day step per click)
+    const prevMonth = asset.getElementById('cal-prev-month');
+    if (prevMonth) {
+      this.addPress(prevMonth, () => {
+        this.calendarDate = new Date(this.calendarDate.getTime() - 24 * 60 * 60 * 1000);
+        this.calendarStartDay = this.calendarDate.getDate();
+        this.updateCalendarDays();
+        this.refreshTasksPanelUI();
+        this.refreshHubPanelUI();
+      });
+    }
+    const nextMonth = asset.getElementById('cal-next-month');
+    if (nextMonth) {
+      this.addPress(nextMonth, () => {
+        this.calendarDate = new Date(this.calendarDate.getTime() + 24 * 60 * 60 * 1000);
+        this.calendarStartDay = this.calendarDate.getDate();
+        this.updateCalendarDays();
+        this.refreshTasksPanelUI();
+        this.refreshHubPanelUI();
+      });
+    }
+
+    for (let i = 0; i < 3; i++) {
+      const dayBtn = asset.getElementById(`cal-day-${i}`);
+      if (dayBtn) {
+        this.addPress(dayBtn, () => {
+          const selected = this.calendarDays[i];
+          if (!selected) return;
+          this.selectedDayNumber = selected.dayNumber;
+          this.calendarDays.forEach((d) => {
+            d.isSelected = d.dayNumber === this.selectedDayNumber;
+          });
+          const count = this.tasks.filter((t) => (t.dayNumber ?? 16) === this.selectedDayNumber).length;
+          const d = new Date(this.calendarDate.getTime() + i * 24 * 60 * 60 * 1000);
+          const mName = this.monthNames[d.getMonth()] || 'Nov';
+          this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, ${mName} ${selected.dayNumber} (${count} tasks).`);
+          this.refreshTasksPanelUI();
+          this.refreshHubPanelUI();
+        });
+      }
+    }
 
  // Agenda Checkboxes & Titles
  for (let i = 0; i < this.agendaItems.length; i++) {
@@ -849,37 +871,31 @@ export class PanelSystem extends createSystem({
  }
 
  private updateCalendarDays() {
- const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
- this.calendarDays = [];
- for (let i = 0; i < 7; i++) {
- const d = new Date(this.calendarDate.getTime() + i * 24 * 60 * 60 * 1000);
- const dayNum = d.getDate();
- this.calendarDays.push({
- dayOfWeek: daysOfWeek[d.getDay()],
- dayNumber: dayNum,
- isToday: d.getFullYear() === 2026 && d.getMonth() === 10 && dayNum === 18,
- isSelected: dayNum === this.selectedDayNumber,
- });
- }
- this.updateCalendarHeader();
- }
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    this.calendarDays = [];
+    for (let i = 0; i < 3; i++) {
+      const d = new Date(this.calendarDate.getTime() + i * 24 * 60 * 60 * 1000);
+      const dayNum = d.getDate();
+      this.calendarDays.push({
+        dayOfWeek: daysOfWeek[d.getDay()],
+        dayNumber: dayNum,
+        isToday: d.getFullYear() === 2026 && d.getMonth() === 10 && dayNum === 16,
+        isSelected: dayNum === this.selectedDayNumber,
+      });
+    }
+    this.updateCalendarHeader();
+  }
 
- private updateCalendarHeader() {
- const asset = this.getAsset('panel-left-tasks');
- if (!asset) return;
- const monthLabel = asset.getElementById('cal-month-label') as any;
- const startD = this.calendarDate;
- const endD = new Date(this.calendarDate.getTime() + 6 * 24 * 60 * 60 * 1000);
- const startM = this.monthNames[startD.getMonth()] || 'Nov';
- const endM = this.monthNames[endD.getMonth()] || 'Nov';
- const headerStr = startM === endM
- ? `${startM} ${startD.getDate()} - ${endD.getDate()}, ${startD.getFullYear()}`
- : `${startM} ${startD.getDate()} - ${endM} ${endD.getDate()}, ${endD.getFullYear()}`;
- if (monthLabel) {
- setText(monthLabel, headerStr);
- }
- this.setPipSpeech(`Switched calendar week to ${headerStr}.`);
- }
+  private updateCalendarHeader() {
+    const asset = this.getAsset('panel-left-tasks');
+    if (!asset) return;
+    const monthLabel = asset.getElementById('cal-month-label') as any;
+    const currentMonthName = this.monthNames[this.calendarDate.getMonth()] || 'November';
+    const headerStr = `${currentMonthName} ${this.calendarDate.getFullYear()}`;
+    if (monthLabel) {
+      setText(monthLabel, headerStr);
+    }
+  }
 
  private toggleAgendaItem(index: number) {
  if (!this.agendaItems[index]) return;
@@ -905,6 +921,8 @@ export class PanelSystem extends createSystem({
  private bindHubPanel() {
  const asset = this.getAsset('panel-hub');
  if (!asset) return;
+ const handleHub = asset.getElementById('handle-bar-hub');
+ if (handleHub) this.addPress(handleHub, () => this.togglePanelPull('panel-hub'));
 
  // Zoom Back Button on Hub Zoom Bar
  const zoomBackBtn = asset.getElementById('btn-zoom-back');
@@ -1877,7 +1895,28 @@ export class PanelSystem extends createSystem({
  this.addPress(chipStartFocus, () => this.toggleFocusTimer());
  }
 
- const micBtn = asset.getElementById('btn-pip-mic');
+  const handlePip = asset.getElementById('handle-bar-pip');
+    if (handlePip) this.addPress(handlePip, () => this.togglePanelPull('panel-right-pip'));
+
+    const muteBtn = asset.getElementById('btn-pip-mute');
+    if (muteBtn) {
+      this.addPress(muteBtn, () => {
+        this.isPipMuted = !this.isPipMuted;
+        const muteTxt = asset.getElementById('pip-mute-text') as any;
+        if (this.isPipMuted) {
+          if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+          }
+          if (muteTxt) setText(muteTxt, 'Unmute');
+          this.setPipSpeech('Pip is muted. Click mic to speak anytime.', false);
+        } else {
+          if (muteTxt) setText(muteTxt, 'Mute');
+          this.setPipSpeech('Voice unmuted. Pip is ready to assist!');
+        }
+      });
+    }
+
+    const micBtn = asset.getElementById('btn-pip-mic');
  if (micBtn) {
  this.addPress(micBtn, () => {
  this.handleVoiceInputTrigger();
@@ -1947,7 +1986,8 @@ export class PanelSystem extends createSystem({
  }, 700);
  }
 
- public speakTextAloud(text: string) {
+ public speakTextAloud(text: string, force = false) {
+ if (this.isPipMuted && !force) return;
  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
  try {
  window.speechSynthesis.cancel();
@@ -2259,21 +2299,21 @@ export class PanelSystem extends createSystem({
  }
  }
 
- public setPipSpeech(text: string, speakAloud: boolean = true) {
- const pipAsset = this.getAsset('panel-right-pip');
- if (pipAsset) {
- const speechEl = pipAsset.getElementById('pip-speech-text') as any;
- if (speechEl) setText(speechEl, text);
- }
- const hubAsset = this.getAsset('panel-hub');
- if (hubAsset) {
- const hubPipText = hubAsset.getElementById('hub-pip-text') as any;
- if (hubPipText) setText(hubPipText, `Pip: ${text}`);
- }
- if (speakAloud) {
- this.speakTextAloud(text);
- }
- }
+ public setPipSpeech(text: string, speakAloud: boolean = true, force = false) {
+    const pipAsset = this.getAsset('panel-right-pip');
+    if (pipAsset) {
+      const speechEl = pipAsset.getElementById('pip-speech-text') as any;
+      if (speechEl) setText(speechEl, text);
+    }
+    const hubAsset = this.getAsset('panel-hub');
+    if (hubAsset) {
+      const hubPipText = hubAsset.getElementById('hub-pip-text') as any;
+      if (hubPipText) setText(hubPipText, `Pip: ${text}`);
+    }
+    if (speakAloud) {
+      this.speakTextAloud(text, force);
+    }
+  }
 
  public triggerPipEmote(emote: 'celebrate' | 'thinking' | 'idle') {
  this.pipEmoteState = emote;
@@ -2291,6 +2331,8 @@ export class PanelSystem extends createSystem({
  private bindFocusPanel() {
  const asset = this.getAsset('panel-right-focus');
  if (!asset) return;
+ const handleFocus = asset.getElementById('handle-bar-focus');
+ if (handleFocus) this.addPress(handleFocus, () => this.togglePanelPull('panel-right-focus'));
 
  // Zoom & Back
  const cardHabits = asset.getElementById('card-habits');
@@ -2659,33 +2701,37 @@ export class PanelSystem extends createSystem({
  const asset = this.getAsset('panel-left-tasks');
  if (!asset) return;
 
- for (let i = 0; i < 7; i++) {
- const day = this.calendarDays[i];
- const dayBtn = asset.getElementById(`cal-day-${i}`) as any;
- const dayTxt = asset.getElementById(`cal-date-text-${i}`) as any;
- if (day && dayTxt) {
- setText(dayTxt, day.dayNumber);
- }
- if (day && dayBtn && typeof dayBtn.setProperties === 'function') {
- const hasTasks = this.tasks.some((t) => (t.dayNumber ?? 18) === day.dayNumber);
- if (day.isSelected) {
- dayBtn.setProperties({
- backgroundColor: '#D97736',
- borderColor: '#F3B27A',
- });
- } else if (hasTasks) {
- dayBtn.setProperties({
- backgroundColor: 'rgba(217, 119, 54, 0.22)',
- borderColor: 'rgba(217, 119, 54, 0.50)',
- });
- } else {
- dayBtn.setProperties({
- backgroundColor: 'transparent',
- borderColor: 'transparent',
- });
- }
- }
- }
+ for (let i = 0; i < 3; i++) {
+      const day = this.calendarDays[i];
+      const dayBtn = asset.getElementById(`cal-day-${i}`) as any;
+      const dayTxt = asset.getElementById(`cal-date-text-${i}`) as any;
+      const dayHdr = asset.getElementById(`cal-day-header-${i}`) as any;
+      if (day && dayHdr) {
+        setText(dayHdr, day.dayOfWeek);
+      }
+      if (day && dayTxt) {
+        setText(dayTxt, day.dayNumber);
+      }
+      if (day && dayBtn && typeof dayBtn.setProperties === 'function') {
+        const hasTasks = this.tasks.some((t) => (t.dayNumber ?? 16) === day.dayNumber);
+        if (day.isSelected) {
+          dayBtn.setProperties({
+            backgroundColor: '#D97736',
+            borderColor: '#FFFFFF',
+          });
+        } else if (hasTasks) {
+          dayBtn.setProperties({
+            backgroundColor: 'rgba(217, 119, 54, 0.22)',
+            borderColor: 'rgba(217, 119, 54, 0.50)',
+          });
+        } else {
+          dayBtn.setProperties({
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            borderColor: 'rgba(255, 255, 255, 0.15)',
+          });
+        }
+      }
+    }
 
  const completedCount = this.agendaItems.filter((a) => a.isCompleted).length;
  const badgeEl = asset.getElementById('agenda-count-badge') as any;

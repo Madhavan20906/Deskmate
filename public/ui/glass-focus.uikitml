@@ -314,9 +314,9 @@
  }
  </style>
 
- <div class="panel-handle">
+ <Button id="handle-bar-focus" class="panel-handle">
  <div class="handle-bar"></div>
- </div>
+ </Button>
 
  <div id="focus-zoom-bar" class="zoom-top-bar" style="display: none;">
  <Button id="btn-habits-back" class="zoom-back-btn">

@@ -395,7 +395,7 @@
  }
 
  .schedule-title {
- font-size: 14px;
+ font-size: 17px;
  font-weight: 700;
  color: #FFFFFF;
  }
@@ -1346,9 +1346,9 @@
  }
  </style>
 
- <div class="panel-handle">
+ <Button id="handle-bar-hub" class="panel-handle">
  <div class="handle-bar"></div>
- </div>
+ </Button>
 
  <div id="hub-zoom-bar" class="hub-zoom-bar" style="display: none;">
  <Button id="btn-zoom-back" class="zoom-back-btn">
