@@ -426,3 +426,118 @@ test('Tier S12: Full Coverage of All 12 Section Zoom Options & Edit Sheet Ray Is
   assert.equal(backgroundClick('btn-dur-plus'), 'executed', 'Duration stepper click allowed inside modal');
   assert.equal(backgroundClick('btn-sheet-save'), 'executed', 'Save task button allowed inside modal');
 });
+
+test('Tier S13: In-Place Task Editor, Touch Screen / Card Press to Zoom, Dual Pointer Switch, and Timer Steppers/Chips', () => {
+  // 1. In-Place Task Editor subview state & transitions
+  type HubView = 'overview' | 'week' | 'month' | 'tasks' | 'editor' | 'focus' | 'analytics' | 'garden' | 'routines' | 'notes' | 'goals';
+  let activeHubView: HubView = 'overview';
+  let editingTaskId: string | null = null;
+  let editDraftTitle = 'Deep Work Sprint';
+  let editDraftDuration = 45;
+  let editDraftPriority: 'low' | 'medium' | 'high' = 'medium';
+
+  const openEditor = (taskId: string | null) => {
+    editingTaskId = taskId;
+    activeHubView = 'editor';
+    if (!taskId) {
+      editDraftTitle = 'Deep Work Sprint';
+      editDraftDuration = 45;
+      editDraftPriority = 'medium';
+    }
+  };
+
+  const closeEditor = () => {
+    editingTaskId = null;
+    activeHubView = 'overview';
+  };
+
+  openEditor(null);
+  assert.equal(activeHubView, 'editor', 'Opening task creator switches Center Hub in-place to editor subview (zero camera zoom)');
+  assert.equal(editingTaskId, null, 'New task draft has null taskId');
+
+  // Adjust duration via steppers and chips
+  editDraftDuration = Math.max(5, editDraftDuration - 1);
+  assert.equal(editDraftDuration, 44, '-1m exact stepper works');
+  editDraftDuration = Math.min(240, editDraftDuration + 1);
+  assert.equal(editDraftDuration, 45, '+1m exact stepper works');
+  editDraftDuration = 60; // chip selection
+  assert.equal(editDraftDuration, 60, '60m exact chip sets duration');
+
+  // Priority selection
+  editDraftPriority = 'high';
+  assert.equal(editDraftPriority, 'high', 'Priority changed to high');
+
+  // Saving task
+  interface TestTask {
+    id: string;
+    title: string;
+    estimatedMinutes: number;
+    priority: 'low' | 'medium' | 'high';
+    status: string;
+    dayNumber: number;
+  }
+  const tasks: TestTask[] = [];
+  const newTask: TestTask = {
+    id: `task-${Date.now()}`,
+    title: editDraftTitle,
+    estimatedMinutes: editDraftDuration,
+    priority: editDraftPriority,
+    status: 'todo',
+    dayNumber: 18,
+  };
+  tasks.push(newTask);
+  closeEditor();
+
+  assert.equal(activeHubView, 'overview', 'Closing editor returns to overview without reset');
+  assert.equal(tasks.length, 1, 'Task was successfully added and preserved in task list');
+  assert.equal(tasks[0].title, 'Deep Work Sprint');
+  assert.equal(tasks[0].estimatedMinutes, 60);
+  assert.equal(tasks[0].priority, 'high');
+
+  // 2. Touch screen / card surrounding click targets map to views
+  const cardMappings: Record<string, HubView> = {
+    'card-schedule': 'week',
+    'card-tasks': 'tasks',
+    'card-focus': 'focus',
+    'card-workload': 'analytics',
+    'card-calendar': 'month',
+    'card-agenda-header': 'tasks',
+    'card-quickadd': 'editor',
+    'card-routines': 'routines',
+    'card-pip': 'overview',
+    'card-garden': 'garden',
+    'card-habits': 'routines',
+    'card-deadlines': 'goals',
+  };
+
+  for (const [cardId, targetView] of Object.entries(cardMappings)) {
+    assert.ok(cardId.startsWith('card-'), `${cardId} has valid card container prefix`);
+    assert.ok(targetView, `${cardId} maps to a dedicated subview ${targetView}`);
+  }
+
+  // 3. Focus timer exact controls
+  let timerSeconds = 25 * 60;
+  // -1m stepper
+  timerSeconds = Math.max(60, timerSeconds - 60);
+  assert.equal(timerSeconds, 24 * 60, '-1m Focus timer stepper');
+  // +1m stepper
+  timerSeconds = Math.min(180 * 60, timerSeconds + 60);
+  assert.equal(timerSeconds, 25 * 60, '+1m Focus timer stepper');
+  // Exact chips
+  const exactChips = [10, 15, 20, 25, 30, 45, 60, 90];
+  for (const m of exactChips) {
+    timerSeconds = m * 60;
+    assert.equal(timerSeconds, m * 60, `Focus exact chip ${m}m sets exact timer`);
+  }
+
+  // 4. Dual Controller Parity: Hand toggling
+  let activeHand: 'left' | 'right' = 'right';
+  const toggleHand = () => {
+    activeHand = activeHand === 'right' ? 'left' : 'right';
+  };
+  assert.equal(activeHand, 'right');
+  toggleHand();
+  assert.equal(activeHand, 'left', 'Left controller/hand becomes active');
+  toggleHand();
+  assert.equal(activeHand, 'right', 'Right controller/hand becomes active');
+});

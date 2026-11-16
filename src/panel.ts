@@ -52,7 +52,6 @@ import {
 
 import { GhostDeskmateAudio } from './audio.js';
 import { recommendWhatNext, planDaySchedule, TaskItem } from './productivity-engine.js';
-import { PipRobotRig } from './scene-assets/pip-robot.scene-asset.js';
 
 const STORAGE_KEY_TASKS = 'deskmate.tasks.v1';
 
@@ -63,6 +62,7 @@ export type HubContentView =
   | 'week'
   | 'month'
   | 'tasks'
+  | 'editor'
   | 'focus'
   | 'analytics'
   | 'garden'
@@ -173,9 +173,6 @@ export class PanelSystem extends createSystem({
   private deleteTapCount = 0;
   private deleteResetTimer: number | null = null;
 
-  // Pip 3D Robot
-  private pipRig: PipRobotRig | null = null;
-
   // Audio & Settings
   private audio: GhostDeskmateAudio | null = null;
   private soundEnabled = true;
@@ -192,30 +189,16 @@ export class PanelSystem extends createSystem({
     }, 1000);
     this.cleanupFuncs.push(() => window.clearInterval(interval));
 
-    this.initPipRobotRig();
     this.bindPanels();
   }
 
   private lastElementPressTime = new WeakMap<any, number>();
   private lastHoverSoundTime = 0;
 
-  private isPartOfEditSheet(element: any): boolean {
-    let cur = element;
-    while (cur) {
-      if (cur.id && this.editSheetElementIds.has(cur.id)) return true;
-      if (cur.id === 'glass-sheet-root' || cur.id === 'panel-edit-sheet') return true;
-      cur = cur.parentElement || cur.parent;
-    }
-    return false;
-  }
-
   private addPress(element: any, handler: () => void) {
     if (!element || typeof element.addEventListener !== 'function') return;
 
     const onEnter = () => {
-      if (this.isEditSheetOpen && !this.isPartOfEditSheet(element)) {
-        return;
-      }
       const now = performance.now();
       if (this.soundEnabled && this.audio && now - this.lastHoverSoundTime > 90) {
         this.lastHoverSoundTime = now;
@@ -224,12 +207,9 @@ export class PanelSystem extends createSystem({
     };
 
     const trigger = () => {
-      if (this.isEditSheetOpen && !this.isPartOfEditSheet(element)) {
-        return;
-      }
       const now = performance.now();
       const lastElem = this.lastElementPressTime.get(element) || 0;
-      if (now - lastElem < 300) return;
+      if (now - lastElem < 250) return;
       this.lastElementPressTime.set(element, now);
       if (this.soundEnabled && this.audio) {
         this.audio.playPinchTick();
@@ -424,21 +404,6 @@ export class PanelSystem extends createSystem({
     return this.world.getSceneObject<UIKitMLAsset>(entityName) ?? null;
   }
 
-  private initPipRobotRig() {
-    const pipObj = this.world.getSceneObject('pip-robot');
-    if (!pipObj) return;
-
-    const head = pipObj.getObjectByName('pip-head');
-    const body = pipObj.getObjectByName('pip-robot-root');
-    if (head) {
-      this.pipRig = {
-        root: pipObj as any,
-        head: head as any,
-        body: body as any,
-      } as any;
-    }
-  }
-
   private bindPanels() {
     if (this.isBound) return;
     const hubAsset = this.getAsset('panel-hub');
@@ -460,10 +425,10 @@ export class PanelSystem extends createSystem({
   // --------------------------------------------------------------------------
   public resetPanelTransforms() {
     const defaults: Record<string, { pos: [number, number, number]; rotDeg: [number, number, number]; scale: number }> = {
-      'panel-left-tasks': { pos: [-0.58, 1.28, -0.68], rotDeg: [0, 22, 0], scale: 0.10 },
-      'panel-hub': { pos: [0, 1.28, -0.72], rotDeg: [0, 0, 0], scale: 0.10 },
-      'panel-right-pip': { pos: [0.56, 1.45, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
-      'panel-right-focus': { pos: [0.56, 1.15, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
+      'panel-left-tasks': { pos: [-0.58, 1.48, -0.68], rotDeg: [0, 22, 0], scale: 0.10 },
+      'panel-hub': { pos: [0, 1.48, -0.72], rotDeg: [0, 0, 0], scale: 0.10 },
+      'panel-right-pip': { pos: [0.56, 1.65, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
+      'panel-right-focus': { pos: [0.56, 1.35, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
     };
 
     for (const [id, def] of Object.entries(defaults)) {
@@ -540,6 +505,7 @@ export class PanelSystem extends createSystem({
       { id: 'view-week', view: 'week' },
       { id: 'view-month', view: 'month' },
       { id: 'view-tasks', view: 'tasks' },
+      { id: 'view-task-editor', view: 'editor' },
       { id: 'view-focus', view: 'focus' },
       { id: 'view-analytics', view: 'analytics' },
       { id: 'view-garden', view: 'garden' },
@@ -612,6 +578,15 @@ export class PanelSystem extends createSystem({
     if (!asset) return;
 
     // Zoom & Back
+    const cardCalendar = asset.getElementById('card-calendar');
+    if (cardCalendar) this.addPress(cardCalendar, () => this.zoomSection('panel-left-tasks', 'Mini Calendar'));
+    const cardAgendaHdr = asset.getElementById('card-agenda-header');
+    if (cardAgendaHdr) this.addPress(cardAgendaHdr, () => this.zoomSection('panel-left-tasks', "Today's Agenda"));
+    const cardQuickAdd = asset.getElementById('card-quickadd');
+    if (cardQuickAdd) this.addPress(cardQuickAdd, () => this.zoomSection('panel-left-tasks', 'Quick Add'));
+    const cardRoutines = asset.getElementById('card-routines');
+    if (cardRoutines) this.addPress(cardRoutines, () => this.zoomSection('panel-left-tasks', 'Routines'));
+
     const zoomCal = asset.getElementById('btn-zoom-calendar');
     if (zoomCal) {
       this.addPress(zoomCal, () => this.zoomSection('panel-left-tasks', 'Mini Calendar', 1.15, 0.16));
@@ -939,9 +914,35 @@ export class PanelSystem extends createSystem({
       this.addPress(zoomFocusBtn, () => this.zoomSection('panel-hub', 'Focus Session'));
     }
 
+    // Card Containers (Surrounding click expands that section to Center Hub view)
+    const cardSchedule = asset.getElementById('card-schedule');
+    if (cardSchedule) this.addPress(cardSchedule, () => this.zoomSection('panel-hub', "Today's Schedule"));
+    const cardTasks = asset.getElementById('card-tasks');
+    if (cardTasks) this.addPress(cardTasks, () => this.zoomSection('panel-hub', 'Tasks List'));
+    const cardFocus = asset.getElementById('card-focus');
+    if (cardFocus) this.addPress(cardFocus, () => this.zoomSection('panel-hub', 'Focus Session'));
+    const cardWorkload = asset.getElementById('card-workload');
+    if (cardWorkload) this.addPress(cardWorkload, () => this.zoomSection('panel-hub', 'Workload Analysis'));
+
     const focusPlayBtn = asset.getElementById('hub-focus-play-btn');
     if (focusPlayBtn) {
       this.addPress(focusPlayBtn, () => this.toggleFocusTimer());
+    }
+
+    const focusMinus1 = asset.getElementById('hub-focus-minus1');
+    if (focusMinus1) {
+      this.addPress(focusMinus1, () => {
+        this.focusRemainingSeconds = Math.max(60, this.focusRemainingSeconds - 60);
+        this.refreshHubPanelUI();
+      });
+    }
+
+    const focusPlus1 = asset.getElementById('hub-focus-plus1');
+    if (focusPlus1) {
+      this.addPress(focusPlus1, () => {
+        this.focusRemainingSeconds = Math.min(180 * 60, this.focusRemainingSeconds + 60);
+        this.refreshHubPanelUI();
+      });
     }
 
     const focusMinus5 = asset.getElementById('hub-focus-minus5');
@@ -955,9 +956,22 @@ export class PanelSystem extends createSystem({
     const focusPlus5 = asset.getElementById('hub-focus-plus5');
     if (focusPlus5) {
       this.addPress(focusPlus5, () => {
-        this.focusRemainingSeconds = Math.min(120 * 60, this.focusRemainingSeconds + 5 * 60);
+        this.focusRemainingSeconds = Math.min(180 * 60, this.focusRemainingSeconds + 5 * 60);
         this.refreshHubPanelUI();
       });
+    }
+
+    const hubFocusChips = [15, 25, 45, 60];
+    for (const m of hubFocusChips) {
+      const chipBtn = asset.getElementById(`hub-focus-chip-${m}`);
+      if (chipBtn) {
+        this.addPress(chipBtn, () => {
+          this.focusRemainingSeconds = m * 60;
+          this.focusTotalSeconds = m * 60;
+          this.setPipSpeech(`Focus timer set to ${m} minutes.`);
+          this.refreshHubPanelUI();
+        });
+      }
     }
 
     const focusReset = asset.getElementById('hub-focus-reset');
@@ -1147,17 +1161,45 @@ export class PanelSystem extends createSystem({
     if (studioPlay) {
       this.addPress(studioPlay, () => this.toggleFocusTimer());
     }
-    const studioMinus = asset.getElementById('focus-studio-minus5');
-    if (studioMinus) {
-      this.addPress(studioMinus, () => {
+    const studioMinus1 = asset.getElementById('focus-studio-minus1');
+    if (studioMinus1) {
+      this.addPress(studioMinus1, () => {
+        this.focusRemainingSeconds = Math.max(60, this.focusRemainingSeconds - 60);
+        this.refreshHubPanelUI();
+      });
+    }
+    const studioPlus1 = asset.getElementById('focus-studio-plus1');
+    if (studioPlus1) {
+      this.addPress(studioPlus1, () => {
+        this.focusRemainingSeconds = Math.min(180 * 60, this.focusRemainingSeconds + 60);
+        this.refreshHubPanelUI();
+      });
+    }
+    const studioMinus5 = asset.getElementById('focus-studio-minus5');
+    if (studioMinus5) {
+      this.addPress(studioMinus5, () => {
         this.focusRemainingSeconds = Math.max(60, this.focusRemainingSeconds - 5 * 60);
         this.refreshHubPanelUI();
       });
     }
-    const studioPlus = asset.getElementById('focus-studio-plus5');
-    if (studioPlus) {
-      this.addPress(studioPlus, () => {
-        this.focusRemainingSeconds = Math.min(120 * 60, this.focusRemainingSeconds + 5 * 60);
+    const studioPlus5 = asset.getElementById('focus-studio-plus5');
+    if (studioPlus5) {
+      this.addPress(studioPlus5, () => {
+        this.focusRemainingSeconds = Math.min(180 * 60, this.focusRemainingSeconds + 5 * 60);
+        this.refreshHubPanelUI();
+      });
+    }
+    const studioMinus10 = asset.getElementById('focus-studio-minus10');
+    if (studioMinus10) {
+      this.addPress(studioMinus10, () => {
+        this.focusRemainingSeconds = Math.max(60, this.focusRemainingSeconds - 10 * 60);
+        this.refreshHubPanelUI();
+      });
+    }
+    const studioPlus10 = asset.getElementById('focus-studio-plus10');
+    if (studioPlus10) {
+      this.addPress(studioPlus10, () => {
+        this.focusRemainingSeconds = Math.min(180 * 60, this.focusRemainingSeconds + 10 * 60);
         this.refreshHubPanelUI();
       });
     }
@@ -1181,6 +1223,164 @@ export class PanelSystem extends createSystem({
         this.focusRunning = true;
         this.setPipSpeech('Starting 5-minute break!');
         this.refreshHubPanelUI();
+      });
+    }
+    const studioChips = [10, 15, 25, 30, 45, 60, 90];
+    for (const m of studioChips) {
+      const chipBtn = asset.getElementById(`focus-studio-chip-${m}`);
+      if (chipBtn) {
+        this.addPress(chipBtn, () => {
+          this.focusRemainingSeconds = m * 60;
+          this.focusTotalSeconds = m * 60;
+          this.setPipSpeech(`Focus Studio set to ${m} minutes.`);
+          this.refreshHubPanelUI();
+        });
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // In-Place Task Editor Subview Controls
+    // ------------------------------------------------------------------------
+    const editorBack = asset.getElementById('btn-editor-back');
+    if (editorBack) {
+      this.addPress(editorBack, () => this.closeEditSheet());
+    }
+
+    const onSaveTask = () => {
+      if (this.editingTaskId) {
+        const t = this.tasks.find((x) => x.id === this.editingTaskId);
+        if (t) {
+          t.title = this.editDraftTitle;
+          t.estimatedMinutes = this.editDraftDuration;
+          t.priority = this.editDraftPriority;
+          t.scheduledStartMinute = this.editDraftStartTime;
+        }
+        this.saveTasks(true, `Updated "${this.editDraftTitle}"`);
+        this.setPipSpeech(`Updated task "${this.editDraftTitle}".`);
+      } else {
+        const newTask: GlassTask = {
+          id: `task-${Date.now()}`,
+          title: this.editDraftTitle,
+          estimatedMinutes: this.editDraftDuration,
+          priority: this.editDraftPriority,
+          scheduledStartMinute: this.editDraftStartTime,
+          status: 'todo',
+          dayNumber: this.selectedDayNumber,
+        };
+        this.tasks.push(newTask);
+        this.saveTasks(true, `Added "${this.editDraftTitle}"`);
+        this.setPipSpeech(`Created new task "${this.editDraftTitle}" for Nov ${this.selectedDayNumber}.`);
+        this.triggerPipEmote('celebrate');
+      }
+      this.closeEditSheet();
+    };
+
+    const editorSaveTop = asset.getElementById('btn-editor-save');
+    if (editorSaveTop) this.addPress(editorSaveTop, onSaveTask);
+
+    const editorSaveBottom = asset.getElementById('ed-btn-save-bottom');
+    if (editorSaveBottom) this.addPress(editorSaveBottom, onSaveTask);
+
+    const presets = [
+      'Deep Work Sprint',
+      'Team Sync',
+      'Code Review',
+      'Write Report',
+      'ML Benchmark',
+      'Gym / Health',
+    ];
+    for (let i = 0; i < presets.length; i++) {
+      const btn = asset.getElementById(`ed-preset-${i}`);
+      if (btn) {
+        this.addPress(btn, () => {
+          this.editDraftTitle = presets[i];
+          this.updateTaskEditorDisplay();
+          this.setPipSpeech(`Title set to "${presets[i]}".`);
+        });
+      }
+    }
+
+    const durSteps: Array<{ id: string; delta: number }> = [
+      { id: 'ed-dur-minus15', delta: -15 },
+      { id: 'ed-dur-minus5', delta: -5 },
+      { id: 'ed-dur-minus1', delta: -1 },
+      { id: 'ed-dur-plus1', delta: 1 },
+      { id: 'ed-dur-plus5', delta: 5 },
+      { id: 'ed-dur-plus15', delta: 15 },
+    ];
+    for (const ds of durSteps) {
+      const btn = asset.getElementById(ds.id);
+      if (btn) {
+        this.addPress(btn, () => {
+          this.editDraftDuration = Math.max(5, Math.min(240, this.editDraftDuration + ds.delta));
+          this.updateTaskEditorDisplay();
+        });
+      }
+    }
+
+    const durChips = [15, 30, 45, 60, 90, 120];
+    for (const m of durChips) {
+      const btn = asset.getElementById(`ed-chip-${m}`);
+      if (btn) {
+        this.addPress(btn, () => {
+          this.editDraftDuration = m;
+          this.updateTaskEditorDisplay();
+          this.setPipSpeech(`Duration set to ${m} minutes.`);
+        });
+      }
+    }
+
+    const priChoices: Array<{ id: string; pri: 'low' | 'medium' | 'high' }> = [
+      { id: 'ed-pri-low', pri: 'low' },
+      { id: 'ed-pri-med', pri: 'medium' },
+      { id: 'ed-pri-high', pri: 'high' },
+    ];
+    for (const p of priChoices) {
+      const btn = asset.getElementById(p.id);
+      if (btn) {
+        this.addPress(btn, () => {
+          this.editDraftPriority = p.pri;
+          this.updateTaskEditorDisplay();
+        });
+      }
+    }
+
+    const timeChips: Array<{ id: string; minute: number; label: string }> = [
+      { id: 'ed-time-9', minute: 9 * 60, label: '09:00 AM' },
+      { id: 'ed-time-11', minute: 11 * 60, label: '11:00 AM' },
+      { id: 'ed-time-14', minute: 14 * 60, label: '02:00 PM' },
+      { id: 'ed-time-16', minute: 16 * 60, label: '04:00 PM' },
+      { id: 'ed-time-18', minute: 18 * 60, label: '06:00 PM' },
+    ];
+    for (const tc of timeChips) {
+      const btn = asset.getElementById(tc.id);
+      if (btn) {
+        this.addPress(btn, () => {
+          this.editDraftStartTime = tc.minute;
+          this.setPipSpeech(`Scheduled start set to ${tc.label}.`);
+        });
+      }
+    }
+
+    const edDeleteBtn = asset.getElementById('ed-btn-delete');
+    if (edDeleteBtn) {
+      this.addPress(edDeleteBtn, () => {
+        if (!this.editingTaskId) return;
+        if (this.deleteTapCount === 0) {
+          this.deleteTapCount = 1;
+          this.updateTaskEditorDisplay();
+          if (this.deleteResetTimer) window.clearTimeout(this.deleteResetTimer);
+          this.deleteResetTimer = window.setTimeout(() => {
+            this.deleteTapCount = 0;
+            this.updateTaskEditorDisplay();
+          }, 5000);
+        } else {
+          const taskToDelete = this.tasks.find((t) => t.id === this.editingTaskId);
+          this.tasks = this.tasks.filter((t) => t.id !== this.editingTaskId);
+          this.saveTasks(true, `Deleted "${taskToDelete?.title || 'task'}"`);
+          this.setPipSpeech(`Deleted task "${taskToDelete?.title || ''}".`);
+          this.closeEditSheet();
+        }
       });
     }
 
@@ -1303,6 +1503,11 @@ export class PanelSystem extends createSystem({
     if (!asset) return;
 
     // Zoom & Back
+    const cardPip = asset.getElementById('card-pip');
+    if (cardPip) this.addPress(cardPip, () => this.zoomSection('panel-right-pip', 'Pip Companion'));
+    const cardGarden = asset.getElementById('card-garden');
+    if (cardGarden) this.addPress(cardGarden, () => this.zoomSection('panel-right-pip', 'Productivity Garden'));
+
     const zoomPip = asset.getElementById('btn-zoom-pip');
     if (zoomPip) {
       this.addPress(zoomPip, () => this.zoomSection('panel-right-pip', 'Pip Companion', 1.18, 0.16));
@@ -1419,6 +1624,11 @@ export class PanelSystem extends createSystem({
     if (!asset) return;
 
     // Zoom & Back
+    const cardHabits = asset.getElementById('card-habits');
+    if (cardHabits) this.addPress(cardHabits, () => this.zoomSection('panel-right-focus', 'Habits & Streaks'));
+    const cardDeadlines = asset.getElementById('card-deadlines');
+    if (cardDeadlines) this.addPress(cardDeadlines, () => this.zoomSection('panel-right-focus', 'Upcoming Deadlines'));
+
     const zoomHabits = asset.getElementById('btn-zoom-habits');
     if (zoomHabits) {
       this.addPress(zoomHabits, () => this.zoomSection('panel-right-focus', 'Habits & Streaks', 1.18, 0.16));
@@ -1611,21 +1821,27 @@ export class PanelSystem extends createSystem({
         this.editDraftStartTime = task.scheduledStartMinute;
       }
     } else {
-      this.editDraftTitle = 'New task';
+      this.editDraftTitle = 'Deep Work Sprint';
       this.editDraftDuration = 45;
       this.editDraftPriority = 'medium';
       this.editDraftStartTime = 540;
     }
 
+    // Keep old 3D floating sheet hidden offscreen - task editor lives in-place in Center Hub!
     const sheetObj = this.world.getSceneObject('panel-edit-sheet');
     if (sheetObj) {
-      sheetObj.position.set(0, 1.25, -0.30);
-      sheetObj.rotation.set(0, 0, 0);
-      sheetObj.scale.set(0.12, 0.12, 0.12);
-      sheetObj.visible = true;
+      sheetObj.position.set(0, -50, 0);
+      sheetObj.visible = false;
     }
 
-    this.updateEditSheetDisplay();
+    // Switch Center Hub in-place to the Task Editor subview
+    this.setHubView('editor');
+    this.updateTaskEditorDisplay();
+    this.setPipSpeech(
+      taskId
+        ? `Editing "${this.editDraftTitle}". Modify settings and click Save Task.`
+        : 'Create New Task. Choose presets, duration, and click Save Task.',
+    );
   }
 
   private closeEditSheet() {
@@ -1637,27 +1853,62 @@ export class PanelSystem extends createSystem({
       sheetObj.position.set(0, -50, 0);
       sheetObj.visible = false;
     }
+    this.setHubView('overview');
     this.refreshAllUI();
   }
 
-  private updateEditSheetDisplay() {
-    const asset = this.getAsset('panel-edit-sheet');
-    if (!asset) return;
+  private updateTaskEditorDisplay() {
+    const hubAsset = this.getAsset('panel-hub');
+    if (!hubAsset) return;
 
-    const titleEl = asset.getElementById('sheet-title') as any;
+    const titleEl = hubAsset.getElementById('editor-title') as any;
     if (titleEl) {
       setText(titleEl, this.editingTaskId ? `Edit: ${this.editDraftTitle}` : 'Create New Task');
     }
 
-    const durEl = asset.getElementById('sheet-duration-display') as any;
+    const durEl = hubAsset.getElementById('ed-duration-display') as any;
     if (durEl) {
       setText(durEl, `${this.editDraftDuration}m`);
     }
 
-    const delLbl = asset.getElementById('btn-sheet-delete-label') as any;
-    if (delLbl) {
-      setText(delLbl, this.deleteTapCount === 1 ? 'Confirm Delete?' : 'Delete');
+    // Priority button styling
+    const priButtons: Array<{ id: string; textId: string; pri: 'low' | 'medium' | 'high'; activeBg: string; activeBorder: string; activeColor: string }> = [
+      { id: 'ed-pri-low', textId: 'ed-pri-low-text', pri: 'low', activeBg: 'rgba(59, 130, 246, 0.40)', activeBorder: '#3B82F6', activeColor: '#93C5FD' },
+      { id: 'ed-pri-med', textId: 'ed-pri-med-text', pri: 'medium', activeBg: 'rgba(234, 179, 8, 0.40)', activeBorder: '#EAB308', activeColor: '#FDE047' },
+      { id: 'ed-pri-high', textId: 'ed-pri-high-text', pri: 'high', activeBg: 'rgba(239, 68, 68, 0.40)', activeBorder: '#EF4444', activeColor: '#FCA5A5' },
+    ];
+    for (const p of priButtons) {
+      const btn = hubAsset.getElementById(p.id) as any;
+      const isActive = this.editDraftPriority === p.pri;
+      if (btn && typeof btn.setProperties === 'function') {
+        btn.setProperties({
+          backgroundColor: isActive ? p.activeBg : 'rgba(255, 255, 255, 0.05)',
+          borderColor: isActive ? p.activeBorder : 'rgba(255, 255, 255, 0.15)',
+        });
+      }
+      const txt = hubAsset.getElementById(p.textId) as any;
+      if (txt && typeof txt.setProperties === 'function') {
+        txt.setProperties({
+          color: isActive ? p.activeColor : 'rgba(255, 255, 255, 0.60)',
+        });
+      }
     }
+
+    // Delete button visibility and label
+    const delBtn = hubAsset.getElementById('ed-btn-delete') as any;
+    const delLbl = hubAsset.getElementById('ed-btn-delete-label') as any;
+    if (delBtn && typeof delBtn.setProperties === 'function') {
+      delBtn.setProperties({
+        display: this.editingTaskId ? 'flex' : 'none',
+      });
+    }
+    if (delLbl) {
+      setText(delLbl, this.deleteTapCount === 1 ? '⚠️ Confirm Delete?' : 'Delete Task');
+    }
+  }
+
+  private updateEditSheetDisplay() {
+    this.updateTaskEditorDisplay();
   }
 
   // --------------------------------------------------------------------------
@@ -1984,14 +2235,9 @@ export class PanelSystem extends createSystem({
     }
   }
 
-  update(time: number, _delta: number) {
+  update(_time: number, _delta: number) {
     if (!this.isBound) {
       this.bindPanels();
-    }
-
-    if (this.pipRig && this.pipRig.head) {
-      const bob = Math.sin(time * 0.003) * 0.006;
-      this.pipRig.head.position.y = 0.05 + bob;
     }
   }
 }

@@ -1377,7 +1377,7 @@
   </div>
 
   <div id="view-overview" class="hub-main-view">
-    <div class="schedule-card">
+    <div id="card-schedule" class="schedule-card">
       <div class="schedule-card-header">
         <span id="hub-schedule-title" class="schedule-title">Today's Schedule (8:00 AM – 10:00 PM)</span>
         <div class="schedule-controls">
@@ -1572,6 +1572,12 @@
           </div>
 
           <div class="focus-quick-chips-row">
+            <Button id="hub-focus-minus1" class="focus-quick-chip">
+              <ButtonLabel class="focus-quick-chip-text">-1m</ButtonLabel>
+            </Button>
+            <Button id="hub-focus-plus1" class="focus-quick-chip">
+              <ButtonLabel class="focus-quick-chip-text">+1m</ButtonLabel>
+            </Button>
             <Button id="hub-focus-minus5" class="focus-quick-chip">
               <ButtonLabel class="focus-quick-chip-text">-5m</ButtonLabel>
             </Button>
@@ -1584,6 +1590,12 @@
             <Button id="hub-focus-break" class="focus-quick-chip">
               <ButtonLabel class="focus-quick-chip-text">Break</ButtonLabel>
             </Button>
+          </div>
+          <div class="focus-quick-chips-row" style="margin-top: 4px;">
+            <Button id="hub-focus-chip-15" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">15m</ButtonLabel></Button>
+            <Button id="hub-focus-chip-25" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">25m</ButtonLabel></Button>
+            <Button id="hub-focus-chip-45" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">45m</ButtonLabel></Button>
+            <Button id="hub-focus-chip-60" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">60m</ButtonLabel></Button>
           </div>
         </div>
 
@@ -1846,6 +1858,83 @@
     </div>
   </div>
 
+  <!-- Subview: Task Creation & Edit Studio (In-Place, Zero Zoom) -->
+  <div id="view-task-editor" class="hub-subview" style="display: none;">
+    <div class="subview-top-bar">
+      <Button id="btn-editor-back" class="subview-back-btn">
+        <ButtonLabel class="subview-back-text">◀ Cancel</ButtonLabel>
+      </Button>
+      <span id="editor-title" class="subview-title">Create New Task</span>
+      <Button id="btn-editor-save" class="subview-back-btn" style="background-color: #22C55E; border-color: #4ADE80;">
+        <ButtonLabel class="subview-back-text">💾 Save Task</ButtonLabel>
+      </Button>
+    </div>
+
+    <div class="subview-body" style="gap: 8px;">
+      <!-- Quick Title Presets -->
+      <span class="greeting-subtitle" style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.60);">QUICK TITLE PRESETS</span>
+      <div style="flex-direction: row; gap: 6px; width: 100%; flex-wrap: wrap;">
+        <Button id="ed-preset-0" class="focus-quick-chip" style="width: 140px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">Deep Work Sprint</ButtonLabel></Button>
+        <Button id="ed-preset-1" class="focus-quick-chip" style="width: 105px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">Team Sync</ButtonLabel></Button>
+        <Button id="ed-preset-2" class="focus-quick-chip" style="width: 115px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">Code Review</ButtonLabel></Button>
+        <Button id="ed-preset-3" class="focus-quick-chip" style="width: 115px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">Write Report</ButtonLabel></Button>
+        <Button id="ed-preset-4" class="focus-quick-chip" style="width: 125px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">ML Benchmark</ButtonLabel></Button>
+        <Button id="ed-preset-5" class="focus-quick-chip" style="width: 115px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">Gym / Health</ButtonLabel></Button>
+      </div>
+
+      <!-- Duration Steppers & Quick Chips -->
+      <div style="flex-direction: row; justify-content: space-between; align-items: center; width: 100%;">
+        <span class="greeting-subtitle" style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.60);">DURATION</span>
+        <span id="ed-duration-display" class="subview-title" style="font-size: 15px; color: #A78BFA; font-weight: 800;">60m</span>
+      </div>
+      <div style="flex-direction: row; gap: 6px; width: 100%; align-items: center;">
+        <Button id="ed-dur-minus15" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-15m</ButtonLabel></Button>
+        <Button id="ed-dur-minus5" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-5m</ButtonLabel></Button>
+        <Button id="ed-dur-minus1" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-1m</ButtonLabel></Button>
+        <Button id="ed-dur-plus1" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">+1m</ButtonLabel></Button>
+        <Button id="ed-dur-plus5" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">+5m</ButtonLabel></Button>
+        <Button id="ed-dur-plus15" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">+15m</ButtonLabel></Button>
+      </div>
+      <!-- Exact Duration Chips -->
+      <div style="flex-direction: row; gap: 6px; width: 100%;">
+        <Button id="ed-chip-15" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">15m</ButtonLabel></Button>
+        <Button id="ed-chip-30" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">30m</ButtonLabel></Button>
+        <Button id="ed-chip-45" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">45m</ButtonLabel></Button>
+        <Button id="ed-chip-60" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">60m</ButtonLabel></Button>
+        <Button id="ed-chip-90" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">90m</ButtonLabel></Button>
+        <Button id="ed-chip-120" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">120m</ButtonLabel></Button>
+      </div>
+
+      <!-- Priority Level Selection -->
+      <span class="greeting-subtitle" style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.60);">PRIORITY LEVEL</span>
+      <div style="flex-direction: row; gap: 8px; width: 100%;">
+        <Button id="ed-pri-low" class="sched-view-btn" style="flex-grow: 1; height: 30px;"><ButtonLabel id="ed-pri-low-text" class="sched-view-text">Low</ButtonLabel></Button>
+        <Button id="ed-pri-med" class="sched-view-btn sched-view-btn-active" style="flex-grow: 1; height: 30px;"><ButtonLabel id="ed-pri-med-text" class="sched-view-text-active">Medium</ButtonLabel></Button>
+        <Button id="ed-pri-high" class="sched-view-btn" style="flex-grow: 1; height: 30px;"><ButtonLabel id="ed-pri-high-text" class="sched-view-text">High</ButtonLabel></Button>
+      </div>
+
+      <!-- Start Time Chips -->
+      <span class="greeting-subtitle" style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.60);">SCHEDULED START TIME</span>
+      <div style="flex-direction: row; gap: 6px; width: 100%;">
+        <Button id="ed-time-9" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">09:00</ButtonLabel></Button>
+        <Button id="ed-time-11" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">11:00</ButtonLabel></Button>
+        <Button id="ed-time-14" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">14:00</ButtonLabel></Button>
+        <Button id="ed-time-16" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">16:00</ButtonLabel></Button>
+        <Button id="ed-time-18" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">18:00</ButtonLabel></Button>
+      </div>
+
+      <!-- Bottom Actions -->
+      <div style="flex-direction: row; justify-content: space-between; align-items: center; width: 100%; margin-top: 4px;">
+        <Button id="ed-btn-delete" class="subview-back-btn" style="background-color: rgba(239, 68, 68, 0.30); border-color: #EF4444;">
+          <ButtonLabel id="ed-btn-delete-label" class="subview-back-text" style="color: #FCA5A5;">Delete Task</ButtonLabel>
+        </Button>
+        <Button id="ed-btn-save-bottom" class="subview-back-btn" style="background-color: #7C5CFF; border-color: #A78BFA; padding-left: 18px; padding-right: 18px;">
+          <ButtonLabel class="subview-back-text">Save Task</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+  </div>
+
   <!-- Subview: Focus Studio -->
   <div id="view-focus" class="hub-subview" style="display: none;">
     <div class="subview-top-bar">
@@ -1857,14 +1946,27 @@
         <ButtonLabel id="btn-focus-studio-play-text" class="subview-back-text">▶ Start Sprint</ButtonLabel>
       </Button>
     </div>
-    <div class="subview-body" style="align-items: center; justify-content: center; gap: 14px;">
+    <div class="subview-body" style="align-items: center; justify-content: center; gap: 10px;">
       <span id="focus-studio-timer" class="subview-title" style="font-size: 36px; font-weight: 800; color: #A78BFA;">25:00</span>
       <span id="focus-studio-mode" class="greeting-subtitle" style="font-size: 14px;">Pomodoro Focus Mode • 4/8 Sessions Today</span>
-      <div class="focus-quick-chips-row" style="width: 380px;">
+      <div class="focus-quick-chips-row" style="width: 480px; flex-wrap: wrap; justify-content: center; gap: 6px;">
+        <Button id="focus-studio-minus1" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-1m</ButtonLabel></Button>
+        <Button id="focus-studio-plus1" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">+1m</ButtonLabel></Button>
         <Button id="focus-studio-minus5" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-5m</ButtonLabel></Button>
         <Button id="focus-studio-plus5" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">+5m</ButtonLabel></Button>
+        <Button id="focus-studio-minus10" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-10m</ButtonLabel></Button>
+        <Button id="focus-studio-plus10" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">+10m</ButtonLabel></Button>
         <Button id="focus-studio-reset" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">Reset</ButtonLabel></Button>
         <Button id="focus-studio-break" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">Break</ButtonLabel></Button>
+      </div>
+      <div class="focus-quick-chips-row" style="width: 480px; justify-content: center; gap: 6px;">
+        <Button id="focus-studio-chip-10" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">10m</ButtonLabel></Button>
+        <Button id="focus-studio-chip-15" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">15m</ButtonLabel></Button>
+        <Button id="focus-studio-chip-25" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">25m</ButtonLabel></Button>
+        <Button id="focus-studio-chip-30" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">30m</ButtonLabel></Button>
+        <Button id="focus-studio-chip-45" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">45m</ButtonLabel></Button>
+        <Button id="focus-studio-chip-60" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">60m</ButtonLabel></Button>
+        <Button id="focus-studio-chip-90" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">90m</ButtonLabel></Button>
       </div>
     </div>
   </div>
