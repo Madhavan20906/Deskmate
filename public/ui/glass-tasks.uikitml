@@ -79,7 +79,7 @@
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
-      padding: 12px;
+      padding: 10px;
       border-radius: 16px;
       background-color: rgba(18, 25, 48, 0.82);
       border-width: 1px;
@@ -87,39 +87,31 @@
       gap: 10px;
     }
 
-    .task-row-left {
-      flex-direction: row;
-      align-items: center;
-      gap: 10px;
-      flex-grow: 1;
-    }
-
     .checkbox-btn {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 999px;
       border-width: 2px;
-      border-color: rgba(255, 255, 255, 0.35);
-      background-color: transparent;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .checkbox-btn-done {
-      width: 28px;
-      height: 28px;
-      border-radius: 999px;
-      border-width: 2px;
-      border-color: #22C55E;
-      background-color: #22C55E;
+      border-color: rgba(255, 255, 255, 0.40);
+      background-color: rgba(255, 255, 255, 0.05);
       align-items: center;
       justify-content: center;
     }
 
     .check-mark {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
-      color: #FFFFFF;
+      color: #22C55E;
+    }
+
+    .task-row-main {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      flex-grow: 1;
+      padding-left: 6px;
+      padding-right: 6px;
+      background-color: transparent;
     }
 
     .task-info {
@@ -133,15 +125,9 @@
       color: #FFFFFF;
     }
 
-    .task-name-done {
-      font-size: 15px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.45);
-    }
-
     .task-time-hint {
       font-size: 12px;
-      color: rgba(255, 255, 255, 0.60);
+      color: rgba(255, 255, 255, 0.65);
     }
 
     .priority-pill {
@@ -256,67 +242,67 @@
 
   <div class="task-list">
     <!-- Task 1: Finish ML assignment -->
-    <div id="task-row-0" class="task-row">
-      <div class="task-row-left">
-        <Button id="task-chk-0" class="checkbox-btn">
-          <ButtonLabel id="task-chk-lbl-0" class="check-mark"></ButtonLabel>
-        </Button>
+    <div class="task-row">
+      <Button id="task-chk-0" class="checkbox-btn">
+        <ButtonLabel id="task-chk-lbl-0" class="check-mark"></ButtonLabel>
+      </Button>
+      <Button id="task-row-0" class="task-row-main">
         <div class="task-info">
           <span id="task-title-0" class="task-name">Finish ML assignment</span>
           <span id="task-time-0" class="task-time-hint">09:00 - 10:30</span>
         </div>
-      </div>
-      <div id="task-pill-0" class="priority-pill priority-pill-high">
-        <span id="task-pill-text-0" class="pill-text-high">High, 1h 30m</span>
-      </div>
+        <div id="task-pill-0" class="priority-pill priority-pill-high">
+          <span id="task-pill-text-0" class="pill-text-high">High, 1h 30m</span>
+        </div>
+      </Button>
     </div>
 
     <!-- Task 2: Implement API -->
-    <div id="task-row-1" class="task-row">
-      <div class="task-row-left">
-        <Button id="task-chk-1" class="checkbox-btn">
-          <ButtonLabel id="task-chk-lbl-1" class="check-mark"></ButtonLabel>
-        </Button>
+    <div class="task-row">
+      <Button id="task-chk-1" class="checkbox-btn">
+        <ButtonLabel id="task-chk-lbl-1" class="check-mark"></ButtonLabel>
+      </Button>
+      <Button id="task-row-1" class="task-row-main">
         <div class="task-info">
           <span id="task-title-1" class="task-name">Implement API</span>
           <span id="task-time-1" class="task-time-hint">11:00 - 13:00</span>
         </div>
-      </div>
-      <div id="task-pill-1" class="priority-pill priority-pill-medium">
-        <span id="task-pill-text-1" class="pill-text-medium">Medium, 2h</span>
-      </div>
+        <div id="task-pill-1" class="priority-pill priority-pill-medium">
+          <span id="task-pill-text-1" class="pill-text-medium">Medium, 2h</span>
+        </div>
+      </Button>
     </div>
 
     <!-- Task 3: Team meeting -->
-    <div id="task-row-2" class="task-row">
-      <div class="task-row-left">
-        <Button id="task-chk-2" class="checkbox-btn">
-          <ButtonLabel id="task-chk-lbl-2" class="check-mark"></ButtonLabel>
-        </Button>
+    <div class="task-row">
+      <Button id="task-chk-2" class="checkbox-btn">
+        <ButtonLabel id="task-chk-lbl-2" class="check-mark"></ButtonLabel>
+      </Button>
+      <Button id="task-row-2" class="task-row-main">
         <div class="task-info">
           <span id="task-title-2" class="task-name">Team meeting</span>
           <span id="task-time-2" class="task-time-hint">14:00 - 14:30</span>
         </div>
-      </div>
-      <div id="task-pill-2" class="priority-pill priority-pill-low">
-        <span id="task-pill-text-2" class="pill-text-low">Low, 30m</span>
-      </div>
+        <div id="task-pill-2" class="priority-pill priority-pill-low">
+          <span id="task-pill-text-2" class="pill-text-low">Low, 30m</span>
+        </div>
+      </Button>
     </div>
 
     <!-- Task 4: Read research paper -->
-    <div id="task-row-3" class="task-row">
-      <div class="task-row-left">
-        <Button id="task-chk-3" class="checkbox-btn">
-          <ButtonLabel id="task-chk-lbl-3" class="check-mark"></ButtonLabel>
-        </Button>
+    <div class="task-row">
+      <Button id="task-chk-3" class="checkbox-btn">
+        <ButtonLabel id="task-chk-lbl-3" class="check-mark"></ButtonLabel>
+      </Button>
+      <Button id="task-row-3" class="task-row-main">
         <div class="task-info">
           <span id="task-title-3" class="task-name">Read research paper</span>
           <span id="task-time-3" class="task-time-hint">15:00 - 16:00</span>
         </div>
-      </div>
-      <div id="task-pill-3" class="priority-pill priority-pill-medium">
-        <span id="task-pill-text-3" class="pill-text-medium">Medium, 1h</span>
-      </div>
+        <div id="task-pill-3" class="priority-pill priority-pill-medium">
+          <span id="task-pill-text-3" class="pill-text-medium">Medium, 1h</span>
+        </div>
+      </Button>
     </div>
   </div>
 

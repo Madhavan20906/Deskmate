@@ -276,21 +276,6 @@
       color: rgba(255, 255, 255, 0.85);
     }
 
-    .now-marker-line {
-      width: 2px;
-      height: 100%;
-      background-color: #7C5CFF;
-      align-items: center;
-    }
-
-    .now-marker-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background-color: #A78BFA;
-      margin-top: -3px;
-    }
-
     .bottom-cards-row {
       flex-direction: row;
       justify-content: space-between;
@@ -441,8 +426,8 @@
 
   <div class="hub-header">
     <div class="header-time-group">
-      <span id="hub-date" class="header-date">Tue, Nov 18</span>
-      <span id="hub-time" class="header-time">10:24 AM</span>
+      <span id="hub-date" class="header-date">Mon, Nov 16</span>
+      <span id="hub-time" class="header-time">10:14 AM</span>
     </div>
 
     <div class="header-brand-group">
@@ -529,25 +514,25 @@
       </div>
 
       <div id="timeline-track" class="timeline-track">
-        <div id="block-0" class="schedule-block" style="background-color: #7C5CFF; width: 140px; margin-left: 55px;">
-          <span class="block-title">Finish ML assignment</span>
-          <span class="block-time">09:00 - 10:30</span>
-        </div>
+        <Button id="block-0" class="schedule-block" style="background-color: #7C5CFF; width: 140px; margin-left: 55px;">
+          <ButtonLabel id="block-title-0" class="block-title">Finish ML assignment</ButtonLabel>
+          <ButtonLabel id="block-time-0" class="block-time">09:00 - 10:30</ButtonLabel>
+        </Button>
 
-        <div id="block-1" class="schedule-block" style="background-color: #3B82F6; width: 180px; margin-left: 25px;">
-          <span class="block-title">Implement API</span>
-          <span class="block-time">11:00 - 13:00</span>
-        </div>
+        <Button id="block-1" class="schedule-block" style="background-color: #3B82F6; width: 180px; margin-left: 25px;">
+          <ButtonLabel id="block-title-1" class="block-title">Implement API</ButtonLabel>
+          <ButtonLabel id="block-time-1" class="block-time">11:00 - 13:00</ButtonLabel>
+        </Button>
 
-        <div id="block-2" class="schedule-block" style="background-color: #F59E0B; width: 75px; margin-left: 55px;">
-          <span class="block-title">Team meeting</span>
-          <span class="block-time">14:00 - 14:30</span>
-        </div>
+        <Button id="block-2" class="schedule-block" style="background-color: #F59E0B; width: 75px; margin-left: 55px;">
+          <ButtonLabel id="block-title-2" class="block-title">Team meeting</ButtonLabel>
+          <ButtonLabel id="block-time-2" class="block-time">14:00 - 14:30</ButtonLabel>
+        </Button>
 
-        <div id="block-3" class="schedule-block" style="background-color: #22C55E; width: 95px; margin-left: 25px;">
-          <span class="block-title">Read research paper</span>
-          <span class="block-time">15:00 - 16:00</span>
-        </div>
+        <Button id="block-3" class="schedule-block" style="background-color: #22C55E; width: 95px; margin-left: 25px;">
+          <ButtonLabel id="block-title-3" class="block-title">Read research paper</ButtonLabel>
+          <ButtonLabel id="block-time-3" class="block-time">15:00 - 16:00</ButtonLabel>
+        </Button>
       </div>
     </div>
   </div>

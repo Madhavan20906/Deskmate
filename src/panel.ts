@@ -39,12 +39,52 @@ const STORAGE_KEY_TASKS = 'deskmate.tasks.v1';
 
 type NavTab = 'home' | 'tasks' | 'schedule' | 'focus' | 'analytics' | 'garden';
 
+/**
+ * Robust helper to set text on UIKitML elements.
+ * In PMNDRS UIKit, text is a WebGL mesh updated via setProperties({ text }).
+ * Fallbacks to textContent and innerText are preserved for DOM compatibility.
+ */
+function setText(element: any, text: string | number) {
+  if (!element) return;
+  const str = String(text);
+  if (typeof element.setProperties === 'function') {
+    try {
+      element.setProperties({ text: str });
+    } catch {}
+  }
+  if ('textContent' in element) {
+    try {
+      element.textContent = str;
+    } catch {}
+  }
+  if ('innerText' in element) {
+    try {
+      element.innerText = str;
+    } catch {}
+  }
+  if (Array.isArray(element.children)) {
+    for (const child of element.children) {
+      if (child && typeof child.setProperties === 'function') {
+        try {
+          child.setProperties({ text: str });
+        } catch {}
+      }
+      if (child && 'textContent' in child) {
+        try {
+          child.textContent = str;
+        } catch {}
+      }
+    }
+  }
+}
+
 export class PanelSystem extends createSystem({
   grabbedPanels: { required: [Grabbed] },
 }) {
   private tasks: GlassTask[] = [];
   private undoStack = new UndoStack<GlassTask[]>(5);
   private undoTimer: number | null = null;
+  private isBound = false;
 
   // Clock & Timer
   private lastClockMinute = -1;
@@ -92,6 +132,56 @@ export class PanelSystem extends createSystem({
     this.bindPanels();
   }
 
+  /**
+   * Universal press listener with 250ms debounce.
+   * Handles BOTH hand tracking (fingertip poke / pointerdown)
+   * and controller ray (trigger select / click).
+   * Also binds to children (e.g. ButtonLabel) to prevent missed ray hits.
+   */
+  private addPress(element: any, handler: () => void) {
+    if (!element || typeof element.addEventListener !== 'function') return;
+    let lastTime = 0;
+    const debounced = () => {
+      const now = performance.now();
+      if (now - lastTime < 250) return;
+      lastTime = now;
+      handler();
+    };
+
+    element.addEventListener('click', debounced);
+    this.cleanupFuncs.push(() => {
+      try {
+        element.removeEventListener('click', debounced);
+      } catch {}
+    });
+
+    element.addEventListener('pointerdown', debounced);
+    this.cleanupFuncs.push(() => {
+      try {
+        element.removeEventListener('pointerdown', debounced);
+      } catch {}
+    });
+
+    if (Array.isArray(element.children)) {
+      for (const child of element.children) {
+        if (child && typeof child.addEventListener === 'function') {
+          child.addEventListener('click', debounced);
+          this.cleanupFuncs.push(() => {
+            try {
+              child.removeEventListener('click', debounced);
+            } catch {}
+          });
+          child.addEventListener('pointerdown', debounced);
+          this.cleanupFuncs.push(() => {
+            try {
+              child.removeEventListener('pointerdown', debounced);
+            } catch {}
+          });
+        }
+      }
+    }
+  }
+
   private loadTasks() {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY_TASKS);
@@ -135,15 +225,21 @@ export class PanelSystem extends createSystem({
     if (undoContainer) {
       undoContainer.style = undoContainer.style || {};
       undoContainer.style.display = 'flex';
+      if (typeof undoContainer.setProperties === 'function') {
+        undoContainer.setProperties({ display: 'flex' });
+      }
     }
     if (undoLabelEl) {
-      undoLabelEl.textContent = label;
+      setText(undoLabelEl, label);
     }
 
     // Hide after 8 seconds
     this.undoTimer = window.setTimeout(() => {
       if (undoContainer) {
         undoContainer.style.display = 'none';
+        if (typeof undoContainer.setProperties === 'function') {
+          undoContainer.setProperties({ display: 'none' });
+        }
       }
     }, 8000);
   }
@@ -161,6 +257,9 @@ export class PanelSystem extends createSystem({
     const undoContainer = tasksAsset?.getElementById('undo-container') as any;
     if (undoContainer) {
       undoContainer.style.display = 'none';
+      if (typeof undoContainer.setProperties === 'function') {
+        undoContainer.setProperties({ display: 'none' });
+      }
     }
     this.setPipSpeech('Reverted last action.');
   }
@@ -203,37 +302,29 @@ export class PanelSystem extends createSystem({
     // Add Task Button
     const addBtn = asset.getElementById('btn-add-task');
     if (addBtn) {
-      const onAdd = () => this.openEditSheet(null);
-      addBtn.addEventListener('click', onAdd);
-      this.cleanupFuncs.push(() => addBtn.removeEventListener('click', onAdd));
+      this.addPress(addBtn, () => this.openEditSheet(null));
     }
 
     // Undo Button
     const undoBtn = asset.getElementById('undo-btn');
     if (undoBtn) {
-      const onUndo = () => this.triggerUndo();
-      undoBtn.addEventListener('click', onUndo);
-      this.cleanupFuncs.push(() => undoBtn.removeEventListener('click', onUndo));
+      this.addPress(undoBtn, () => this.triggerUndo());
     }
 
     // Checkboxes and Row click
     for (let i = 0; i < 4; i++) {
       const chkBtn = asset.getElementById(`task-chk-${i}`);
       if (chkBtn) {
-        const onChk = () => this.toggleTaskComplete(i);
-        chkBtn.addEventListener('click', onChk);
-        this.cleanupFuncs.push(() => chkBtn.removeEventListener('click', onChk));
+        this.addPress(chkBtn, () => this.toggleTaskComplete(i));
       }
 
       const rowEl = asset.getElementById(`task-row-${i}`);
       if (rowEl) {
-        const onRowClick = () => {
+        this.addPress(rowEl, () => {
           if (this.tasks[i]) {
             this.openEditSheet(this.tasks[i].id);
           }
-        };
-        rowEl.addEventListener('click', onRowClick);
-        this.cleanupFuncs.push(() => rowEl.removeEventListener('click', onRowClick));
+        });
       }
     }
   }
@@ -264,23 +355,17 @@ export class PanelSystem extends createSystem({
     // Header Action Buttons
     const bellBtn = asset.getElementById('btn-bell');
     if (bellBtn) {
-      const onBell = () => this.setPipSpeech('No unread notifications.');
-      bellBtn.addEventListener('click', onBell);
-      this.cleanupFuncs.push(() => bellBtn.removeEventListener('click', onBell));
+      this.addPress(bellBtn, () => this.setPipSpeech('No unread notifications.'));
     }
 
     const settingsBtn = asset.getElementById('btn-settings');
     if (settingsBtn) {
-      const onSettings = () => this.toggleSettingsSheet();
-      settingsBtn.addEventListener('click', onSettings);
-      this.cleanupFuncs.push(() => settingsBtn.removeEventListener('click', onSettings));
+      this.addPress(settingsBtn, () => this.toggleSettingsSheet());
     }
 
     const profileBtn = asset.getElementById('btn-profile');
     if (profileBtn) {
-      const onProfile = () => this.setPipSpeech('Logged in as Madhavan.');
-      profileBtn.addEventListener('click', onProfile);
-      this.cleanupFuncs.push(() => profileBtn.removeEventListener('click', onProfile));
+      this.addPress(profileBtn, () => this.setPipSpeech('Logged in as Madhavan.'));
     }
 
     // Navigation Tiles
@@ -295,9 +380,7 @@ export class PanelSystem extends createSystem({
     for (const item of navItems) {
       const btn = asset.getElementById(item.id);
       if (btn) {
-        const onNav = () => this.switchNavTab(item.tab);
-        btn.addEventListener('click', onNav);
-        this.cleanupFuncs.push(() => btn.removeEventListener('click', onNav));
+        this.addPress(btn, () => this.switchNavTab(item.tab));
       }
     }
 
@@ -305,11 +388,9 @@ export class PanelSystem extends createSystem({
     for (let i = 0; i < 4; i++) {
       const blockEl = asset.getElementById(`block-${i}`);
       if (blockEl) {
-        const onBlock = () => {
+        this.addPress(blockEl, () => {
           if (this.tasks[i]) this.openEditSheet(this.tasks[i].id);
-        };
-        blockEl.addEventListener('click', onBlock);
-        this.cleanupFuncs.push(() => blockEl.removeEventListener('click', onBlock));
+        });
       }
     }
   }
@@ -334,7 +415,7 @@ export class PanelSystem extends createSystem({
 
     const chipWhatNext = asset.getElementById('chip-pip-what-next');
     if (chipWhatNext) {
-      const onWhatNext = () => {
+      this.addPress(chipWhatNext, () => {
         const mappedTasks: TaskItem[] = this.tasks.map((t) => ({
           id: t.id,
           title: t.title,
@@ -352,14 +433,12 @@ export class PanelSystem extends createSystem({
         } else {
           this.setPipSpeech('All caught up! Start a new task or take a rest.');
         }
-      };
-      chipWhatNext.addEventListener('click', onWhatNext);
-      this.cleanupFuncs.push(() => chipWhatNext.removeEventListener('click', onWhatNext));
+      });
     }
 
     const chipPlanDay = asset.getElementById('chip-pip-plan-day');
     if (chipPlanDay) {
-      const onPlanDay = () => {
+      this.addPress(chipPlanDay, () => {
         const mappedTasks: TaskItem[] = this.tasks.map((t) => ({
           id: t.id,
           title: t.title,
@@ -378,34 +457,28 @@ export class PanelSystem extends createSystem({
         this.saveTasks(true, 'Planned schedule with rest buffers');
         this.setPipSpeech('Packed tasks into your schedule with 10-minute rest buffers.');
         this.triggerPipEmote('celebrate');
-      };
-      chipPlanDay.addEventListener('click', onPlanDay);
-      this.cleanupFuncs.push(() => chipPlanDay.removeEventListener('click', onPlanDay));
+      });
     }
 
     const chipRecap = asset.getElementById('chip-pip-recap');
     if (chipRecap) {
-      const onRecap = () => {
+      this.addPress(chipRecap, () => {
         const done = this.tasks.filter((t) => t.status === 'completed').length;
         const total = this.tasks.length;
         this.setPipSpeech(`Today's progress: ${done} of ${total} tasks finished. Keep momentum!`);
-      };
-      chipRecap.addEventListener('click', onRecap);
-      this.cleanupFuncs.push(() => chipRecap.removeEventListener('click', onRecap));
+      });
     }
 
     const chipBreak = asset.getElementById('chip-pip-break');
     if (chipBreak) {
-      const onBreak = () => {
+      this.addPress(chipBreak, () => {
         this.focusMode = 'short_break';
         this.focusTotalSeconds = 5 * 60;
         this.focusRemainingSeconds = 5 * 60;
         this.focusRunning = true;
         this.setPipSpeech('Taking a 5-minute breather. Stand up and stretch!');
         this.refreshAllUI();
-      };
-      chipBreak.addEventListener('click', onBreak);
-      this.cleanupFuncs.push(() => chipBreak.removeEventListener('click', onBreak));
+      });
     }
   }
 
@@ -414,7 +487,7 @@ export class PanelSystem extends createSystem({
     if (!asset) return;
     const speechEl = asset.getElementById('pip-speech-text') as any;
     if (speechEl) {
-      speechEl.textContent = text;
+      setText(speechEl, text);
     }
   }
 
@@ -429,54 +502,45 @@ export class PanelSystem extends createSystem({
 
     const playBtn = asset.getElementById('btn-focus-play-pause');
     if (playBtn) {
-      const onPlay = () => this.toggleFocusTimer();
-      playBtn.addEventListener('click', onPlay);
-      this.cleanupFuncs.push(() => playBtn.removeEventListener('click', onPlay));
+      this.addPress(playBtn, () => this.toggleFocusTimer());
     }
 
     const minus5Btn = asset.getElementById('chip-focus-minus5');
     if (minus5Btn) {
-      const onMinus5 = () => {
+      this.addPress(minus5Btn, () => {
         this.focusRemainingSeconds = Math.max(60, this.focusRemainingSeconds - 5 * 60);
         this.refreshAllUI();
-      };
-      minus5Btn.addEventListener('click', onMinus5);
-      this.cleanupFuncs.push(() => minus5Btn.removeEventListener('click', onMinus5));
+      });
     }
 
     const plus5Btn = asset.getElementById('chip-focus-plus5');
     if (plus5Btn) {
-      const onPlus5 = () => {
+      this.addPress(plus5Btn, () => {
         this.focusRemainingSeconds = Math.min(120 * 60, this.focusRemainingSeconds + 5 * 60);
         this.refreshAllUI();
-      };
-      plus5Btn.addEventListener('click', onPlus5);
-      this.cleanupFuncs.push(() => plus5Btn.removeEventListener('click', onPlus5));
+      });
     }
 
     const resetBtn = asset.getElementById('chip-focus-reset');
     if (resetBtn) {
-      const onReset = () => {
+      this.addPress(resetBtn, () => {
         this.focusRunning = false;
         this.focusRemainingSeconds = 25 * 60;
+        this.focusTotalSeconds = 25 * 60;
         this.focusMode = 'pomodoro';
         this.refreshAllUI();
-      };
-      resetBtn.addEventListener('click', onReset);
-      this.cleanupFuncs.push(() => resetBtn.removeEventListener('click', onReset));
+      });
     }
 
     const breakBtn = asset.getElementById('chip-focus-break');
     if (breakBtn) {
-      const onBreak = () => {
+      this.addPress(breakBtn, () => {
         this.focusMode = 'short_break';
         this.focusRemainingSeconds = 5 * 60;
         this.focusTotalSeconds = 5 * 60;
         this.focusRunning = true;
         this.refreshAllUI();
-      };
-      breakBtn.addEventListener('click', onBreak);
-      this.cleanupFuncs.push(() => breakBtn.removeEventListener('click', onBreak));
+      });
     }
   }
 
@@ -500,9 +564,7 @@ export class PanelSystem extends createSystem({
     // Close Button
     const closeBtn = asset.getElementById('btn-sheet-close');
     if (closeBtn) {
-      const onClose = () => this.closeEditSheet();
-      closeBtn.addEventListener('click', onClose);
-      this.cleanupFuncs.push(() => closeBtn.removeEventListener('click', onClose));
+      this.addPress(closeBtn, () => this.closeEditSheet());
     }
 
     // Title Presets
@@ -510,65 +572,53 @@ export class PanelSystem extends createSystem({
     for (let i = 0; i < presets.length; i++) {
       const btn = asset.getElementById(`preset-${i}`);
       if (btn) {
-        const onPreset = () => {
+        this.addPress(btn, () => {
           this.editDraftTitle = presets[i];
           this.updateEditSheetDisplay();
-        };
-        btn.addEventListener('click', onPreset);
-        this.cleanupFuncs.push(() => btn.removeEventListener('click', onPreset));
+        });
       }
     }
 
     // Duration Steppers
     const durMinus = asset.getElementById('btn-dur-minus');
     if (durMinus) {
-      const onMinus = () => {
+      this.addPress(durMinus, () => {
         this.editDraftDuration = Math.max(15, this.editDraftDuration - 15);
         this.updateEditSheetDisplay();
-      };
-      durMinus.addEventListener('click', onMinus);
-      this.cleanupFuncs.push(() => durMinus.removeEventListener('click', onMinus));
+      });
     }
 
     const durPlus = asset.getElementById('btn-dur-plus');
     if (durPlus) {
-      const onPlus = () => {
+      this.addPress(durPlus, () => {
         this.editDraftDuration = Math.min(240, this.editDraftDuration + 15);
         this.updateEditSheetDisplay();
-      };
-      durPlus.addEventListener('click', onPlus);
-      this.cleanupFuncs.push(() => durPlus.removeEventListener('click', onPlus));
+      });
     }
 
     // Priority Toggles
     const priLow = asset.getElementById('btn-pri-low');
     if (priLow) {
-      const onLow = () => {
+      this.addPress(priLow, () => {
         this.editDraftPriority = 'low';
         this.updateEditSheetDisplay();
-      };
-      priLow.addEventListener('click', onLow);
-      this.cleanupFuncs.push(() => priLow.removeEventListener('click', onLow));
+      });
     }
 
     const priMed = asset.getElementById('btn-pri-med');
     if (priMed) {
-      const onMed = () => {
+      this.addPress(priMed, () => {
         this.editDraftPriority = 'medium';
         this.updateEditSheetDisplay();
-      };
-      priMed.addEventListener('click', onMed);
-      this.cleanupFuncs.push(() => priMed.removeEventListener('click', onMed));
+      });
     }
 
     const priHigh = asset.getElementById('btn-pri-high');
     if (priHigh) {
-      const onHigh = () => {
+      this.addPress(priHigh, () => {
         this.editDraftPriority = 'high';
         this.updateEditSheetDisplay();
-      };
-      priHigh.addEventListener('click', onHigh);
-      this.cleanupFuncs.push(() => priHigh.removeEventListener('click', onHigh));
+      });
     }
 
     // Time Chips
@@ -581,28 +631,25 @@ export class PanelSystem extends createSystem({
     for (const slot of timeSlots) {
       const btn = asset.getElementById(slot.id);
       if (btn) {
-        const onTime = () => {
+        this.addPress(btn, () => {
           this.editDraftStartTime = slot.minute;
           this.updateEditSheetDisplay();
-        };
-        btn.addEventListener('click', onTime);
-        this.cleanupFuncs.push(() => btn.removeEventListener('click', onTime));
+        });
       }
     }
 
     // Delete Button (2-tap confirm)
     const deleteBtn = asset.getElementById('btn-sheet-delete');
     if (deleteBtn) {
-      const onDelete = () => {
+      this.addPress(deleteBtn, () => {
         if (this.deleteTapCount === 0) {
           this.deleteTapCount = 1;
-          const lbl = asset.getElementById('btn-sheet-delete-label') as any;
-          if (lbl) lbl.textContent = 'Confirm Delete?';
+          this.updateEditSheetDisplay();
 
           if (this.deleteResetTimer !== null) window.clearTimeout(this.deleteResetTimer);
           this.deleteResetTimer = window.setTimeout(() => {
             this.deleteTapCount = 0;
-            if (lbl) lbl.textContent = 'Delete';
+            this.updateEditSheetDisplay();
           }, 5000);
         } else {
           // Second tap: delete
@@ -613,15 +660,13 @@ export class PanelSystem extends createSystem({
           }
           this.closeEditSheet();
         }
-      };
-      deleteBtn.addEventListener('click', onDelete);
-      this.cleanupFuncs.push(() => deleteBtn.removeEventListener('click', onDelete));
+      });
     }
 
     // Save Button
     const saveBtn = asset.getElementById('btn-sheet-save');
     if (saveBtn) {
-      const onSave = () => {
+      this.addPress(saveBtn, () => {
         if (this.editingTaskId) {
           // Edit existing
           const t = this.tasks.find((x) => x.id === this.editingTaskId);
@@ -646,9 +691,7 @@ export class PanelSystem extends createSystem({
           this.saveTasks(true, `Added "${this.editDraftTitle}"`);
         }
         this.closeEditSheet();
-      };
-      saveBtn.addEventListener('click', onSave);
-      this.cleanupFuncs.push(() => saveBtn.removeEventListener('click', onSave));
+      });
     }
   }
 
@@ -673,7 +716,7 @@ export class PanelSystem extends createSystem({
 
     const sheetObj = this.world.getSceneObject('panel-edit-sheet');
     if (sheetObj) {
-      sheetObj.position.set(0, 1.28, -0.65);
+      sheetObj.position.set(0, 1.25, -0.65);
       sheetObj.visible = true;
     }
 
@@ -695,17 +738,45 @@ export class PanelSystem extends createSystem({
 
     const titleEl = asset.getElementById('sheet-title') as any;
     if (titleEl) {
-      titleEl.textContent = this.editingTaskId ? `Edit: ${this.editDraftTitle}` : 'Create New Task';
+      setText(titleEl, this.editingTaskId ? `Edit: ${this.editDraftTitle}` : 'Create New Task');
     }
 
     const durEl = asset.getElementById('sheet-duration-display') as any;
     if (durEl) {
-      durEl.textContent = `${this.editDraftDuration}m`;
+      setText(durEl, `${this.editDraftDuration}m`);
     }
 
     const delLbl = asset.getElementById('btn-sheet-delete-label') as any;
     if (delLbl) {
-      delLbl.textContent = 'Delete';
+      setText(delLbl, this.deleteTapCount === 1 ? 'Confirm Delete?' : 'Delete');
+    }
+
+    const delBtn = asset.getElementById('btn-sheet-delete') as any;
+    if (delBtn && typeof delBtn.setProperties === 'function') {
+      delBtn.setProperties({
+        backgroundColor: this.deleteTapCount === 1 ? 'rgba(239, 68, 68, 0.65)' : 'rgba(239, 68, 68, 0.20)',
+        borderColor: this.deleteTapCount === 1 ? '#EF4444' : 'rgba(239, 68, 68, 0.50)',
+      });
+    }
+
+    // Update priority button highlights
+    const priLow = asset.getElementById('btn-pri-low') as any;
+    const priMed = asset.getElementById('btn-pri-med') as any;
+    const priHigh = asset.getElementById('btn-pri-high') as any;
+    if (priLow && typeof priLow.setProperties === 'function') {
+      priLow.setProperties({
+        backgroundColor: this.editDraftPriority === 'low' ? 'rgba(59, 130, 246, 0.60)' : 'rgba(59, 130, 246, 0.20)',
+      });
+    }
+    if (priMed && typeof priMed.setProperties === 'function') {
+      priMed.setProperties({
+        backgroundColor: this.editDraftPriority === 'medium' ? 'rgba(245, 158, 11, 0.60)' : 'rgba(245, 158, 11, 0.20)',
+      });
+    }
+    if (priHigh && typeof priHigh.setProperties === 'function') {
+      priHigh.setProperties({
+        backgroundColor: this.editDraftPriority === 'high' ? 'rgba(239, 68, 68, 0.60)' : 'rgba(239, 68, 68, 0.20)',
+      });
     }
   }
 
@@ -713,7 +784,7 @@ export class PanelSystem extends createSystem({
   // Update Loop & Periodic Ticks
   // --------------------------------------------------------------------------
   private tickSecond() {
-    // 1. Clock check (only update UI once per minute)
+    // 1. Live dynamic Clock & Date check with real Date()
     const now = new Date();
     const currentMinute = now.getHours() * 60 + now.getMinutes();
     if (currentMinute !== this.lastClockMinute) {
@@ -740,12 +811,12 @@ export class PanelSystem extends createSystem({
     const clock = getClockViewModel(now);
     const timeEl = hubAsset.getElementById('hub-time') as any;
     const dateEl = hubAsset.getElementById('hub-date') as any;
-    if (timeEl) timeEl.textContent = clock.timeFormatted;
-    if (dateEl) dateEl.textContent = clock.dateFormatted;
+    if (timeEl) setText(timeEl, clock.timeFormatted);
+    if (dateEl) setText(dateEl, clock.dateFormatted);
 
     const greeting = generateGreeting(now, 'Madhavan');
     const greetEl = hubAsset.getElementById('hub-greeting-text') as any;
-    if (greetEl) greetEl.textContent = greeting.greeting;
+    if (greetEl) setText(greetEl, greeting.greeting);
   }
 
   private updateFocusDisplay() {
@@ -760,13 +831,20 @@ export class PanelSystem extends createSystem({
     );
 
     const timeEl = focusAsset.getElementById('focus-countdown') as any;
-    if (timeEl) timeEl.textContent = ring.timeFormatted;
+    if (timeEl) setText(timeEl, ring.timeFormatted);
 
     const modeEl = focusAsset.getElementById('focus-mode-label') as any;
-    if (modeEl) modeEl.textContent = ring.modeLabel;
+    if (modeEl) setText(modeEl, ring.modeLabel);
 
     const playLbl = focusAsset.getElementById('focus-play-label') as any;
-    if (playLbl) playLbl.textContent = this.focusRunning ? '||' : '>';
+    if (playLbl) setText(playLbl, this.focusRunning ? '||' : '>');
+
+    const playBtn = focusAsset.getElementById('btn-focus-play-pause') as any;
+    if (playBtn && typeof playBtn.setProperties === 'function') {
+      playBtn.setProperties({
+        backgroundColor: this.focusRunning ? '#22C55E' : '#7C5CFF',
+      });
+    }
   }
 
   public refreshAllUI() {
@@ -784,7 +862,7 @@ export class PanelSystem extends createSystem({
 
     const activeCount = rows.filter((r) => !r.isCompleted).length;
     const countBadge = asset.getElementById('tasks-count-badge') as any;
-    if (countBadge) countBadge.textContent = `${activeCount} Active`;
+    if (countBadge) setText(countBadge, `${activeCount} Active`);
 
     for (let i = 0; i < 4; i++) {
       const row = rows[i];
@@ -792,12 +870,19 @@ export class PanelSystem extends createSystem({
       const timeEl = asset.getElementById(`task-time-${i}`) as any;
       const pillText = asset.getElementById(`task-pill-text-${i}`) as any;
       const chkLbl = asset.getElementById(`task-chk-lbl-${i}`) as any;
+      const chkBtn = asset.getElementById(`task-chk-${i}`) as any;
 
       if (row) {
-        if (titleEl) titleEl.textContent = row.title;
-        if (timeEl) timeEl.textContent = row.scheduledTimeFormatted || row.durationFormatted;
-        if (pillText) pillText.textContent = row.priorityLabel;
-        if (chkLbl) chkLbl.textContent = row.isCompleted ? '✓' : '';
+        if (titleEl) setText(titleEl, row.title);
+        if (timeEl) setText(timeEl, row.scheduledTimeFormatted || row.durationFormatted);
+        if (pillText) setText(pillText, row.priorityLabel);
+        if (chkLbl) setText(chkLbl, row.isCompleted ? '✓' : '');
+        if (chkBtn && typeof chkBtn.setProperties === 'function') {
+          chkBtn.setProperties({
+            backgroundColor: row.isCompleted ? 'rgba(34, 197, 94, 0.35)' : 'rgba(255, 255, 255, 0.05)',
+            borderColor: row.isCompleted ? '#22C55E' : 'rgba(255, 255, 255, 0.40)',
+          });
+        }
       }
     }
   }
@@ -809,50 +894,62 @@ export class PanelSystem extends createSystem({
     // 1. Workload Donut
     const donut = calculateWorkloadDonut(this.tasks);
     const donutPct = asset.getElementById('donut-percentage-text') as any;
-    if (donutPct) donutPct.textContent = `${donut.percentage}%`;
+    if (donutPct) setText(donutPct, `${donut.percentage}%`);
 
     const schedText = asset.getElementById('legend-scheduled-text') as any;
-    if (schedText) schedText.textContent = `Scheduled: ${donut.scheduledFormatted}`;
+    if (schedText) setText(schedText, `Scheduled: ${donut.scheduledFormatted}`);
 
     const remText = asset.getElementById('legend-remaining-text') as any;
-    if (remText) remText.textContent = `Remaining: ${donut.remainingFormatted}`;
+    if (remText) setText(remText, `Remaining: ${donut.remainingFormatted}`);
 
     // 2. Garden Progress
     const garden = calculateGardenProgress(this.gardenPoints);
     const gardenLvl = asset.getElementById('garden-level-text') as any;
-    if (gardenLvl) gardenLvl.textContent = `Level ${garden.level}`;
+    if (gardenLvl) setText(gardenLvl, `Level ${garden.level}`);
 
     const gardenSub = asset.getElementById('nav-garden-sub') as any;
-    if (gardenSub) gardenSub.textContent = `Level ${garden.level}`;
+    if (gardenSub) setText(gardenSub, `Level ${garden.level}`);
 
     const gardenBar = asset.getElementById('garden-progress-bar-fill') as any;
     if (gardenBar) {
       gardenBar.style = gardenBar.style || {};
       gardenBar.style.width = `${garden.progressPercent}%`;
+      if (typeof gardenBar.setProperties === 'function') {
+        gardenBar.setProperties({ width: `${garden.progressPercent}%` });
+      }
     }
 
     // 3. Schedule Summary Capsule
     const schedBlocks = tasksToScheduleBlocks(this.tasks);
     const summaryCapsule = asset.getElementById('schedule-summary-capsule') as any;
     if (summaryCapsule) {
-      summaryCapsule.textContent = `${donut.scheduledFormatted} planned of 8h`;
+      setText(summaryCapsule, `${donut.scheduledFormatted} planned of 8h`);
     }
 
     // 4. Update blocks
     for (let i = 0; i < 4; i++) {
       const block = schedBlocks[i];
-      const blockEl = asset.getElementById(`block-${i}`) as any;
-      if (block && blockEl) {
-        const titleSpan = blockEl.children?.[0] || blockEl.children;
-        const timeSpan = blockEl.children?.[1];
-        if (titleSpan) titleSpan.textContent = block.title;
-        if (timeSpan) timeSpan.textContent = block.timeRangeFormatted;
+      const blockTitleEl = asset.getElementById(`block-title-${i}`) as any;
+      const blockTimeEl = asset.getElementById(`block-time-${i}`) as any;
+      if (block) {
+        if (blockTitleEl) setText(blockTitleEl, block.title);
+        if (blockTimeEl) setText(blockTimeEl, block.timeRangeFormatted);
       }
     }
   }
 
   update(time: number, _delta: number) {
-    // Zero per-frame allocations: update Pip robot head bobbing
+    // 1. Dynamically bind panels as soon as UIKitML elements are mounted in DOM
+    if (!this.isBound) {
+      const hubAsset = this.getAsset('panel-hub');
+      const timeEl = hubAsset?.getElementById('hub-time');
+      if (timeEl) {
+        this.bindPanels();
+        this.isBound = true;
+      }
+    }
+
+    // 2. Zero per-frame allocations: update Pip robot head bobbing
     if (this.pipRig && this.pipRig.head) {
       const bob = Math.sin(time * 0.003) * 0.006;
       this.pipRig.head.position.y = 0.05 + bob;
