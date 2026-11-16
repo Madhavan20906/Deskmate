@@ -22,13 +22,13 @@ export type EnvironmentId =
   | 'home_office';
 
 // Default comfortable readable seated viewing pose:
-// Desk is at [0, 0, -0.75], tabletop at y = 0.74, cards at y = 1.00, dashboard at y = 1.28.
-// Camera at z = 0.85, y = 1.25 with -7° pitch frames the Dashboard, Task Cards, and entire desk comfortably.
+// Desk is at [0, 0, -0.75], tabletop at y = 0.74, cards at y = 1.00, dashboard at y = 1.48.
+// Camera at z = 0.85, y = 1.45 frames the Dashboard and Task Cards comfortably at chest-to-eye height.
 const DEFAULT_POSE = {
   x: 0,
-  y: 1.25,
+  y: 1.45,
   z: 0.85,
-  pitchRad: -0.12,
+  pitchRad: -0.06,
   fovyRad: (64 * Math.PI) / 180,
 };
 
@@ -43,15 +43,15 @@ function positionHandsOnDesk(device: any) {
   if (!device) return;
 
   // Panel targets in world space
-  // panel-left-tasks: [-0.58, 1.28, -0.68]
-  // panel-hub: [0, 1.28, -0.75]
-  const leftPos = new Vector3(-0.25, 1.05, -0.36);
-  const leftTarget = new Vector3(-0.58, 1.28, -0.68);
+  // panel-left-tasks: [-0.58, 1.48, -0.68]
+  // panel-hub: [0, 1.48, -0.72]
+  const leftPos = new Vector3(-0.25, 1.25, -0.36);
+  const leftTarget = new Vector3(-0.58, 1.48, -0.68);
   leftDirVec.subVectors(leftTarget, leftPos).normalize();
   const leftQuat = new Quaternion().setFromUnitVectors(forwardVec, leftDirVec);
 
-  const rightPos = new Vector3(0.25, 1.05, -0.36);
-  const rightTarget = new Vector3(0.0, 1.28, -0.75);
+  const rightPos = new Vector3(0.25, 1.25, -0.36);
+  const rightTarget = new Vector3(0.0, 1.48, -0.72);
   rightDirVec.subVectors(rightTarget, rightPos).normalize();
   const rightQuat = new Quaternion().setFromUnitVectors(forwardVec, rightDirVec);
 
@@ -172,13 +172,29 @@ export function initDesktopHandHUD() {
 
   window.addEventListener('keydown', (e) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-    if (e.key === 'Tab') {
+    if (e.key === 'Tab' || e.key === 'q' || e.key === 'Q') {
       e.preventDefault();
       toggleActiveHand();
     } else if (e.key === '1') {
       setActiveHand('left');
     } else if (e.key === '2') {
       setActiveHand('right');
+    }
+  });
+
+  // Dynamic dual pointer parity: auto-switch commit hand when pointing to left vs right workspace sides
+  window.addEventListener('pointermove', (e) => {
+    const isLeftScreen = e.clientX < window.innerWidth * 0.46;
+    const targetHand = isLeftScreen ? 'left' : 'right';
+    if (activeHand !== targetHand) {
+      setActiveHand(targetHand);
+    }
+  });
+
+  // Right-click commits left hand explicitly, left-click commits active hand
+  window.addEventListener('contextmenu', (e) => {
+    if (e.target instanceof HTMLCanvasElement) {
+      setActiveHand('left');
     }
   });
 }

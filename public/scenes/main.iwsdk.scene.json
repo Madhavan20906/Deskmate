@@ -6,14 +6,14 @@
         "id": "hero",
         "position": [
           0,
-          1.20,
+          1.45,
           0.10
         ],
         "projection": "perspective",
         "role": "hero",
         "target": [
           0,
-          0.95,
+          1.30,
           -0.65
         ]
       }
@@ -77,7 +77,7 @@
       "transform": {
         "position": [
           -0.58,
-          1.28,
+          1.48,
           -0.68
         ],
         "rotationDeg": [
@@ -102,7 +102,7 @@
       "transform": {
         "position": [
           0,
-          1.28,
+          1.48,
           -0.72
         ],
         "rotationDeg": [
@@ -127,7 +127,7 @@
       "transform": {
         "position": [
           0.56,
-          1.45,
+          1.65,
           -0.68
         ],
         "rotationDeg": [
@@ -136,32 +136,6 @@
           0
         ],
         "scale": 0.10
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {}
-      },
-      "content": {
-        "asset": "pip-robot",
-        "type": "asset"
-      },
-      "id": "pip-robot",
-      "name": "Pip 3D Robot Companion",
-      "transform": {
-        "position": [
-          0.56,
-          1.51,
-          -0.61
-        ],
-        "rotationDeg": [
-          0,
-          -22,
-          0
-        ],
-        "scale": 0.45
       }
     },
     {
@@ -178,7 +152,7 @@
       "transform": {
         "position": [
           0.56,
-          1.15,
+          1.35,
           -0.68
         ],
         "rotationDeg": [

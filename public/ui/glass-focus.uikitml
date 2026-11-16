@@ -326,7 +326,7 @@
   </div>
 
   <!-- Habits & Streaks -->
-  <div class="habits-card">
+  <div id="card-habits" class="habits-card">
     <div class="habits-header-row">
       <span class="habits-title">Habits &amp; Streaks</span>
       <Button id="btn-zoom-habits" class="card-zoom-btn">
@@ -392,7 +392,7 @@
   </div>
 
   <!-- Upcoming & Deadlines -->
-  <div class="deadlines-card">
+  <div id="card-deadlines" class="deadlines-card">
     <div class="deadlines-header-row">
       <span class="deadlines-title">Upcoming & Deadlines</span>
       <Button id="btn-zoom-deadlines" class="card-zoom-btn">

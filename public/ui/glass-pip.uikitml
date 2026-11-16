@@ -369,7 +369,7 @@
   </div>
 
   <!-- Pip Companion -->
-  <div class="pip-card">
+  <div id="card-pip" class="pip-card">
     <div class="pip-header-row">
       <div class="pip-title-group">
         <div class="pip-avatar-circle">
@@ -422,7 +422,7 @@
   </div>
 
   <!-- Productivity Garden -->
-  <div class="garden-card">
+  <div id="card-garden" class="garden-card">
     <div class="garden-header-row">
       <span class="garden-title">Productivity Garden</span>
       <span class="garden-badge">Active</span>
