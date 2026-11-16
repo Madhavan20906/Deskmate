@@ -133,6 +133,25 @@ export class PanelSystem extends createSystem({
   private zoomedPanelId: string | null = null;
 
   // Active Edit Task State
+  private isEditSheetOpen = false;
+  private readonly editSheetElementIds = new Set<string>([
+    'btn-sheet-close',
+    'preset-0',
+    'preset-1',
+    'preset-2',
+    'preset-3',
+    'btn-dur-minus',
+    'btn-dur-plus',
+    'btn-pri-low',
+    'btn-pri-med',
+    'btn-pri-high',
+    'chip-time-9',
+    'chip-time-11',
+    'chip-time-14',
+    'chip-time-16',
+    'btn-sheet-delete',
+    'btn-sheet-save',
+  ]);
   private editingTaskId: string | null = null;
   private editDraftTitle = 'New task';
   private editDraftDuration = 60;
@@ -167,10 +186,23 @@ export class PanelSystem extends createSystem({
   private lastElementPressTime = new WeakMap<any, number>();
   private lastHoverSoundTime = 0;
 
+  private isPartOfEditSheet(element: any): boolean {
+    let cur = element;
+    while (cur) {
+      if (cur.id && this.editSheetElementIds.has(cur.id)) return true;
+      if (cur.id === 'glass-sheet-root' || cur.id === 'panel-edit-sheet') return true;
+      cur = cur.parentElement || cur.parent;
+    }
+    return false;
+  }
+
   private addPress(element: any, handler: () => void) {
     if (!element || typeof element.addEventListener !== 'function') return;
 
     const onEnter = () => {
+      if (this.isEditSheetOpen && !this.isPartOfEditSheet(element)) {
+        return;
+      }
       const now = performance.now();
       if (this.soundEnabled && this.audio && now - this.lastHoverSoundTime > 90) {
         this.lastHoverSoundTime = now;
@@ -179,6 +211,9 @@ export class PanelSystem extends createSystem({
     };
 
     const trigger = () => {
+      if (this.isEditSheetOpen && !this.isPartOfEditSheet(element)) {
+        return;
+      }
       const now = performance.now();
       const lastElem = this.lastElementPressTime.get(element) || 0;
       if (now - lastElem < 300) return;
@@ -337,14 +372,14 @@ export class PanelSystem extends createSystem({
   // --------------------------------------------------------------------------
   // Section Zoom / Focus View Mechanics
   // --------------------------------------------------------------------------
-  public zoomSection(panelId: string, sectionTitle = 'Section View') {
+  public zoomSection(panelId: string, sectionTitle = 'Section View', offsetY = 1.25, zoomScale = 0.155) {
     this.zoomedPanelId = panelId;
 
     const targetObj = this.world.getSceneObject(panelId);
     if (targetObj) {
-      targetObj.position.set(0, 1.24, -0.44);
+      targetObj.position.set(0, offsetY, -0.40);
       targetObj.rotation.set(0, 0, 0);
-      targetObj.scale.set(0.145, 0.145, 0.145);
+      targetObj.scale.set(zoomScale, zoomScale, zoomScale);
       targetObj.visible = true;
     }
 
@@ -400,52 +435,27 @@ export class PanelSystem extends createSystem({
   }
 
   private updateZoomBackButtons(panelId: string, sectionTitle: string, isZoomed: boolean) {
-    const hubAsset = this.getAsset('panel-hub');
-    const tasksAsset = this.getAsset('panel-left-tasks');
-    const pipAsset = this.getAsset('panel-right-pip');
-    const focusAsset = this.getAsset('panel-right-focus');
+    const panels = [
+      { id: 'panel-hub', barId: 'hub-zoom-bar', labelId: 'zoom-section-label' },
+      { id: 'panel-left-tasks', barId: 'tasks-zoom-bar', labelId: 'tasks-zoom-label' },
+      { id: 'panel-right-pip', barId: 'pip-zoom-bar', labelId: 'pip-zoom-label' },
+      { id: 'panel-right-focus', barId: 'focus-zoom-bar', labelId: 'focus-zoom-label' },
+    ];
 
-    const hubZoomBar = hubAsset?.getElementById('hub-zoom-bar') as any;
-    const zoomSectionLbl = hubAsset?.getElementById('zoom-section-label') as any;
-    if (hubZoomBar) {
-      const show = isZoomed && panelId === 'panel-hub';
-      hubZoomBar.style = hubZoomBar.style || {};
-      hubZoomBar.style.display = show ? 'flex' : 'none';
-      if (typeof hubZoomBar.setProperties === 'function') {
-        hubZoomBar.setProperties({ display: show ? 'flex' : 'none' });
+    for (const p of panels) {
+      const asset = this.getAsset(p.id);
+      const bar = asset?.getElementById(p.barId) as any;
+      const label = asset?.getElementById(p.labelId) as any;
+      const show = isZoomed && panelId === p.id;
+      if (bar) {
+        bar.style = bar.style || {};
+        bar.style.display = show ? 'flex' : 'none';
+        if (typeof bar.setProperties === 'function') {
+          bar.setProperties({ display: show ? 'flex' : 'none' });
+        }
       }
-      if (zoomSectionLbl) {
-        setText(zoomSectionLbl, `Viewing: ${sectionTitle} (Zoomed)`);
-      }
-    }
-
-    const tasksBack = tasksAsset?.getElementById('btn-tasks-panel-back') as any;
-    if (tasksBack) {
-      const show = isZoomed && panelId === 'panel-left-tasks';
-      tasksBack.style = tasksBack.style || {};
-      tasksBack.style.display = show ? 'flex' : 'none';
-      if (typeof tasksBack.setProperties === 'function') {
-        tasksBack.setProperties({ display: show ? 'flex' : 'none' });
-      }
-    }
-
-    const pipBack = pipAsset?.getElementById('btn-pip-back') as any;
-    if (pipBack) {
-      const show = isZoomed && panelId === 'panel-right-pip';
-      pipBack.style = pipBack.style || {};
-      pipBack.style.display = show ? 'flex' : 'none';
-      if (typeof pipBack.setProperties === 'function') {
-        pipBack.setProperties({ display: show ? 'flex' : 'none' });
-      }
-    }
-
-    const habitsBack = focusAsset?.getElementById('btn-habits-back') as any;
-    if (habitsBack) {
-      const show = isZoomed && panelId === 'panel-right-focus';
-      habitsBack.style = habitsBack.style || {};
-      habitsBack.style.display = show ? 'flex' : 'none';
-      if (typeof habitsBack.setProperties === 'function') {
-        habitsBack.setProperties({ display: show ? 'flex' : 'none' });
+      if (label && show) {
+        setText(label, `Viewing: ${sectionTitle} (Zoomed)`);
       }
     }
   }
@@ -458,9 +468,25 @@ export class PanelSystem extends createSystem({
     if (!asset) return;
 
     // Zoom & Back
+    const zoomCal = asset.getElementById('btn-zoom-calendar');
+    if (zoomCal) {
+      this.addPress(zoomCal, () => this.zoomSection('panel-left-tasks', 'Mini Calendar', 1.15, 0.16));
+    }
+    const zoomAgenda = asset.getElementById('btn-zoom-agenda');
+    if (zoomAgenda) {
+      this.addPress(zoomAgenda, () => this.zoomSection('panel-left-tasks', "Today's Agenda", 1.28, 0.16));
+    }
+    const zoomQuick = asset.getElementById('btn-zoom-quickadd');
+    if (zoomQuick) {
+      this.addPress(zoomQuick, () => this.zoomSection('panel-left-tasks', 'Quick Add', 1.40, 0.16));
+    }
+    const zoomRoutines = asset.getElementById('btn-zoom-routines');
+    if (zoomRoutines) {
+      this.addPress(zoomRoutines, () => this.zoomSection('panel-left-tasks', 'Routines', 1.50, 0.16));
+    }
     const zoomBtn = asset.getElementById('btn-zoom-tasks-panel');
     if (zoomBtn) {
-      this.addPress(zoomBtn, () => this.zoomSection('panel-left-tasks', 'Agenda & Routines'));
+      this.addPress(zoomBtn, () => this.zoomSection('panel-left-tasks', 'Agenda & Routines', 1.25, 0.16));
     }
     const backBtn = asset.getElementById('btn-tasks-panel-back');
     if (backBtn) {
@@ -930,7 +956,11 @@ export class PanelSystem extends createSystem({
     // Zoom & Back
     const zoomPip = asset.getElementById('btn-zoom-pip');
     if (zoomPip) {
-      this.addPress(zoomPip, () => this.zoomSection('panel-right-pip', 'Pip Companion & Garden'));
+      this.addPress(zoomPip, () => this.zoomSection('panel-right-pip', 'Pip Companion', 1.18, 0.16));
+    }
+    const zoomGarden = asset.getElementById('btn-zoom-garden');
+    if (zoomGarden) {
+      this.addPress(zoomGarden, () => this.zoomSection('panel-right-pip', 'Productivity Garden', 1.38, 0.16));
     }
     const pipBack = asset.getElementById('btn-pip-back');
     if (pipBack) {
@@ -1042,7 +1072,11 @@ export class PanelSystem extends createSystem({
     // Zoom & Back
     const zoomHabits = asset.getElementById('btn-zoom-habits');
     if (zoomHabits) {
-      this.addPress(zoomHabits, () => this.zoomSection('panel-right-focus', 'Habits & Deadlines'));
+      this.addPress(zoomHabits, () => this.zoomSection('panel-right-focus', 'Habits & Streaks', 1.18, 0.16));
+    }
+    const zoomDeadlines = asset.getElementById('btn-zoom-deadlines');
+    if (zoomDeadlines) {
+      this.addPress(zoomDeadlines, () => this.zoomSection('panel-right-focus', 'Upcoming Deadlines', 1.38, 0.16));
     }
     const habitsBack = asset.getElementById('btn-habits-back');
     if (habitsBack) {
@@ -1214,6 +1248,7 @@ export class PanelSystem extends createSystem({
   }
 
   private openEditSheet(taskId: string | null) {
+    this.isEditSheetOpen = true;
     this.editingTaskId = taskId;
     this.deleteTapCount = 0;
 
@@ -1234,7 +1269,9 @@ export class PanelSystem extends createSystem({
 
     const sheetObj = this.world.getSceneObject('panel-edit-sheet');
     if (sheetObj) {
-      sheetObj.position.set(0, 1.28, -0.60);
+      sheetObj.position.set(0, 1.25, -0.30);
+      sheetObj.rotation.set(0, 0, 0);
+      sheetObj.scale.set(0.12, 0.12, 0.12);
       sheetObj.visible = true;
     }
 
@@ -1242,12 +1279,15 @@ export class PanelSystem extends createSystem({
   }
 
   private closeEditSheet() {
+    this.isEditSheetOpen = false;
     this.editingTaskId = null;
     this.deleteTapCount = 0;
     const sheetObj = this.world.getSceneObject('panel-edit-sheet');
     if (sheetObj) {
       sheetObj.position.set(0, -50, 0);
+      sheetObj.visible = false;
     }
+    this.refreshAllUI();
   }
 
   private updateEditSheetDisplay() {

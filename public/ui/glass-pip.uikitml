@@ -281,10 +281,91 @@
       align-items: center;
       justify-content: center;
     }
+
+    .zoom-top-bar {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border-radius: 12px;
+      background-color: rgba(124, 92, 255, 0.25);
+      border-width: 1.5px;
+      border-color: #7C5CFF;
+      width: 100%;
+    }
+
+    .zoom-back-btn {
+      flex-direction: row;
+      align-items: center;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      border-radius: 999px;
+      background-color: #7C5CFF;
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.40);
+    }
+
+    .zoom-back-btn:hover {
+      background-color: #906ffa;
+      border-color: #FFFFFF;
+      border-width: 2px;
+    }
+
+    .zoom-back-btn:active {
+      background-color: #633ef5;
+    }
+
+    .zoom-back-text {
+      font-size: 11px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .zoom-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #C4B5FD;
+    }
+
+    .card-zoom-btn {
+      padding-left: 6px;
+      padding-right: 6px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-zoom-btn:hover {
+      background-color: rgba(124, 92, 255, 0.40);
+      border-color: #A78BFA;
+    }
+
+    .card-zoom-text {
+      font-size: 10px;
+      font-weight: 700;
+      color: #E2E8F0;
+    }
   </style>
 
   <div class="panel-handle">
     <div class="handle-bar"></div>
+  </div>
+
+  <div id="pip-zoom-bar" class="zoom-top-bar" style="display: none;">
+    <Button id="btn-pip-back" class="zoom-back-btn">
+      <ButtonLabel class="zoom-back-text">◀ Back to Overview</ButtonLabel>
+    </Button>
+    <span id="pip-zoom-label" class="zoom-section-title">Viewing Section (Zoomed)</span>
   </div>
 
   <!-- Pip Companion -->
@@ -296,11 +377,8 @@
         </div>
         <span class="pip-title">Pip</span>
       </div>
-      <Button id="btn-pip-back" class="pip-action-chip" style="display: none;">
-        <ButtonLabel class="pip-action-text">&lt; Back</ButtonLabel>
-      </Button>
-      <Button id="btn-zoom-pip" class="pip-action-chip">
-        <ButtonLabel class="pip-action-text">⛶ Zoom</ButtonLabel>
+      <Button id="btn-zoom-pip" class="card-zoom-btn">
+        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
       </Button>
     </div>
 
@@ -348,6 +426,9 @@
     <div class="garden-header-row">
       <span class="garden-title">Productivity Garden</span>
       <span class="garden-badge">Active</span>
+      <Button id="btn-zoom-garden" class="card-zoom-btn">
+        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
+      </Button>
     </div>
 
     <div class="garden-body-row">

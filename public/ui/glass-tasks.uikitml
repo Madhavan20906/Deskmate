@@ -403,19 +403,91 @@
       font-weight: 700;
       color: #FFFFFF;
     }
+
+    .zoom-top-bar {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border-radius: 12px;
+      background-color: rgba(124, 92, 255, 0.25);
+      border-width: 1.5px;
+      border-color: #7C5CFF;
+      width: 100%;
+    }
+
+    .zoom-back-btn {
+      flex-direction: row;
+      align-items: center;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      border-radius: 999px;
+      background-color: #7C5CFF;
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.40);
+    }
+
+    .zoom-back-btn:hover {
+      background-color: #906ffa;
+      border-color: #FFFFFF;
+      border-width: 2px;
+    }
+
+    .zoom-back-btn:active {
+      background-color: #633ef5;
+    }
+
+    .zoom-back-text {
+      font-size: 11px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .zoom-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #C4B5FD;
+    }
+
+    .card-zoom-btn {
+      padding-left: 6px;
+      padding-right: 6px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-zoom-btn:hover {
+      background-color: rgba(124, 92, 255, 0.40);
+      border-color: #A78BFA;
+    }
+
+    .card-zoom-text {
+      font-size: 10px;
+      font-weight: 700;
+      color: #E2E8F0;
+    }
   </style>
 
   <div class="panel-handle">
     <div class="handle-bar"></div>
   </div>
 
-  <div class="section-header-row">
-    <Button id="btn-tasks-panel-back" class="cal-nav-btn" style="display: none;">
-      <ButtonLabel class="cal-nav-text">&lt; Back</ButtonLabel>
+  <div id="tasks-zoom-bar" class="zoom-top-bar" style="display: none;">
+    <Button id="btn-tasks-panel-back" class="zoom-back-btn">
+      <ButtonLabel class="zoom-back-text">◀ Back to Overview</ButtonLabel>
     </Button>
-    <Button id="btn-zoom-tasks-panel" class="cal-nav-btn">
-      <ButtonLabel class="cal-nav-text">⛶ Zoom</ButtonLabel>
-    </Button>
+    <span id="tasks-zoom-label" class="zoom-section-title">Viewing Section (Zoomed)</span>
   </div>
 
   <!-- Mini Calendar Date Strip -->
@@ -427,6 +499,9 @@
       <span id="cal-month-label" class="calendar-title">November 2026</span>
       <Button id="cal-next-month" class="cal-nav-btn">
         <ButtonLabel class="cal-nav-text">&gt;</ButtonLabel>
+      </Button>
+      <Button id="btn-zoom-calendar" class="card-zoom-btn">
+        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
       </Button>
     </div>
 
@@ -469,6 +544,9 @@
   <div class="section-header-row">
     <span class="section-title">Today's Agenda</span>
     <span id="agenda-count-badge" class="section-badge">5 items</span>
+    <Button id="btn-zoom-agenda" class="card-zoom-btn">
+      <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
+    </Button>
   </div>
 
   <div class="agenda-list">
@@ -525,7 +603,12 @@
 
   <!-- Quick Add Bar -->
   <div class="quick-add-group">
-    <span class="quick-add-title">Quick Add</span>
+    <div class="section-header-row">
+      <span class="quick-add-title">Quick Add</span>
+      <Button id="btn-zoom-quickadd" class="card-zoom-btn">
+        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
+      </Button>
+    </div>
     <div class="quick-add-pills-row">
       <Button id="quick-add-task" class="quick-add-pill">
         <ButtonLabel class="quick-add-text">+ Task</ButtonLabel>
@@ -544,6 +627,9 @@
     <div class="routines-header-row">
       <span class="routines-title">Routines</span>
       <span id="routines-total-badge" class="section-badge">1 active</span>
+      <Button id="btn-zoom-routines" class="card-zoom-btn">
+        <ButtonLabel class="card-zoom-text">⛶ Zoom</ButtonLabel>
+      </Button>
     </div>
 
     <Button id="routine-morning-row" class="routine-row-btn">

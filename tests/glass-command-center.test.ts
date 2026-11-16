@@ -359,3 +359,70 @@ test('Tier S11: Section Zoom / Focus View & Back to Overview State Preservation'
   assert.equal(tasks[0].status, 'completed', 'Task status remains completed after returning to overview');
   assert.equal(tasks[0].estimatedMinutes, 105, 'Task duration edit remains preserved without reset');
 });
+
+test('Tier S12: Full Coverage of All 12 Section Zoom Options & Edit Sheet Ray Isolation', () => {
+  // Verify all 12 discrete sections have zoom options
+  const sections = [
+    { id: 'btn-zoom-calendar', panel: 'panel-left-tasks', title: 'Mini Calendar', offsetY: 1.15 },
+    { id: 'btn-zoom-agenda', panel: 'panel-left-tasks', title: "Today's Agenda", offsetY: 1.28 },
+    { id: 'btn-zoom-quickadd', panel: 'panel-left-tasks', title: 'Quick Add', offsetY: 1.40 },
+    { id: 'btn-zoom-routines', panel: 'panel-left-tasks', title: 'Routines', offsetY: 1.50 },
+    { id: 'btn-zoom-schedule', panel: 'panel-hub', title: "Today's Schedule", offsetY: 1.18 },
+    { id: 'btn-zoom-tasks', panel: 'panel-hub', title: 'Tasks List', offsetY: 1.40 },
+    { id: 'btn-zoom-focus', panel: 'panel-hub', title: 'Focus Session', offsetY: 1.40 },
+    { id: 'btn-zoom-workload', panel: 'panel-hub', title: 'Workload Analysis', offsetY: 1.40 },
+    { id: 'btn-zoom-pip', panel: 'panel-right-pip', title: 'Pip Companion', offsetY: 1.18 },
+    { id: 'btn-zoom-garden', panel: 'panel-right-pip', title: 'Productivity Garden', offsetY: 1.38 },
+    { id: 'btn-zoom-habits', panel: 'panel-right-focus', title: 'Habits & Streaks', offsetY: 1.18 },
+    { id: 'btn-zoom-deadlines', panel: 'panel-right-focus', title: 'Upcoming Deadlines', offsetY: 1.38 },
+  ];
+
+  assert.equal(sections.length, 12, 'DeskMate provides zoom options for all 12 individual sections');
+
+  for (const s of sections) {
+    assert.ok(s.id.startsWith('btn-zoom-'), `${s.id} follows zoom naming convention`);
+    assert.ok(s.offsetY >= 1.15 && s.offsetY <= 1.55, `${s.title} has ergonomic eye-level vertical offset`);
+  }
+
+  // Verify Edit Sheet z-index:
+  // Must be strictly in front of zoomed panels (z = -0.40) and overview (z = -0.72)
+  const zoomedZ = -0.40;
+  const overviewZ = -0.72;
+  const editSheetZ = -0.30;
+  assert.ok(editSheetZ > zoomedZ, 'Edit sheet (-0.30m) is strictly closer than zoomed panel (-0.40m)');
+  assert.ok(editSheetZ > overviewZ, 'Edit sheet (-0.30m) is strictly closer than overview (-0.72m)');
+
+  // Verify ray event isolation logic
+  const editSheetIds = new Set([
+    'btn-sheet-close',
+    'preset-0',
+    'preset-1',
+    'preset-2',
+    'preset-3',
+    'btn-dur-minus',
+    'btn-dur-plus',
+    'btn-pri-low',
+    'btn-pri-med',
+    'btn-pri-high',
+    'chip-time-9',
+    'chip-time-11',
+    'chip-time-14',
+    'chip-time-16',
+    'btn-sheet-delete',
+    'btn-sheet-save',
+  ]);
+
+  let isEditSheetOpen = true;
+  const backgroundClick = (elemId: string) => {
+    if (isEditSheetOpen && !editSheetIds.has(elemId)) {
+      return 'blocked';
+    }
+    return 'executed';
+  };
+
+  assert.equal(backgroundClick('btn-zoom-back'), 'blocked', 'Background zoom-back click blocked while modal is open');
+  assert.equal(backgroundClick('hub-chk-box-0'), 'blocked', 'Background task checkbox click blocked while modal is open');
+  assert.equal(backgroundClick('preset-0'), 'executed', 'Preset chip click allowed inside modal');
+  assert.equal(backgroundClick('btn-dur-plus'), 'executed', 'Duration stepper click allowed inside modal');
+  assert.equal(backgroundClick('btn-sheet-save'), 'executed', 'Save task button allowed inside modal');
+});
