@@ -378,7 +378,7 @@
  <span class="pip-title">Pip</span>
  </div>
  <Button id="btn-zoom-pip" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ <ButtonLabel class="card-zoom-text">Expand</ButtonLabel>
  </Button>
  </div>
 
@@ -427,7 +427,7 @@
  <span class="garden-title">Productivity Garden</span>
  <span class="garden-badge">Active</span>
  <Button id="btn-zoom-garden" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ <ButtonLabel class="card-zoom-text">Expand</ButtonLabel>
  </Button>
  </div>
 

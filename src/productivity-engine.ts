@@ -241,77 +241,90 @@ export function parseVoiceTaskCommand(transcript: string, baseDay = 18): ParsedV
  return null;
  }
 
- // 1. Resolve Day
+ // 1. Resolve Time First (handles 7pm, 7:30pm, at 2 PM, at 14:00)
+ let startMinute: number | null = 10 * 60; // 10:00 AM default
+ let timeStrFound = '';
+ const timeMatch = lower.match(/(?:\bat\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b|\bat\s+(\d{1,2})(?::(\d{2}))?\b/i);
+ if (timeMatch) {
+ timeStrFound = timeMatch[0];
+ let hour = parseInt(timeMatch[1] || timeMatch[4], 10);
+ const minute = parseInt(timeMatch[2] || timeMatch[5] || '0', 10);
+ const meridian = (timeMatch[3] || '').toLowerCase();
+ if (meridian === 'pm' && hour < 12) hour += 12;
+ if (meridian === 'am' && hour === 12) hour = 0;
+ startMinute = hour * 60 + minute;
+ }
+
+ // Remove time string from remainder
+ let remainder = lower;
+ if (timeStrFound) {
+ remainder = remainder.replace(timeStrFound, ' ');
+ }
+
+ // 2. Resolve Duration First before day so numbers in duration don't get matched as days
+ let duration = 30; // default 30m
+ let durStrFound = '';
+ const durMatch = remainder.match(/(?:for\s+)?(\d+)\s*(hours?|hrs?|h\b|minutes?|mins?|m\b)/i);
+ if (durMatch) {
+ durStrFound = durMatch[0];
+ const val = parseInt(durMatch[1], 10);
+ const unit = durMatch[2].toLowerCase();
+ if (unit.startsWith('h')) {
+ duration = val * 60;
+ } else {
+ duration = val;
+ }
+ remainder = remainder.replace(durStrFound, ' ');
+ }
+
+ // 3. Resolve Day
  let targetDay = baseDay;
- if (lower.includes('tomorrow')) {
+ if (remainder.includes('tomorrow')) {
  targetDay = baseDay + 1;
- } else if (lower.includes('today')) {
+ } else if (remainder.includes('today')) {
  targetDay = baseDay;
- } else if (lower.includes('sunday')) {
+ } else if (/\bsunday\b/.test(remainder)) {
  targetDay = 16;
- } else if (lower.includes('monday')) {
+ } else if (/\bmonday\b/.test(remainder)) {
  targetDay = 17;
- } else if (lower.includes('tuesday')) {
+ } else if (/\btuesday\b/.test(remainder)) {
  targetDay = 18;
- } else if (lower.includes('wednesday')) {
+ } else if (/\bwednesday\b/.test(remainder)) {
  targetDay = 19;
- } else if (lower.includes('thursday')) {
+ } else if (/\bthursday\b/.test(remainder)) {
  targetDay = 20;
- } else if (lower.includes('friday')) {
+ } else if (/\bfriday\b/.test(remainder)) {
  targetDay = 21;
- } else if (lower.includes('saturday')) {
+ } else if (/\bsaturday\b/.test(remainder)) {
  targetDay = 22;
  } else {
- const numMatch = lower.match(/(?:nov(?:ember)?\s*|on\s+)(\d{1,2})/);
- if (numMatch && numMatch[1]) {
- const parsedNum = parseInt(numMatch[1], 10);
+ const dayMatch = remainder.match(/\b(?:(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+|on\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+|on\s+the\s+|on\s+)(\d{1,2})(?:st|nd|rd|th)?\b/i);
+ if (dayMatch && dayMatch[1]) {
+ const parsedNum = parseInt(dayMatch[1], 10);
  if (parsedNum >= 1 && parsedNum <= 31) {
  targetDay = parsedNum;
  }
  }
  }
 
- // 2. Resolve Duration
- let duration = 30; // default 30m
- const hourMatch = lower.match(/(\d+)\s*(?:hours?|hrs?|h\b)/);
- const minMatch = lower.match(/(\d+)\s*(?:minutes?|mins?|m\b)/);
- if (hourMatch && hourMatch[1]) {
- duration = parseInt(hourMatch[1], 10) * 60;
- if (minMatch && minMatch[1]) {
- duration += parseInt(minMatch[1], 10);
- }
- } else if (minMatch && minMatch[1]) {
- duration = parseInt(minMatch[1], 10);
- }
-
- // 3. Resolve Priority
+ // 4. Resolve Priority
  let priority: 'low' | 'medium' | 'high' = 'medium';
- if (lower.includes('high priority') || lower.includes('urgent') || lower.includes('critical')) {
+ if (/high\s+priority|urgent|critical|important/.test(remainder)) {
  priority = 'high';
- } else if (lower.includes('low priority') || lower.includes('minor')) {
+ } else if (/low\s+priority|minor/.test(remainder)) {
  priority = 'low';
- }
-
- // 4. Resolve Start Time
- let startMinute: number | null = 10 * 60; // default 10:00 AM
- const timeMatch = lower.match(/at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
- if (timeMatch && timeMatch[1]) {
- let hour = parseInt(timeMatch[1], 10);
- const minute = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0;
- const meridian = timeMatch[3];
- if (meridian === 'pm' && hour < 12) hour += 12;
- if (meridian === 'am' && hour === 12) hour = 0;
- startMinute = hour * 60 + minute;
  }
 
  // 5. Clean Title
  let title = transcript
  .replace(/^(?:please\s+)?(?:pip\s+)?(?:can\s+you\s+)?(?:add\s+a?\s*task|schedule\s+a?\s*task|create\s+a?\s*task|add|schedule|create)\s*(?:called|named|to)?/i, '')
- .replace(/\b(?:for|on\s+)?(?:tomorrow|today|sunday|monday|tuesday|wednesday|thursday|friday|saturday|nov(?:ember)?\s*\d{1,2})\b/gi, '')
- .replace(/(?:at\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?)/gi, '')
- .replace(/(?:for\s+)?(?:\d+\s*(?:hours?|hrs?|minutes?|mins?|h\b|m\b))/gi, '')
+ .replace(/(?:\bat\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)\b|\bat\s+\d{1,2}(?::\d{2})?\b/gi, '')
+ .replace(/(?:for\s+)?\d+\s*(?:hours?|hrs?|h\b|minutes?|mins?|m\b)/gi, '')
+ .replace(/\b(?:for|on\s+)?(?:tomorrow|today|sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/gi, '')
+ .replace(/\b(?:(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*|on\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*|on\s+the\s+|on\s+)?\d{1,2}(?:st|nd|rd|th)?\b/gi, '')
+ .replace(/\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b/gi, '')
  .replace(/(?:high|medium|low)\s+priority/gi, '')
- .replace(/\b(?:for|on|at|priority)\b/gi, '')
+ .replace(/\b(?:for|on|at|priority|urgent|critical)\b/gi, '')
  .replace(/[,.]/g, '')
  .replace(/\s+/g, ' ')
  .trim();

@@ -330,7 +330,7 @@
  <div class="habits-header-row">
  <span class="habits-title">Habits &amp; Streaks</span>
  <Button id="btn-zoom-habits" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ <ButtonLabel class="card-zoom-text">Expand</ButtonLabel>
  </Button>
  <div class="streak-badge">
  <span id="habit-streak-badge" class="streak-text">Streak: 7 Day Streak</span>
@@ -396,7 +396,7 @@
  <div class="deadlines-header-row">
  <span class="deadlines-title">Upcoming & Deadlines</span>
  <Button id="btn-zoom-deadlines" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ <ButtonLabel class="card-zoom-text">Expand</ButtonLabel>
  </Button>
  </div>
 

@@ -131,6 +131,7 @@ export class PanelSystem extends createSystem({
  private weather: WeatherData = { ...SEED_WEATHER };
  private calendarDays: CalendarDayViewModel[] = JSON.parse(JSON.stringify(SEED_CALENDAR_DAYS));
  private calendarStartDay = 16;
+ private calendarDate = new Date(2026, 10, 16);
  private selectedDayNumber = 18;
  private selectedMonthIndex = 10; // November
  private readonly monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -490,11 +491,11 @@ export class PanelSystem extends createSystem({
  public applyWorkspaceOffset() {
   const presets: Record<string, Record<string, { pos: [number, number, number]; rotDeg: [number, number, number]; scale: number }>> = {
    Arc: {
-    'panel-left-tasks': { pos: [-0.58, 1.48, -0.68], rotDeg: [0, 22, 0], scale: 0.10 },
+    'panel-left-tasks': { pos: [-0.72, 1.48, -0.72], rotDeg: [0, 26, 0], scale: 0.10 },
     'panel-hub': { pos: [0, 1.48, -0.72], rotDeg: [0, 0, 0], scale: 0.10 },
-    'panel-right-pip': { pos: [0.56, 1.66, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
-    'pip-robot': { pos: [0.60, 1.84, -0.48], rotDeg: [0, -22, 0], scale: 0.45 },
-    'panel-right-focus': { pos: [0.56, 1.28, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
+    'panel-right-pip': { pos: [0.72, 1.66, -0.72], rotDeg: [0, -26, 0], scale: 0.10 },
+    'pip-robot': { pos: [0.76, 1.84, -0.52], rotDeg: [0, -26, 0], scale: 0.45 },
+    'panel-right-focus': { pos: [0.72, 1.28, -0.72], rotDeg: [0, -26, 0], scale: 0.10 },
    },
    Spread: {
     'panel-left-tasks': { pos: [-0.82, 1.48, -0.74], rotDeg: [0, 32, 0], scale: 0.10 },
@@ -728,7 +729,8 @@ export class PanelSystem extends createSystem({
  const prevMonth = asset.getElementById('cal-prev-month');
  if (prevMonth) {
  this.addPress(prevMonth, () => {
- this.calendarStartDay = Math.max(1, this.calendarStartDay - 7);
+ this.calendarDate = new Date(this.calendarDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+ this.calendarStartDay = this.calendarDate.getDate();
  this.updateCalendarDays();
  this.refreshTasksPanelUI();
  this.refreshHubPanelUI();
@@ -737,7 +739,8 @@ export class PanelSystem extends createSystem({
  const nextMonth = asset.getElementById('cal-next-month');
  if (nextMonth) {
  this.addPress(nextMonth, () => {
- this.calendarStartDay = Math.min(25, this.calendarStartDay + 7);
+ this.calendarDate = new Date(this.calendarDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+ this.calendarStartDay = this.calendarDate.getDate();
  this.updateCalendarDays();
  this.refreshTasksPanelUI();
  this.refreshHubPanelUI();
@@ -755,7 +758,9 @@ export class PanelSystem extends createSystem({
  d.isSelected = d.dayNumber === this.selectedDayNumber;
  });
  const count = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber).length;
- this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, Nov ${selected.dayNumber} (${count} tasks). Tasks added will be scheduled for this day.`);
+ const d = new Date(this.calendarDate.getTime() + i * 24 * 60 * 60 * 1000);
+ const mName = this.monthNames[d.getMonth()] || 'Nov';
+ this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, ${mName} ${selected.dayNumber} (${count} tasks). Tasks added will be scheduled for this day.`);
  this.refreshTasksPanelUI();
  this.refreshHubPanelUI();
  });
@@ -847,11 +852,12 @@ export class PanelSystem extends createSystem({
  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
  this.calendarDays = [];
  for (let i = 0; i < 7; i++) {
- const dayNum = this.calendarStartDay + i;
+ const d = new Date(this.calendarDate.getTime() + i * 24 * 60 * 60 * 1000);
+ const dayNum = d.getDate();
  this.calendarDays.push({
- dayOfWeek: daysOfWeek[i % 7],
+ dayOfWeek: daysOfWeek[d.getDay()],
  dayNumber: dayNum,
- isToday: dayNum === 18,
+ isToday: d.getFullYear() === 2026 && d.getMonth() === 10 && dayNum === 18,
  isSelected: dayNum === this.selectedDayNumber,
  });
  }
@@ -862,11 +868,17 @@ export class PanelSystem extends createSystem({
  const asset = this.getAsset('panel-left-tasks');
  if (!asset) return;
  const monthLabel = asset.getElementById('cal-month-label') as any;
+ const startD = this.calendarDate;
+ const endD = new Date(this.calendarDate.getTime() + 6 * 24 * 60 * 60 * 1000);
+ const startM = this.monthNames[startD.getMonth()] || 'Nov';
+ const endM = this.monthNames[endD.getMonth()] || 'Nov';
+ const headerStr = startM === endM
+ ? `${startM} ${startD.getDate()} - ${endD.getDate()}, ${startD.getFullYear()}`
+ : `${startM} ${startD.getDate()} - ${endM} ${endD.getDate()}, ${endD.getFullYear()}`;
  if (monthLabel) {
- const endDay = this.calendarStartDay + 6;
- setText(monthLabel, `Nov ${this.calendarStartDay} - ${endDay}`);
+ setText(monthLabel, headerStr);
  }
- this.setPipSpeech(`Switched calendar week to Nov ${this.calendarStartDay} - ${this.calendarStartDay + 6}, 2026.`);
+ this.setPipSpeech(`Switched calendar week to ${headerStr}.`);
  }
 
  private toggleAgendaItem(index: number) {
@@ -1038,7 +1050,25 @@ export class PanelSystem extends createSystem({
  if (editBtn) {
  this.addPress(editBtn, () => {
  const task = this.getFilteredTasks()[i];
- if (task) this.openEditSheet(task.id);
+ if (task) {
+ this.openEditSheet(task.id);
+ this.setPipSpeech(`Editing task "${task.title}". Adjust duration, priority, or start time.`);
+ }
+ });
+ }
+
+ const delBtn = asset.getElementById(`hub-task-del-${i}`);
+ if (delBtn) {
+ this.addPress(delBtn, () => {
+ const task = this.getFilteredTasks()[i];
+ if (task) {
+ const title = task.title;
+ this.tasks = this.tasks.filter((t) => t.id !== task.id);
+ this.saveTasks(true, `Deleted "${title}"`);
+ this.refreshAllUI();
+ this.setPipSpeech(`Removed task "${title}" from your schedule.`);
+ this.triggerPipEmote('celebrate');
+ }
  });
  }
  }
@@ -1533,7 +1563,7 @@ export class PanelSystem extends createSystem({
  if (gardenWater) {
  this.addPress(gardenWater, () => {
  this.gardenPoints += 20;
- this.setPipSpeech('Water Watered the Great Oak! +20 XP awarded.');
+ this.setPipSpeech('Watered the Great Oak! +20 XP awarded.');
  this.triggerPipEmote('celebrate');
  this.refreshAllUI();
  });
@@ -1542,7 +1572,7 @@ export class PanelSystem extends createSystem({
  if (gardenTend) {
  this.addPress(gardenTend, () => {
  this.gardenPoints += 10;
- this.setPipSpeech('Prune Pruned the foliage! +10 XP awarded.');
+ this.setPipSpeech('Pruned the foliage! +10 XP awarded.');
  this.triggerPipEmote('celebrate');
  this.refreshAllUI();
  });
@@ -1551,7 +1581,7 @@ export class PanelSystem extends createSystem({
  if (gardenNurture) {
  this.addPress(gardenNurture, () => {
  this.gardenPoints += 30;
- this.setPipSpeech('Nurture Organic fertilizer applied! +30 XP! Tree is thriving!');
+ this.setPipSpeech('Organic fertilizer applied! +30 XP! Tree is thriving!');
  this.triggerPipEmote('celebrate');
  this.refreshAllUI();
  });
@@ -1868,7 +1898,7 @@ export class PanelSystem extends createSystem({
  rec.lang = 'en-US';
  rec.onstart = () => {
  this.voiceListening = true;
- this.setPipSpeech('Listening for voice... Say any task and day (e.g. "Add task on Friday")');
+ this.setPipSpeech('Listening for voice... Say your command.', false);
  this.triggerPipEmote('thinking');
  this.refreshPipPanelUI();
  };
@@ -1876,13 +1906,22 @@ export class PanelSystem extends createSystem({
  this.voiceListening = false;
  this.refreshPipPanelUI();
  const transcript = evt.results?.[0]?.[0]?.transcript || '';
- if (transcript) {
- this.executeVoiceCommand(transcript);
+ if (transcript && transcript.trim()) {
+ this.executeVoiceCommand(transcript.trim());
  }
  };
- rec.onerror = () => {
+ rec.onerror = (err: any) => {
  this.voiceListening = false;
  this.refreshPipPanelUI();
+ console.warn('Speech recognition error:', err);
+ if (err && err.error === 'no-speech') {
+ this.setPipSpeech('No speech detected. Click the mic to try again.', false);
+ return;
+ }
+ if (err && (err.error === 'not-allowed' || err.error === 'audio-capture')) {
+ this.setPipSpeech('Microphone permission needed. Please allow microphone access.', true);
+ return;
+ }
  this.triggerNextSimulatedVoiceCommand();
  };
  rec.start();
@@ -1925,9 +1964,9 @@ export class PanelSystem extends createSystem({
  }
 
  public executeVoiceCommand(transcript: string) {
- const lower = transcript.toLowerCase();
+ const lower = transcript.toLowerCase().trim();
 
- // 1. Section Navigation: switch to, open, show, bring to view
+ // 1. Section Navigation
  if (
  lower.includes('switch to') ||
  lower.includes('open ') ||
@@ -1939,48 +1978,48 @@ export class PanelSystem extends createSystem({
  ) {
  if (lower.includes('calendar') || lower.includes('month')) {
  this.zoomSection('panel-left-tasks', 'Mini Calendar');
- this.setPipSpeech('Done: Brought Mini Calendar to view.');
+ this.setPipSpeech('Brought Mini Calendar to view.');
  return;
  }
  if (lower.includes('task') || lower.includes('agenda')) {
  this.zoomSection('panel-left-tasks', 'Agenda');
- this.setPipSpeech('Done: Brought Agenda and Tasks to view.');
+ this.setPipSpeech("Brought Today's Agenda and Tasks to view.");
  return;
  }
  if (lower.includes('habit') || lower.includes('streak')) {
  this.zoomSection('panel-right-focus', 'Habits & Streaks');
- this.setPipSpeech('Done: Brought Habits and Streaks to view.');
+ this.setPipSpeech('Brought Habits and Streaks to view.');
  return;
  }
  if (lower.includes('deadline') || lower.includes('upcoming')) {
  this.zoomSection('panel-right-focus', 'Upcoming Deadlines');
- this.setPipSpeech('Done: Brought Upcoming Deadlines to view.');
+ this.setPipSpeech('Brought Upcoming Deadlines to view.');
  return;
  }
  if (lower.includes('schedule') || lower.includes('day')) {
  this.switchNavTab('schedule');
  this.resetZoom();
- this.setPipSpeech('Done: Brought Day Schedule to view.');
+ this.setPipSpeech('Brought Day Schedule to view.');
  return;
  }
  if (lower.includes('timer') || lower.includes('focus')) {
  this.zoomSection('panel-hub', 'Focus Session');
- this.setPipSpeech('Done: Brought Focus Timer to view.');
+ this.setPipSpeech('Brought Focus Timer to view.');
  return;
  }
  if (lower.includes('routine')) {
  this.zoomSection('panel-left-tasks', 'Routines');
- this.setPipSpeech('Done: Brought Routines to view.');
+ this.setPipSpeech('Brought Routines to view.');
  return;
  }
  if (lower.includes('garden')) {
  this.zoomSection('panel-right-pip', 'Productivity Garden');
- this.setPipSpeech('Done: Brought Productivity Garden to view.');
+ this.setPipSpeech('Brought Productivity Garden to view.');
  return;
  }
  if (lower.includes('overview') || lower.includes('dashboard') || lower.includes('back')) {
  this.resetZoom();
- this.setPipSpeech('Done: Returned to full workspace overview.');
+ this.setPipSpeech('Returned to full workspace overview.');
  return;
  }
  }
@@ -1998,17 +2037,42 @@ export class PanelSystem extends createSystem({
  this.saveTasks(true, `Deleted "${removed.title}" via Pip`);
  this.refreshAllUI();
  this.triggerPipEmote('celebrate');
- this.setPipSpeech(`Done: Removed task "${removed.title}".`);
+ this.setPipSpeech(`Removed task "${removed.title}" from your schedule.`);
  return;
  } else {
- this.setPipSpeech(`Not done: Could not find any task matching "${query}".`);
+ this.setPipSpeech(`I couldn't find any task matching "${query}".`);
  return;
  }
  }
  }
 
- // 3. Edit / Modify / Update Task
- if (lower.startsWith('edit') || lower.startsWith('update') || lower.startsWith('change') || lower.startsWith('modify')) {
+ // 3. Edit / Modify Task (time, duration, priority, or open editor)
+ if (lower.startsWith('edit') || lower.startsWith('update') || lower.startsWith('change') || lower.startsWith('modify') || lower.startsWith('set ') || lower.startsWith('move ')) {
+ // Time edit: "change [task] time to 8pm", "move [task] to 8pm", "set [task] timing to 8pm"
+ const timeMatch = lower.match(/(?:change|set|move)\s+(?:task\s+)?(.+?)\s+(?:time|timing|start\s*time)?\s*to\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
+ if (timeMatch) {
+ const taskQuery = timeMatch[1].replace(/\b(?:time|timing|start\s*time)\b/g, '').trim();
+ let hour = parseInt(timeMatch[2], 10);
+ const minute = timeMatch[3] ? parseInt(timeMatch[3], 10) : 0;
+ const meridian = (timeMatch[4] || '').toLowerCase();
+ if (meridian === 'pm' && hour < 12) hour += 12;
+ if (meridian === 'am' && hour === 12) hour = 0;
+ const newStartMin = hour * 60 + minute;
+ const task = this.tasks.find((t) => t.title.toLowerCase().includes(taskQuery));
+ if (task) {
+ task.scheduledStartMinute = newStartMin;
+ this.saveTasks(true, `Changed time of "${task.title}" to ${newStartMin}`);
+ this.refreshAllUI();
+ this.triggerPipEmote('celebrate');
+ const ampm = hour >= 12 ? 'PM' : 'AM';
+ const displayH = hour % 12 === 0 ? 12 : hour % 12;
+ const timeFormatted = `${displayH}:${minute < 10 ? '0' : ''}${minute} ${ampm}`;
+ this.setPipSpeech(`Changed ${task.title} start time to ${timeFormatted}!`);
+ return;
+ }
+ }
+
+ // Priority edit: "change [task] priority to high"
  const priorityMatch = lower.match(/(?:change|set)\s+(?:task\s+)?(.+?)\s+priority\s+to\s+(high|medium|low)/);
  if (priorityMatch) {
  const taskQuery = priorityMatch[1].trim();
@@ -2019,11 +2083,12 @@ export class PanelSystem extends createSystem({
  this.saveTasks(true, `Changed priority of "${task.title}" to ${newPrio}`);
  this.refreshAllUI();
  this.triggerPipEmote('celebrate');
- this.setPipSpeech(`Done: Changed priority of "${task.title}" to ${newPrio}.`);
+ this.setPipSpeech(`Changed ${task.title} priority to ${newPrio}!`);
  return;
  }
  }
 
+ // Duration edit: "change [task] duration to 60 minutes"
  const durationMatch = lower.match(/(?:change|set)\s+(?:task\s+)?(.+?)\s+duration\s+to\s+(\d+)\s*(?:minutes|min|m)?/);
  if (durationMatch) {
  const taskQuery = durationMatch[1].trim();
@@ -2034,11 +2099,12 @@ export class PanelSystem extends createSystem({
  this.saveTasks(true, `Changed duration of "${task.title}" to ${newDur}m`);
  this.refreshAllUI();
  this.triggerPipEmote('celebrate');
- this.setPipSpeech(`Done: Changed duration of "${task.title}" to ${newDur} minutes.`);
+ this.setPipSpeech(`Updated ${task.title} duration to ${newDur} minutes!`);
  return;
  }
  }
 
+ // General Edit: "edit task [title]"
  const editQuery = lower
  .replace(/^(?:edit|update|change|modify)\s+(?:task\s+)?/, '')
  .replace(/^(?:the\s+)/, '')
@@ -2048,10 +2114,10 @@ export class PanelSystem extends createSystem({
  if (task) {
  this.openEditSheet(task.id);
  this.triggerPipEmote('thinking');
- this.setPipSpeech(`Done: Opened editor for "${task.title}". Modify details in the Command Hub.`);
+ this.setPipSpeech(`Opening editor for ${task.title}. You can change duration, time, and priority.`);
  return;
  } else {
- this.setPipSpeech(`Not done: Could not find any task matching "${editQuery}".`);
+ this.setPipSpeech(`I couldn't find any task matching "${editQuery}".`);
  return;
  }
  }
@@ -2073,10 +2139,10 @@ export class PanelSystem extends createSystem({
  this.saveTasks(true, `Completed "${task.title}" via Pip`);
  this.refreshAllUI();
  this.triggerPipEmote('celebrate');
- this.setPipSpeech(`Done: Marked "${task.title}" as completed! +20 XP awarded.`);
+ this.setPipSpeech(`Marked ${task.title} as completed! Plus 20 garden XP.`);
  return;
  } else {
- this.setPipSpeech(`Not done: Could not find a task matching "${query}".`);
+ this.setPipSpeech(`I couldn't find a task matching "${query}".`);
  return;
  }
  }
@@ -2091,7 +2157,7 @@ export class PanelSystem extends createSystem({
  this.focusRunning = true;
  this.refreshHubPanelUI();
  this.triggerPipEmote('celebrate');
- this.setPipSpeech(`Done: Kept timer at ${minutes} minutes and started focus session.`);
+ this.setPipSpeech(`Focus timer set to ${minutes} minutes. Let's do this!`);
  return;
  }
 
@@ -2113,7 +2179,7 @@ export class PanelSystem extends createSystem({
  if (t) t.scheduledStartMinute = item.startMinute;
  }
  this.saveTasks(true, 'Planned schedule with rest buffers');
- this.setPipSpeech('Done: Planned your day with 10-minute rest buffers. You are all set!');
+ this.setPipSpeech('Planned your day with 10-minute rest buffers. You are all set!');
  this.triggerPipEmote('celebrate');
  if (this.soundEnabled && this.audio) this.audio.playPinchTick();
  return;
@@ -2136,7 +2202,7 @@ export class PanelSystem extends createSystem({
  return;
  }
 
- // 9. Add Task on Any Day
+ // 9. Add Task on Any Day (Today, Tomorrow, Specific Date)
  const parsed = parseVoiceTaskCommand(transcript, this.selectedDayNumber);
  if (parsed) {
  const newTask: GlassTask = {
@@ -2154,16 +2220,22 @@ export class PanelSystem extends createSystem({
  this.refreshAllUI();
 
  const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
- const dayName = daysOfWeek[parsed.dayNumber % 7] || 'Day';
+ const dayName = daysOfWeek[parsed.dayNumber % 7] || 'Nov';
+ const h = Math.floor((parsed.scheduledStartMinute ?? 600) / 60);
+ const m = (parsed.scheduledStartMinute ?? 600) % 60;
+ const ampm = h >= 12 ? 'PM' : 'AM';
+ const displayH = h % 12 === 0 ? 12 : h % 12;
+ const timeFormatted = `${displayH}:${m < 10 ? '0' : ''}${m} ${ampm}`;
+
  this.setPipSpeech(
- `Done: Added task "${parsed.title}" on ${dayName}, Nov ${parsed.dayNumber} (${parsed.estimatedMinutes}m, ${parsed.priority} priority).`,
+ `Added ${parsed.title} for ${dayName}, Nov ${parsed.dayNumber} at ${timeFormatted}!`,
  );
  this.triggerPipEmote('celebrate');
  if (this.soundEnabled && this.audio) this.audio.playPinchTick();
  return;
  }
 
- this.setPipSpeech(`Not done: I heard "${transcript}". Tell me what to add, delete, edit, or switch to!`);
+ this.setPipSpeech(`I heard: "${transcript}". You can ask me to add, delete, or edit a task, set a timer, or switch views.`);
  this.triggerPipEmote('thinking');
  }
 

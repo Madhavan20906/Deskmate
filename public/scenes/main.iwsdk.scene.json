@@ -76,13 +76,13 @@
       "name": "Today's Tasks Glass Panel",
       "transform": {
         "position": [
-          -0.58,
+          -0.72,
           1.48,
-          -0.68
+          -0.72
         ],
         "rotationDeg": [
           0,
-          22,
+          26,
           0
         ],
         "scale": 0.10
@@ -126,13 +126,13 @@
       "name": "Pip Companion Glass Panel",
       "transform": {
         "position": [
-          0.56,
+          0.72,
           1.66,
-          -0.68
+          -0.72
         ],
         "rotationDeg": [
           0,
-          -22,
+          -26,
           0
         ],
         "scale": 0.10
@@ -152,13 +152,13 @@
       "name": "Pip 3D Robot Companion",
       "transform": {
         "position": [
-          0.60,
+          0.76,
           1.84,
-          -0.48
+          -0.52
         ],
         "rotationDeg": [
           0,
-          -22,
+          -26,
           0
         ],
         "scale": 0.45
@@ -177,13 +177,13 @@
       "name": "Focus Timer Glass Panel",
       "transform": {
         "position": [
-          0.56,
+          0.72,
           1.28,
-          -0.68
+          -0.72
         ],
         "rotationDeg": [
           0,
-          -22,
+          -26,
           0
         ],
         "scale": 0.10
