@@ -409,6 +409,15 @@
     <div class="handle-bar"></div>
   </div>
 
+  <div class="section-header-row">
+    <Button id="btn-tasks-panel-back" class="cal-nav-btn" style="display: none;">
+      <ButtonLabel class="cal-nav-text">&lt; Back</ButtonLabel>
+    </Button>
+    <Button id="btn-zoom-tasks-panel" class="cal-nav-btn">
+      <ButtonLabel class="cal-nav-text">⛶ Zoom</ButtonLabel>
+    </Button>
+  </div>
+
   <!-- Mini Calendar Date Strip -->
   <div class="calendar-card">
     <div class="calendar-header">

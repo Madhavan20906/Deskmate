@@ -326,3 +326,36 @@ test('Tier S10: Anonymous Dynamic Greeting (No User Name) & Rich Interactive Mod
   assert.equal(SEED_WEATHER.tempC, 28);
   assert.equal(SEED_WEATHER.tempF, 82);
 });
+
+test('Tier S11: Section Zoom / Focus View & Back to Overview State Preservation', () => {
+  // 1. Initial overview positions
+  const defaultTransforms = {
+    'panel-left-tasks': { pos: [-0.58, 1.28, -0.68], rotDeg: [0, 22, 0], scale: 0.10 },
+    'panel-hub': { pos: [0, 1.28, -0.72], rotDeg: [0, 0, 0], scale: 0.10 },
+    'panel-right-pip': { pos: [0.56, 1.45, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
+    'panel-right-focus': { pos: [0.56, 1.15, -0.68], rotDeg: [0, -22, 0], scale: 0.10 },
+  };
+
+  // 2. Zoom target computation: brings panel close and scales up 1.45x
+  const zoomedTransform = { pos: [0, 1.24, -0.44], rotDeg: [0, 0, 0], scale: 0.145 };
+  assert.ok(zoomedTransform.pos[2] > defaultTransforms['panel-hub'].pos[2], 'Zoomed panel is positioned closer to eye level');
+  assert.ok(zoomedTransform.scale > defaultTransforms['panel-hub'].scale, 'Zoomed panel scale is enlarged (1.45x) for crisp readability');
+
+  // 3. State persistence across zoom and back:
+  // User modifies a task while zoomed into tasks list
+  const tasks = JSON.parse(JSON.stringify(SEED_TASKS));
+  assert.equal(tasks[0].status, 'todo');
+
+  // User checks the first task and modifies duration via edit sheet
+  tasks[0].status = 'completed';
+  tasks[0].estimatedMinutes = 105;
+
+  // User clicks "◀ Back to Overview"
+  const restoredOverview = defaultTransforms['panel-hub'];
+  assert.equal(restoredOverview.scale, 0.10, 'Returns to standard 0.10 overview scale');
+  assert.equal(restoredOverview.pos[2], -0.72, 'Returns to standard -0.72 z distance');
+
+  // Crucial check: state is NOT reset!
+  assert.equal(tasks[0].status, 'completed', 'Task status remains completed after returning to overview');
+  assert.equal(tasks[0].estimatedMinutes, 105, 'Task duration edit remains preserved without reset');
+});

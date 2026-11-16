@@ -247,7 +247,13 @@
   <!-- Habits & Streaks -->
   <div class="habits-card">
     <div class="habits-header-row">
-      <span class="habits-title">Habits & Streaks</span>
+      <span class="habits-title">Habits &amp; Streaks</span>
+      <Button id="btn-habits-back" class="streak-badge" style="display: none;">
+        <ButtonLabel class="streak-text">&lt; Back</ButtonLabel>
+      </Button>
+      <Button id="btn-zoom-habits" class="streak-badge">
+        <ButtonLabel class="streak-text">⛶ Zoom</ButtonLabel>
+      </Button>
       <div class="streak-badge">
         <span id="habit-streak-badge" class="streak-text">🔥 7 Day Streak</span>
       </div>
