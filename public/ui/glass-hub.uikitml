@@ -768,6 +768,29 @@
  background-color: rgba(217, 119, 54, 0.45);
  }
 
+ .task-del-btn {
+ width: 20px;
+ height: 20px;
+ border-radius: 4px;
+ background-color: rgba(239, 68, 68, 0.20);
+ border-width: 1px;
+ border-color: rgba(239, 68, 68, 0.40);
+ align-items: center;
+ justify-content: center;
+ margin-left: 4px;
+ }
+
+ .task-del-btn:hover {
+ background-color: #EF4444;
+ border-color: #FFFFFF;
+ }
+
+ .task-del-icon {
+ font-size: 11px;
+ font-weight: 700;
+ color: #FCA5A5;
+ }
+
  .task-edit-icon {
  font-size: 10px;
  }
@@ -1421,11 +1444,11 @@
  </Button>
 
  <Button id="nav-notes" class="nav-tab-pill">
- <ButtonLabel class="nav-tab-label">Notes Notes</ButtonLabel>
+ <ButtonLabel class="nav-tab-label">Notes</ButtonLabel>
  </Button>
 
  <Button id="nav-goals" class="nav-tab-pill">
- <ButtonLabel class="nav-tab-label">Goals Goals</ButtonLabel>
+ <ButtonLabel class="nav-tab-label">Goals</ButtonLabel>
  </Button>
  </div>
 
@@ -1545,6 +1568,9 @@
  <Button id="hub-task-edit-0" class="task-edit-btn">
  <ButtonLabel class="task-edit-icon">Edit </ButtonLabel>
  </Button>
+ <Button id="hub-task-del-0" class="task-del-btn">
+ <ButtonLabel class="task-del-icon">Del</ButtonLabel>
+ </Button>
  </div>
  </div>
 
@@ -1559,6 +1585,9 @@
  <span class="hub-task-badge badge-med">Med 2h</span>
  <Button id="hub-task-edit-1" class="task-edit-btn">
  <ButtonLabel class="task-edit-icon">Edit </ButtonLabel>
+ </Button>
+ <Button id="hub-task-del-1" class="task-del-btn">
+ <ButtonLabel class="task-del-icon">Del</ButtonLabel>
  </Button>
  </div>
  </div>
@@ -1575,6 +1604,9 @@
  <Button id="hub-task-edit-2" class="task-edit-btn">
  <ButtonLabel class="task-edit-icon">Edit </ButtonLabel>
  </Button>
+ <Button id="hub-task-del-2" class="task-del-btn">
+ <ButtonLabel class="task-del-icon">Del</ButtonLabel>
+ </Button>
  </div>
  </div>
 
@@ -1589,6 +1621,9 @@
  <span class="hub-task-badge badge-med">Med 1h</span>
  <Button id="hub-task-edit-3" class="task-edit-btn">
  <ButtonLabel class="task-edit-icon">Edit </ButtonLabel>
+ </Button>
+ <Button id="hub-task-del-3" class="task-del-btn">
+ <ButtonLabel class="task-del-icon">Del</ButtonLabel>
  </Button>
  </div>
  </div>
@@ -1919,7 +1954,7 @@
  </Button>
  <span id="editor-title" class="subview-title">Create New Task</span>
  <Button id="btn-editor-save" class="subview-back-btn" style="background-color: #22C55E; border-color: #4ADE80;">
- <ButtonLabel class="subview-back-text">Save Save Task</ButtonLabel>
+ <ButtonLabel class="subview-back-text">Save Task</ButtonLabel>
  </Button>
  </div>
 
@@ -2065,13 +2100,13 @@
  </div>
  <div class="garden-action-row">
  <Button id="btn-garden-water" class="garden-act-btn">
- <ButtonLabel class="garden-act-text">Water Water (+20 XP)</ButtonLabel>
+ <ButtonLabel class="garden-act-text">Water (+20 XP)</ButtonLabel>
  </Button>
  <Button id="btn-garden-tend" class="garden-act-btn">
- <ButtonLabel class="garden-act-text">Prune Prune (+10 XP)</ButtonLabel>
+ <ButtonLabel class="garden-act-text">Prune (+10 XP)</ButtonLabel>
  </Button>
  <Button id="btn-garden-nurture" class="garden-act-btn">
- <ButtonLabel class="garden-act-text">Nurture Fertilizer (+30 XP)</ButtonLabel>
+ <ButtonLabel class="garden-act-text">Fertilize (+30 XP)</ButtonLabel>
  </Button>
  </div>
  </div>
@@ -2303,19 +2338,19 @@
  <ButtonLabel class="dock-btn-text"> Timeline</ButtonLabel>
  </Button>
  <Button id="dock-calendar" class="dock-btn">
- <ButtonLabel class="dock-btn-text"> Calendar</ButtonLabel>
+ <ButtonLabel class="dock-btn-text">Calendar</ButtonLabel>
  </Button>
  <Button id="dock-notes" class="dock-btn">
- <ButtonLabel class="dock-btn-text">Notes Notes</ButtonLabel>
+ <ButtonLabel class="dock-btn-text">Notes</ButtonLabel>
  </Button>
  <Button id="dock-goals" class="dock-btn">
- <ButtonLabel class="dock-btn-text">Goals Goals</ButtonLabel>
+ <ButtonLabel class="dock-btn-text">Goals</ButtonLabel>
  </Button>
  <Button id="dock-reports" class="dock-btn">
- <ButtonLabel class="dock-btn-text">Stats Reports</ButtonLabel>
+ <ButtonLabel class="dock-btn-text">Reports</ButtonLabel>
  </Button>
  <Button id="dock-capture" class="dock-btn">
- <ButtonLabel class="dock-btn-text">Capture Capture</ButtonLabel>
+ <ButtonLabel class="dock-btn-text">Capture</ButtonLabel>
  </Button>
  </div>
 
@@ -2334,7 +2369,7 @@
  <ButtonLabel id="btn-mover-height-label" class="mover-chip-text">Height (+10cm)</ButtonLabel>
  </Button>
  <Button id="btn-mover-reset" class="mover-chip">
- <ButtonLabel class="mover-chip-text">Reset Reset</ButtonLabel>
+ <ButtonLabel class="mover-chip-text">Reset</ButtonLabel>
  </Button>
  </div>
 </Panel>

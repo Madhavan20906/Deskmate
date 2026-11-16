@@ -501,7 +501,7 @@
  <ButtonLabel class="cal-nav-text">&gt;</ButtonLabel>
  </Button>
  <Button id="btn-zoom-calendar" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ <ButtonLabel class="card-zoom-text">Expand</ButtonLabel>
  </Button>
  </div>
 
@@ -545,7 +545,7 @@
  <span class="section-title">Today's Agenda</span>
  <span id="agenda-count-badge" class="section-badge">5 items</span>
  <Button id="btn-zoom-agenda" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ <ButtonLabel class="card-zoom-text">Expand</ButtonLabel>
  </Button>
  </div>
 
@@ -606,7 +606,7 @@
  <div class="section-header-row">
  <span class="quick-add-title">Quick Add</span>
  <Button id="btn-zoom-quickadd" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ <ButtonLabel class="card-zoom-text">Expand</ButtonLabel>
  </Button>
  </div>
  <div class="quick-add-pills-row">
@@ -628,7 +628,7 @@
  <span class="routines-title">Routines</span>
  <span id="routines-total-badge" class="section-badge">1 active</span>
  <Button id="btn-zoom-routines" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Zoom</ButtonLabel>
+ <ButtonLabel class="card-zoom-text">Expand</ButtonLabel>
  </Button>
  </div>
 
