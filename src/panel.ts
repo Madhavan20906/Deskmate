@@ -23,6 +23,7 @@ import {
   SEED_TASKS,
   tasksToRowViewModels,
   tasksToScheduleBlocks,
+  shortenScheduleTitle,
   calculateWorkloadDonut,
   calculateGardenProgress,
   generateGreeting,
@@ -726,7 +727,7 @@ export class PanelSystem extends createSystem({
 
     const sheetObj = this.world.getSceneObject('panel-edit-sheet');
     if (sheetObj) {
-      sheetObj.position.set(0, 1.25, -0.65);
+      sheetObj.position.set(0, 1.28, -0.65);
       sheetObj.visible = true;
     }
 
@@ -942,7 +943,7 @@ export class PanelSystem extends createSystem({
       const blockTitleEl = asset.getElementById(`block-title-${i}`) as any;
       const blockTimeEl = asset.getElementById(`block-time-${i}`) as any;
       if (block) {
-        if (blockTitleEl) setText(blockTitleEl, block.title);
+        if (blockTitleEl) setText(blockTitleEl, shortenScheduleTitle(block.title));
         if (blockTimeEl) setText(blockTimeEl, block.timeRangeFormatted);
       }
     }

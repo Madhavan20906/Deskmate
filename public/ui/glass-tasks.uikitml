@@ -3,13 +3,13 @@
     .glass-panel {
       flex-direction: column;
       width: 360px;
-      height: 660px;
-      padding: 18px;
+      height: 580px;
+      padding: 16px;
       border-radius: 24px;
       background-color: rgba(11, 16, 32, 0.78);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.16);
-      gap: 14px;
+      gap: 12px;
     }
 
     .panel-handle {
@@ -17,7 +17,7 @@
       justify-content: center;
       align-items: center;
       width: 100%;
-      height: 12px;
+      height: 8px;
       margin-bottom: 2px;
     }
 
@@ -32,7 +32,7 @@
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 4px;
+      padding-bottom: 2px;
     }
 
     .tasks-title-group {
@@ -41,13 +41,13 @@
     }
 
     .tasks-title {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 700;
       color: #FFFFFF;
     }
 
     .tasks-subtitle {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
       color: rgba(255, 255, 255, 0.70);
     }
@@ -71,35 +71,45 @@
 
     .task-list {
       flex-direction: column;
-      flex-grow: 1;
-      gap: 10px;
+      gap: 8px;
+      width: 100%;
     }
 
     .task-row {
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
-      padding: 10px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 8px;
+      padding-bottom: 8px;
       border-radius: 16px;
       background-color: rgba(18, 25, 48, 0.82);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.12);
-      gap: 10px;
+      gap: 8px;
+      width: 100%;
     }
 
     .checkbox-btn {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      min-width: 30px;
+      max-width: 30px;
+      height: 30px;
+      min-height: 30px;
+      max-height: 30px;
+      flex-shrink: 0;
       border-radius: 999px;
       border-width: 2px;
       border-color: rgba(255, 255, 255, 0.40);
       background-color: rgba(255, 255, 255, 0.05);
       align-items: center;
       justify-content: center;
+      padding: 0px;
     }
 
     .check-mark {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: #22C55E;
     }
@@ -109,24 +119,27 @@
       align-items: center;
       justify-content: space-between;
       flex-grow: 1;
-      padding-left: 6px;
-      padding-right: 6px;
+      padding-left: 4px;
+      padding-right: 4px;
       background-color: transparent;
+      gap: 6px;
     }
 
     .task-info {
       flex-direction: column;
       gap: 2px;
+      flex-grow: 1;
+      max-width: 175px;
     }
 
     .task-name {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       color: #FFFFFF;
     }
 
     .task-time-hint {
-      font-size: 12px;
+      font-size: 11px;
       color: rgba(255, 255, 255, 0.65);
     }
 
@@ -137,6 +150,9 @@
       padding-bottom: 3px;
       border-radius: 999px;
       border-width: 1px;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
     }
 
     .priority-pill-high {
@@ -175,7 +191,7 @@
     .add-task-btn {
       flex-direction: row;
       width: 100%;
-      height: 48px;
+      height: 44px;
       border-radius: 999px;
       background-color: rgba(124, 92, 255, 0.25);
       border-width: 1px;
@@ -186,7 +202,7 @@
     }
 
     .add-task-text {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       color: #FFFFFF;
     }
@@ -197,30 +213,34 @@
       justify-content: space-between;
       padding-left: 12px;
       padding-right: 12px;
-      padding-top: 6px;
-      padding-bottom: 6px;
+      padding-top: 4px;
+      padding-bottom: 4px;
       border-radius: 12px;
-      background-color: rgba(30, 41, 59, 0.90);
+      background-color: rgba(124, 92, 255, 0.18);
       border-width: 1px;
-      border-color: rgba(255, 255, 255, 0.20);
+      border-color: rgba(124, 92, 255, 0.40);
+      width: 100%;
     }
 
     .undo-text {
       font-size: 12px;
-      color: #E2E8F0;
+      font-weight: 600;
+      color: #E0E7FF;
     }
 
-    .undo-btn {
+    .undo-action-btn {
       padding-left: 10px;
       padding-right: 10px;
       padding-top: 3px;
       padding-bottom: 3px;
       border-radius: 999px;
       background-color: #7C5CFF;
+      align-items: center;
+      justify-content: center;
     }
 
-    .undo-btn-text {
-      font-size: 12px;
+    .undo-action-text {
+      font-size: 11px;
       font-weight: 700;
       color: #FFFFFF;
     }
@@ -233,7 +253,7 @@
   <div class="tasks-header">
     <div class="tasks-title-group">
       <span class="tasks-title">Today's Tasks</span>
-      <span id="tasks-active-subtitle" class="tasks-subtitle">Organized by priority</span>
+      <span class="tasks-subtitle">Organized by priority</span>
     </div>
     <div class="tasks-badge">
       <span id="tasks-count-badge" class="tasks-badge-text">4 Active</span>
@@ -241,79 +261,78 @@
   </div>
 
   <div class="task-list">
-    <!-- Task 1: Finish ML assignment -->
     <div class="task-row">
       <Button id="task-chk-0" class="checkbox-btn">
         <ButtonLabel id="task-chk-lbl-0" class="check-mark"></ButtonLabel>
       </Button>
       <Button id="task-row-0" class="task-row-main">
         <div class="task-info">
-          <span id="task-title-0" class="task-name">Finish ML assignment</span>
+          <ButtonLabel id="task-title-0" class="task-name">Finish ML assignment</ButtonLabel>
           <span id="task-time-0" class="task-time-hint">09:00 - 10:30</span>
         </div>
-        <div id="task-pill-0" class="priority-pill priority-pill-high">
+        <div class="priority-pill priority-pill-high">
           <span id="task-pill-text-0" class="pill-text-high">High, 1h 30m</span>
         </div>
       </Button>
     </div>
 
-    <!-- Task 2: Implement API -->
     <div class="task-row">
       <Button id="task-chk-1" class="checkbox-btn">
         <ButtonLabel id="task-chk-lbl-1" class="check-mark"></ButtonLabel>
       </Button>
       <Button id="task-row-1" class="task-row-main">
         <div class="task-info">
-          <span id="task-title-1" class="task-name">Implement API</span>
+          <ButtonLabel id="task-title-1" class="task-name">Implement API</ButtonLabel>
           <span id="task-time-1" class="task-time-hint">11:00 - 13:00</span>
         </div>
-        <div id="task-pill-1" class="priority-pill priority-pill-medium">
+        <div class="priority-pill priority-pill-medium">
           <span id="task-pill-text-1" class="pill-text-medium">Medium, 2h</span>
         </div>
       </Button>
     </div>
 
-    <!-- Task 3: Team meeting -->
     <div class="task-row">
       <Button id="task-chk-2" class="checkbox-btn">
         <ButtonLabel id="task-chk-lbl-2" class="check-mark"></ButtonLabel>
       </Button>
       <Button id="task-row-2" class="task-row-main">
         <div class="task-info">
-          <span id="task-title-2" class="task-name">Team meeting</span>
+          <ButtonLabel id="task-title-2" class="task-name">Team meeting</ButtonLabel>
           <span id="task-time-2" class="task-time-hint">14:00 - 14:30</span>
         </div>
-        <div id="task-pill-2" class="priority-pill priority-pill-low">
+        <div class="priority-pill priority-pill-low">
           <span id="task-pill-text-2" class="pill-text-low">Low, 30m</span>
         </div>
       </Button>
     </div>
 
-    <!-- Task 4: Read research paper -->
     <div class="task-row">
       <Button id="task-chk-3" class="checkbox-btn">
         <ButtonLabel id="task-chk-lbl-3" class="check-mark"></ButtonLabel>
       </Button>
       <Button id="task-row-3" class="task-row-main">
         <div class="task-info">
-          <span id="task-title-3" class="task-name">Read research paper</span>
+          <ButtonLabel id="task-title-3" class="task-name">Read research paper</ButtonLabel>
           <span id="task-time-3" class="task-time-hint">15:00 - 16:00</span>
         </div>
-        <div id="task-pill-3" class="priority-pill priority-pill-medium">
+        <div class="priority-pill priority-pill-medium">
           <span id="task-pill-text-3" class="pill-text-medium">Medium, 1h</span>
         </div>
       </Button>
     </div>
   </div>
 
-  <div id="undo-container" class="undo-bar" style="display: none">
-    <span id="undo-label" class="undo-text">Change saved</span>
-    <Button id="undo-btn" class="undo-btn">
-      <ButtonLabel class="undo-btn-text">Undo</ButtonLabel>
-    </Button>
-  </div>
-
   <Button id="btn-add-task" class="add-task-btn">
+    <ButtonIcon>
+      <Plus color="#FFFFFF"></Plus>
+    </ButtonIcon>
     <ButtonLabel class="add-task-text">+ Add Task</ButtonLabel>
   </Button>
+
+  <div id="undo-container" class="undo-bar" style="display: none">
+    <span id="undo-label" class="undo-text">Action completed</span>
+    <Button id="undo-btn" class="undo-action-btn">
+      <ButtonLabel class="undo-action-text">Undo (8s)</ButtonLabel>
+    </Button>
+  </div>
 </Panel>
