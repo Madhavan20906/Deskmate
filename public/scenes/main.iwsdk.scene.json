@@ -77,16 +77,16 @@
       "name": "Today's Tasks Glass Panel",
       "transform": {
         "position": [
-          -0.46,
-          1.28,
-          -0.72
+          -0.58,
+          1.25,
+          -0.68
         ],
         "rotationDeg": [
           -5,
           24,
           0
         ],
-        "scale": 0.00095
+        "scale": 0.10
       }
     },
     {
@@ -104,15 +104,15 @@
       "transform": {
         "position": [
           0,
-          1.28,
-          -0.78
+          1.25,
+          -0.75
         ],
         "rotationDeg": [
           -5,
           0,
           0
         ],
-        "scale": 0.00095
+        "scale": 0.10
       }
     },
     {
@@ -129,16 +129,16 @@
       "name": "Pip Companion Glass Panel",
       "transform": {
         "position": [
-          0.46,
-          1.44,
-          -0.72
+          0.56,
+          1.41,
+          -0.68
         ],
         "rotationDeg": [
           -5,
           -24,
           0
         ],
-        "scale": 0.00095
+        "scale": 0.10
       }
     },
     {
@@ -155,8 +155,8 @@
       "name": "Pip 3D Robot Companion",
       "transform": {
         "position": [
-          0.46,
-          1.45,
+          0.56,
+          1.41,
           -0.62
         ],
         "rotationDeg": [
@@ -164,7 +164,7 @@
           -24,
           0
         ],
-        "scale": 1
+        "scale": 0.55
       }
     },
     {
@@ -181,16 +181,16 @@
       "name": "Focus Timer Glass Panel",
       "transform": {
         "position": [
-          0.46,
-          1.13,
-          -0.72
+          0.56,
+          1.07,
+          -0.68
         ],
         "rotationDeg": [
           -5,
           -24,
           0
         ],
-        "scale": 0.00095
+        "scale": 0.10
       }
     },
     {
@@ -215,7 +215,7 @@
           0,
           0
         ],
-        "scale": 0.00095
+        "scale": 0.10
       }
     },
     {
