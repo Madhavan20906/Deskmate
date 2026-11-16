@@ -12,17 +12,13 @@ import { WorkspaceSystem } from './workspace.js';
 import { initDesktopPreviewIfNeeded, isQuestOrNativeXR, enforceSeatedXRPose } from './desktop-preview.js';
 
 async function bootstrap() {
-  const isPreview = await initDesktopPreviewIfNeeded();
-
-  const options = isPreview
-    ? {
-        ...projectOptions,
-        input: {
-          ...projectOptions.input,
-          canvasPointerEvents: { enabled: true, activeDuringXR: true },
-        },
-      }
-    : projectOptions;
+  const options = {
+    ...projectOptions,
+    input: {
+      ...projectOptions.input,
+      canvasPointerEvents: { enabled: true, activeDuringXR: true },
+    },
+  };
 
   const world = await World.create(
     document.getElementById('scene-container') as HTMLDivElement,
@@ -95,7 +91,6 @@ async function bootstrap() {
 
   world.renderer.xr.addEventListener('sessionstart', () => {
     updateSessionUI();
-    enforceSeatedXRPose();
   });
   world.renderer.xr.addEventListener('sessionend', () => {
     updateSessionUI();
