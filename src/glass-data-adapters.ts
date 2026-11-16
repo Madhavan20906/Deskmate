@@ -26,6 +26,7 @@ export interface GlassTask {
   status: TaskStatus;
   completedAt?: number | null;
   description?: string;
+  dayNumber?: number; // 16..22 for November dates, defaults to 18
 }
 
 export interface TaskRowViewModel {
@@ -240,6 +241,7 @@ export const SEED_TASKS: GlassTask[] = [
     estimatedMinutes: 90,
     scheduledStartMinute: 9 * 60, // 09:00 to 10:30
     status: 'todo',
+    dayNumber: 18,
   },
   {
     id: 'seed-task-api',
@@ -248,6 +250,7 @@ export const SEED_TASKS: GlassTask[] = [
     estimatedMinutes: 120,
     scheduledStartMinute: 11 * 60, // 11:00 to 13:00
     status: 'todo',
+    dayNumber: 18,
   },
   {
     id: 'seed-task-meeting',
@@ -256,6 +259,7 @@ export const SEED_TASKS: GlassTask[] = [
     estimatedMinutes: 30,
     scheduledStartMinute: 14 * 60, // 14:00 to 14:30
     status: 'todo',
+    dayNumber: 18,
   },
   {
     id: 'seed-task-paper',
@@ -264,6 +268,7 @@ export const SEED_TASKS: GlassTask[] = [
     estimatedMinutes: 60,
     scheduledStartMinute: 15 * 60, // 15:00 to 16:00
     status: 'todo',
+    dayNumber: 18,
   },
 ];
 
