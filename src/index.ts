@@ -60,9 +60,6 @@ async function bootstrap() {
     world.launchXR();
   });
 
-  const welcomeInit = world.getSceneObject('welcome-panel');
-  if (welcomeInit) welcomeInit.visible = false;
-
   const nav = navigator as Navigator & {
     xr?: { isSessionSupported?: (m: string) => Promise<boolean> };
   };
@@ -99,13 +96,9 @@ async function bootstrap() {
   world.renderer.xr.addEventListener('sessionstart', () => {
     updateSessionUI();
     enforceSeatedXRPose();
-    const welcomeObj = world.getSceneObject('welcome-panel');
-    if (welcomeObj) welcomeObj.visible = false;
   });
   world.renderer.xr.addEventListener('sessionend', () => {
     updateSessionUI();
-    const welcomeObj = world.getSceneObject('welcome-panel');
-    if (welcomeObj) welcomeObj.visible = false;
   });
   updateSessionUI();
 

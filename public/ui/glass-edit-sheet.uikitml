@@ -1,0 +1,245 @@
+<Panel class="glass-sheet-panel" id="glass-sheet-root">
+  <style>
+    .glass-sheet-panel {
+      flex-direction: column;
+      width: 440px;
+      height: 480px;
+      padding: 18px;
+      border-radius: 24px;
+      background-color: rgba(11, 16, 32, 0.94);
+      border-width: 1px;
+      border-color: rgba(124, 92, 255, 0.50);
+      gap: 12px;
+    }
+
+    .sheet-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .sheet-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .btn-close {
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.10);
+    }
+
+    .btn-close-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: #E2E8F0;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.65);
+      letter-spacing: 0.5px;
+    }
+
+    .presets-row {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .preset-chip {
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .preset-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    .row-group {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .stepper-row {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stepper-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.12);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stepper-text {
+      font-size: 16px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .duration-display {
+      font-size: 16px;
+      font-weight: 800;
+      color: #A78BFA;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    .priority-toggle-row {
+      flex-direction: row;
+      gap: 6px;
+    }
+
+    .pri-toggle-btn {
+      padding-left: 12px;
+      padding-right: 12px;
+      padding-top: 6px;
+      padding-bottom: 6px;
+      border-radius: 999px;
+      border-width: 1px;
+    }
+
+    .pri-low {
+      background-color: rgba(59, 130, 246, 0.20);
+      border-color: rgba(59, 130, 246, 0.50);
+    }
+
+    .pri-med {
+      background-color: rgba(245, 158, 11, 0.20);
+      border-color: rgba(245, 158, 11, 0.50);
+    }
+
+    .pri-high {
+      background-color: rgba(239, 68, 68, 0.20);
+      border-color: rgba(239, 68, 68, 0.50);
+    }
+
+    .pri-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .time-chips-row {
+      flex-direction: row;
+      gap: 6px;
+    }
+
+    .time-chip {
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .sheet-footer {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      gap: 10px;
+    }
+
+    .btn-delete {
+      padding-left: 14px;
+      padding-right: 14px;
+      height: 40px;
+      border-radius: 999px;
+      background-color: rgba(239, 68, 68, 0.20);
+      border-width: 1px;
+      border-color: rgba(239, 68, 68, 0.50);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-delete-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: #F87171;
+    }
+
+    .btn-save {
+      flex-grow: 1;
+      height: 42px;
+      border-radius: 999px;
+      background-color: #7C5CFF;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-save-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+  </style>
+
+  <div class="sheet-header">
+    <span id="sheet-title" class="sheet-title">Edit Task</span>
+    <Button id="btn-sheet-close" class="btn-close">
+      <ButtonLabel class="btn-close-text">Cancel</ButtonLabel>
+    </Button>
+  </div>
+
+  <span class="section-label">QUICK TITLE PRESETS</span>
+  <div class="presets-row">
+    <Button id="preset-0" class="preset-chip"><ButtonLabel class="preset-text">Deep Work Sprint</ButtonLabel></Button>
+    <Button id="preset-1" class="preset-chip"><ButtonLabel class="preset-text">Team Sync</ButtonLabel></Button>
+    <Button id="preset-2" class="preset-chip"><ButtonLabel class="preset-text">Code Review</ButtonLabel></Button>
+    <Button id="preset-3" class="preset-chip"><ButtonLabel class="preset-text">Write Report</ButtonLabel></Button>
+  </div>
+
+  <span class="section-label">DURATION</span>
+  <div class="stepper-row">
+    <Button id="btn-dur-minus" class="stepper-btn"><ButtonLabel class="stepper-text">-</ButtonLabel></Button>
+    <span id="sheet-duration-display" class="duration-display">60m</span>
+    <Button id="btn-dur-plus" class="stepper-btn"><ButtonLabel class="stepper-text">+</ButtonLabel></Button>
+  </div>
+
+  <span class="section-label">PRIORITY</span>
+  <div class="priority-toggle-row">
+    <Button id="btn-pri-low" class="pri-toggle-btn pri-low"><ButtonLabel class="pri-text">Low</ButtonLabel></Button>
+    <Button id="btn-pri-med" class="pri-toggle-btn pri-med"><ButtonLabel class="pri-text">Medium</ButtonLabel></Button>
+    <Button id="btn-pri-high" class="pri-toggle-btn pri-high"><ButtonLabel class="pri-text">High</ButtonLabel></Button>
+  </div>
+
+  <span class="section-label">START TIME CHIPS</span>
+  <div class="time-chips-row">
+    <Button id="chip-time-9" class="time-chip"><ButtonLabel class="preset-text">09:00</ButtonLabel></Button>
+    <Button id="chip-time-11" class="time-chip"><ButtonLabel class="preset-text">11:00</ButtonLabel></Button>
+    <Button id="chip-time-14" class="time-chip"><ButtonLabel class="preset-text">14:00</ButtonLabel></Button>
+    <Button id="chip-time-16" class="time-chip"><ButtonLabel class="preset-text">16:00</ButtonLabel></Button>
+  </div>
+
+  <div class="sheet-footer">
+    <Button id="btn-sheet-delete" class="btn-delete">
+      <ButtonLabel id="btn-sheet-delete-label" class="btn-delete-text">Delete</ButtonLabel>
+    </Button>
+    <Button id="btn-sheet-save" class="btn-save">
+      <ButtonLabel class="btn-save-text">Save Task</ButtonLabel>
+    </Button>
+  </div>
+</Panel>

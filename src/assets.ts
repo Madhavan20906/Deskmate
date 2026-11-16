@@ -6,14 +6,7 @@
  */
 
 import { AssetType, defineAssets } from '@iwsdk/core';
-import { createDeskAsset } from './scene-assets/desk.scene-asset.js';
-import { createPipAsset } from './scene-assets/pip.scene-asset.js';
-import { createSprintDialAsset } from './scene-assets/sprint-dial.scene-asset.js';
-import { createDeskPlantAsset } from './scene-assets/desk-plant.scene-asset.js';
-import { createFocusLampAsset } from './scene-assets/focus-lamp.scene-asset.js';
-import { createMarblesJarAsset } from './scene-assets/jar.scene-asset.js';
-import { createGhostAsset } from './scene-assets/ghost.scene-asset.js';
-import { createDeskRulerAsset } from './scene-assets/desk-ruler.scene-asset.js';
+import { createPipRobotAsset } from './scene-assets/pip-robot.scene-asset.js';
 
 const publicAssetUrl = (filePath: string): string =>
   `${import.meta.env.BASE_URL}${filePath.replace(/^\/+/u, '')}`;
@@ -25,20 +18,10 @@ const uikitml = (fileName: string, name: string) => ({
 });
 
 export default defineAssets({
-  'workspace-desk': createDeskAsset(),
-  'pip-companion': createPipAsset(),
-  'sprint-dial': createSprintDialAsset(),
-  'desk-plant': createDeskPlantAsset(),
-  'focus-lamp': createFocusLampAsset(),
-  'marbles-jar': createMarblesJarAsset(),
-  'ghost-companion': createGhostAsset(),
-  'desk-ruler': createDeskRulerAsset(),
-  'workspace-dashboard': uikitml('workspace-dashboard.uikitml', 'Daily Workspace'),
-  'task-roadmap': uikitml('task-card.uikitml', 'Task Card'),
-  'task-design-review': uikitml('task-card.uikitml', 'Task Card'),
-  'task-inbox': uikitml('task-card.uikitml', 'Task Card'),
-  'task-slot-4': uikitml('task-card.uikitml', 'Task Card'),
-  'task-slot-5': uikitml('task-card.uikitml', 'Task Card'),
-  'task-slot-6': uikitml('task-card.uikitml', 'Task Card'),
-  'welcome-panel': uikitml('welcome.uikitml', 'Welcome Panel'),
+  'pip-robot': createPipRobotAsset(),
+  'glass-hub': uikitml('glass-hub.uikitml', 'Glass Command Hub'),
+  'glass-tasks': uikitml('glass-tasks.uikitml', 'Glass Tasks Panel'),
+  'glass-pip': uikitml('glass-pip.uikitml', 'Glass Pip Panel'),
+  'glass-focus': uikitml('glass-focus.uikitml', 'Glass Focus Panel'),
+  'glass-sheet': uikitml('glass-edit-sheet.uikitml', 'Glass Edit Sheet'),
 });

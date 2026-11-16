@@ -1,0 +1,186 @@
+{
+  "configEnvHash": "427315c89521e3f242f1453f17348a6fec6838fc3d406858524e5d224e128615",
+  "configEnvLock": {
+    "xr": {
+      "mode": "ar",
+      "offer": "always",
+      "features": {
+        "handTracking": true,
+        "planeDetection": true,
+        "anchors": true
+      }
+    },
+    "render": {
+      "fov": 56,
+      "near": 0.001,
+      "far": 200,
+      "camera": {
+        "position": [
+          0,
+          1.2,
+          0.1
+        ],
+        "lookAt": [
+          0,
+          0.95,
+          -0.65
+        ]
+      }
+    },
+    "emulator": {
+      "device": "metaQuest3",
+      "activation": "always",
+      "injectOnBuild": true,
+      "environment": "sunlit_living_room"
+    }
+  },
+  "sceneEnvHash": "7be0682e6d2aa8014f9f8f4acd1279b6ff2623f65dbfea516bbb74f23834f13a",
+  "sceneEnvLock": {
+    "authoring": {
+      "views": [
+        {
+          "fov": 56,
+          "id": "hero",
+          "position": [
+            0,
+            1.2,
+            0.1
+          ],
+          "projection": "perspective",
+          "role": "hero",
+          "target": [
+            0,
+            0.95,
+            -0.65
+          ]
+        }
+      ]
+    },
+    "components": {
+      "com.iwsdk.components.DomeGradient": {
+        "ground": [
+          0.48,
+          0.38,
+          0.3,
+          1
+        ],
+        "sky": [
+          0.9,
+          0.88,
+          0.85,
+          1
+        ]
+      },
+      "com.iwsdk.components.IBLGradient": {
+        "equator": [
+          0.78,
+          0.73,
+          0.67,
+          1
+        ],
+        "ground": [
+          0.42,
+          0.34,
+          0.28,
+          1
+        ],
+        "intensity": 0.85,
+        "sky": [
+          0.92,
+          0.9,
+          0.86,
+          1
+        ]
+      }
+    },
+    "environment": {
+      "exposure": 1,
+      "shadowMapType": "pcf",
+      "shadows": false,
+      "toneMapping": "aces"
+    },
+    "lightingNodes": [
+      {
+        "components": {
+          "DirectionalLight": {
+            "castShadow": false,
+            "color": [
+              1,
+              0.94,
+              0.86,
+              1
+            ],
+            "intensity": 1.5
+          }
+        },
+        "id": "key-light",
+        "name": "Workspace Key Light",
+        "transform": {
+          "position": [
+            -2,
+            3,
+            1
+          ],
+          "rotationDeg": [
+            -48,
+            -12,
+            0
+          ]
+        }
+      },
+      {
+        "components": {
+          "DirectionalLight": {
+            "castShadow": false,
+            "color": [
+              1,
+              0.96,
+              0.92,
+              1
+            ],
+            "intensity": 0.8
+          }
+        },
+        "id": "front-light",
+        "name": "Workspace Front Fill Light",
+        "transform": {
+          "position": [
+            0,
+            2.5,
+            1.8
+          ],
+          "rotationDeg": [
+            -35,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "components": {
+          "HemisphereLight": {
+            "groundColor": [
+              0.52,
+              0.44,
+              0.38,
+              1
+            ],
+            "intensity": 1,
+            "skyColor": [
+              0.95,
+              0.93,
+              0.9,
+              1
+            ]
+          }
+        },
+        "id": "fill-light",
+        "name": "Workspace Fill Light"
+      }
+    ],
+    "units": "meters",
+    "version": "iwsdk.scene.v1"
+  },
+  "indexHtmlHash": "59c41ec6994dcbdfbe95b4c7cd1b8e409645906f459d1b8ae9d5734c22d6b90a",
+  "timestamp": "2026-11-16T04:13:55.713Z"
+}

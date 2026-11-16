@@ -1,0 +1,593 @@
+<Panel class="glass-hub-panel" id="glass-hub-root">
+  <style>
+    .glass-hub-panel {
+      flex-direction: column;
+      width: 760px;
+      height: 660px;
+      padding: 18px;
+      border-radius: 24px;
+      background-color: rgba(11, 16, 32, 0.78);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.16);
+      gap: 12px;
+    }
+
+    .panel-handle {
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 12px;
+      margin-bottom: 2px;
+    }
+
+    .handle-bar {
+      width: 60px;
+      height: 4px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .hub-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding-bottom: 4px;
+    }
+
+    .header-time-group {
+      flex-direction: column;
+      gap: 2px;
+      min-width: 140px;
+    }
+
+    .header-date {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.70);
+    }
+
+    .header-time {
+      font-size: 26px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 28px;
+    }
+
+    .header-brand-group {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-cube {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background-color: #7C5CFF;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-cube-inner {
+      font-size: 13px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+    }
+
+    .header-actions-group {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      min-width: 140px;
+      justify-content: flex-end;
+    }
+
+    .icon-action-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn-text {
+      font-size: 16px;
+      color: #FFFFFF;
+    }
+
+    .greeting-section {
+      flex-direction: column;
+      gap: 2px;
+      padding-top: 2px;
+      padding-bottom: 4px;
+    }
+
+    .greeting-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .greeting-subtitle {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.70);
+    }
+
+    .nav-tiles-row {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .nav-tile {
+      flex-direction: column;
+      flex-grow: 1;
+      height: 58px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      padding-left: 12px;
+      padding-right: 12px;
+      border-radius: 16px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.10);
+      justify-content: space-between;
+    }
+
+    .nav-tile-active {
+      border-color: #7C5CFF;
+      background-color: rgba(124, 92, 255, 0.18);
+    }
+
+    .nav-tile-garden {
+      border-color: rgba(34, 197, 94, 0.40);
+      background-color: rgba(34, 197, 94, 0.10);
+    }
+
+    .nav-tile-top {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-tile-icon {
+      font-size: 14px;
+    }
+
+    .nav-tile-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .nav-tile-subtitle {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    .nav-tile-subtitle-active {
+      font-size: 11px;
+      font-weight: 700;
+      color: #A78BFA;
+    }
+
+    .nav-tile-subtitle-garden {
+      font-size: 11px;
+      font-weight: 700;
+      color: #4ADE80;
+    }
+
+    .schedule-card {
+      flex-direction: column;
+      width: 100%;
+      height: 180px;
+      padding: 14px;
+      border-radius: 18px;
+      background-color: rgba(18, 25, 48, 0.85);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.12);
+      gap: 10px;
+    }
+
+    .schedule-card-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .schedule-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .schedule-summary-badge {
+      font-size: 12px;
+      font-weight: 600;
+      color: #A78BFA;
+    }
+
+    .timeline-container {
+      flex-direction: column;
+      flex-grow: 1;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .timeline-axis-labels {
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      padding-bottom: 4px;
+    }
+
+    .axis-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.50);
+    }
+
+    .timeline-track {
+      flex-direction: row;
+      width: 100%;
+      height: 72px;
+      border-radius: 12px;
+      background-color: rgba(255, 255, 255, 0.04);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.08);
+      align-items: center;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    .schedule-block {
+      flex-direction: column;
+      height: 56px;
+      border-radius: 10px;
+      padding: 8px;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .block-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .block-time {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .now-marker-line {
+      width: 2px;
+      height: 100%;
+      background-color: #7C5CFF;
+      align-items: center;
+    }
+
+    .now-marker-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background-color: #A78BFA;
+      margin-top: -3px;
+    }
+
+    .bottom-cards-row {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      flex-grow: 1;
+    }
+
+    .summary-card {
+      flex-direction: row;
+      flex-grow: 1;
+      padding: 14px;
+      border-radius: 18px;
+      background-color: rgba(18, 25, 48, 0.85);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.12);
+      gap: 14px;
+      align-items: center;
+    }
+
+    .donut-visual {
+      width: 76px;
+      height: 76px;
+      border-radius: 999px;
+      border-width: 6px;
+      border-color: #7C5CFF;
+      background-color: rgba(124, 92, 255, 0.15);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .donut-percent {
+      font-size: 18px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .workload-info {
+      flex-direction: column;
+      gap: 4px;
+      flex-grow: 1;
+    }
+
+    .workload-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .workload-legend-row {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot-violet {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background-color: #7C5CFF;
+    }
+
+    .legend-dot-blue {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background-color: #3B82F6;
+    }
+
+    .legend-dot-gray {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.40);
+    }
+
+    .legend-text {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.80);
+    }
+
+    .garden-visual {
+      width: 76px;
+      height: 76px;
+      border-radius: 20px;
+      background-color: rgba(34, 197, 94, 0.15);
+      border-width: 1px;
+      border-color: rgba(34, 197, 94, 0.40);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .garden-icon-large {
+      font-size: 32px;
+    }
+
+    .garden-info {
+      flex-direction: column;
+      gap: 4px;
+      flex-grow: 1;
+    }
+
+    .garden-title-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .garden-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .garden-level-badge {
+      font-size: 12px;
+      font-weight: 700;
+      color: #4ADE80;
+    }
+
+    .garden-subtitle {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.70);
+    }
+
+    .garden-progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.10);
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .garden-progress-bar-fill {
+      width: 65%;
+      height: 100%;
+      border-radius: 999px;
+      background-color: #22C55E;
+    }
+  </style>
+
+  <div class="panel-handle">
+    <div class="handle-bar"></div>
+  </div>
+
+  <div class="hub-header">
+    <div class="header-time-group">
+      <span id="hub-date" class="header-date">Tue, Nov 18</span>
+      <span id="hub-time" class="header-time">10:24 AM</span>
+    </div>
+
+    <div class="header-brand-group">
+      <div class="brand-cube">
+        <span class="brand-cube-inner">D</span>
+      </div>
+      <span class="brand-title">DeskMate</span>
+    </div>
+
+    <div class="header-actions-group">
+      <Button id="btn-bell" class="icon-action-btn">
+        <ButtonLabel class="icon-btn-text">B</ButtonLabel>
+      </Button>
+      <Button id="btn-settings" class="icon-action-btn">
+        <ButtonLabel class="icon-btn-text">S</ButtonLabel>
+      </Button>
+      <Button id="btn-profile" class="icon-action-btn">
+        <ButtonLabel class="icon-btn-text">P</ButtonLabel>
+      </Button>
+    </div>
+  </div>
+
+  <div class="greeting-section">
+    <span id="hub-greeting-text" class="greeting-title">Good Morning, Madhavan</span>
+    <span class="greeting-subtitle">Let's plan, focus and get things done today.</span>
+  </div>
+
+  <div class="nav-tiles-row">
+    <Button id="nav-tasks" class="nav-tile">
+      <div class="nav-tile-top">
+        <span class="nav-tile-icon">T</span>
+        <ButtonLabel class="nav-tile-name">Tasks</ButtonLabel>
+      </div>
+      <span id="nav-tasks-sub" class="nav-tile-subtitle">4 Active</span>
+    </Button>
+
+    <Button id="nav-schedule" class="nav-tile nav-tile-active">
+      <div class="nav-tile-top">
+        <span class="nav-tile-icon">C</span>
+        <ButtonLabel class="nav-tile-name">Schedule</ButtonLabel>
+      </div>
+      <span class="nav-tile-subtitle-active">Today</span>
+    </Button>
+
+    <Button id="nav-focus" class="nav-tile">
+      <div class="nav-tile-top">
+        <span class="nav-tile-icon">F</span>
+        <ButtonLabel class="nav-tile-name">Focus</ButtonLabel>
+      </div>
+      <span class="nav-tile-subtitle">Start Session</span>
+    </Button>
+
+    <Button id="nav-analytics" class="nav-tile">
+      <div class="nav-tile-top">
+        <span class="nav-tile-icon">A</span>
+        <ButtonLabel class="nav-tile-name">Analytics</ButtonLabel>
+      </div>
+      <span class="nav-tile-subtitle">Your Progress</span>
+    </Button>
+
+    <Button id="nav-garden" class="nav-tile nav-tile-garden">
+      <div class="nav-tile-top">
+        <span class="nav-tile-icon">G</span>
+        <ButtonLabel class="nav-tile-name">Garden</ButtonLabel>
+      </div>
+      <span id="nav-garden-sub" class="nav-tile-subtitle-garden">Level 3</span>
+    </Button>
+  </div>
+
+  <div class="schedule-card">
+    <div class="schedule-card-header">
+      <span class="schedule-card-title">Today's Schedule (8:00 AM to 6:00 PM)</span>
+      <span id="schedule-summary-capsule" class="schedule-summary-badge">5.0h planned of 8h</span>
+    </div>
+
+    <div class="timeline-container">
+      <div class="timeline-axis-labels">
+        <span class="axis-label">8 AM</span>
+        <span class="axis-label">10 AM</span>
+        <span class="axis-label">12 PM</span>
+        <span class="axis-label">2 PM</span>
+        <span class="axis-label">4 PM</span>
+        <span class="axis-label">6 PM</span>
+      </div>
+
+      <div id="timeline-track" class="timeline-track">
+        <div id="block-0" class="schedule-block" style="background-color: #7C5CFF; width: 140px; margin-left: 55px;">
+          <span class="block-title">Finish ML assignment</span>
+          <span class="block-time">09:00 - 10:30</span>
+        </div>
+
+        <div id="block-1" class="schedule-block" style="background-color: #3B82F6; width: 180px; margin-left: 25px;">
+          <span class="block-title">Implement API</span>
+          <span class="block-time">11:00 - 13:00</span>
+        </div>
+
+        <div id="block-2" class="schedule-block" style="background-color: #F59E0B; width: 75px; margin-left: 55px;">
+          <span class="block-title">Team meeting</span>
+          <span class="block-time">14:00 - 14:30</span>
+        </div>
+
+        <div id="block-3" class="schedule-block" style="background-color: #22C55E; width: 95px; margin-left: 25px;">
+          <span class="block-title">Read research paper</span>
+          <span class="block-time">15:00 - 16:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-cards-row">
+    <div class="summary-card">
+      <div class="donut-visual">
+        <span id="donut-percentage-text" class="donut-percent">63%</span>
+      </div>
+      <div class="workload-info">
+        <span class="workload-title">Workload</span>
+        <div class="workload-legend-row">
+          <div class="legend-dot-violet"></div>
+          <span id="legend-scheduled-text" class="legend-text">Scheduled: 5h 0m</span>
+        </div>
+        <div class="workload-legend-row">
+          <div class="legend-dot-blue"></div>
+          <span id="legend-remaining-text" class="legend-text">Remaining: 3h 0m</span>
+        </div>
+        <div class="workload-legend-row">
+          <div class="legend-dot-gray"></div>
+          <span class="legend-text">Available: 8h 0m</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="garden-visual">
+        <span class="garden-icon-large">L</span>
+      </div>
+      <div class="garden-info">
+        <div class="garden-title-row">
+          <span class="garden-title">Garden Progress</span>
+          <span id="garden-level-text" class="garden-level-badge">Level 3</span>
+        </div>
+        <span class="garden-subtitle">Keep it growing!</span>
+        <div class="garden-progress-bar-bg">
+          <div id="garden-progress-bar-fill" class="garden-progress-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Panel>

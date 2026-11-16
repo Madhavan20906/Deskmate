@@ -64,377 +64,133 @@
   },
   "nodes": [
     {
-      "content": {
-        "asset": "workspace-desk",
-        "type": "asset"
-      },
-      "id": "workspace-desk",
-      "name": "Workspace Desk Table",
-      "transform": {
-        "position": [
-          0,
-          0,
-          -0.65
-        ],
-        "scale": 1
-      }
-    },
-    {
       "components": {
         "OneHandGrabbable": {},
         "PokeInteractable": {},
         "RayInteractable": {}
       },
       "content": {
-        "asset": "desk-ruler",
+        "asset": "glass-tasks",
         "type": "asset"
       },
-      "id": "desk-ruler",
-      "name": "Desk Ruler Schedule Bar",
+      "id": "panel-left-tasks",
+      "name": "Today's Tasks Glass Panel",
       "transform": {
         "position": [
-          0,
-          0.745,
-          -0.48
-        ],
-        "scale": 1
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {}
-      },
-      "content": {
-        "asset": "pip-companion",
-        "type": "asset"
-      },
-      "id": "pip-companion",
-      "name": "Pip 3D Companion",
-      "transform": {
-        "position": [
-          -0.48,
-          0.75,
-          -0.50
-        ],
-        "scale": 1.25
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {}
-      },
-      "content": {
-        "asset": "sprint-dial",
-        "type": "asset"
-      },
-      "id": "sprint-dial",
-      "name": "Sprint 3D Dial",
-      "transform": {
-        "position": [
-          0.30,
-          0.74,
-          -0.50
-        ],
-        "scale": 1
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {}
-      },
-      "content": {
-        "asset": "desk-plant",
-        "type": "asset"
-      },
-      "id": "desk-plant",
-      "name": "Desk Plant",
-      "transform": {
-        "position": [
-          0.48,
-          0.74,
-          -0.68
-        ],
-        "scale": 1
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {}
-      },
-      "content": {
-        "asset": "focus-lamp",
-        "type": "asset"
-      },
-      "id": "focus-lamp",
-      "name": "Focus Lamp",
-      "transform": {
-        "position": [
-          0.42,
-          0.74,
-          -0.62
-        ],
-        "scale": 1
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {}
-      },
-      "content": {
-        "asset": "marbles-jar",
-        "type": "asset"
-      },
-      "id": "marbles-jar",
-      "name": "Productivity Marbles & Jar",
-      "transform": {
-        "position": [
-          -0.45,
-          0.74,
-          -0.62
-        ],
-        "scale": 1
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {}
-      },
-      "content": {
-        "asset": "ghost-companion",
-        "type": "asset"
-      },
-      "id": "ghost-companion",
-      "name": "Ghost Deskmate Companion",
-      "transform": {
-        "position": [
-          -0.45,
-          0.98,
-          -0.58
-        ],
-        "scale": 1
-      }
-    },
-    {
-      "components": {
-        "PokeInteractable": {},
-        "RayInteractable": {}
-      },
-      "content": {
-        "asset": "workspace-dashboard",
-        "type": "asset"
-      },
-      "id": "workspace-dashboard",
-      "name": "Daily Workspace Dashboard",
-      "transform": {
-        "position": [
-          0,
-          1.24,
-          -0.78
-        ],
-        "scale": 0.10
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {},
-        "TaskData": {
-          "active": true,
-          "description": "Deep work and milestones",
-          "estimatedMinutes": 120,
-          "id": "seed-roadmap",
-          "priority": "high",
-          "slot": 0,
-          "status": "todo",
-          "title": "Plan Q4 roadmap"
-        }
-      },
-      "content": {
-        "asset": "task-roadmap",
-        "type": "asset"
-      },
-      "id": "task-card-roadmap",
-      "name": "Roadmap Task Card",
-      "transform": {
-        "position": [
-          -0.34,
-          0.98,
-          -0.68
+          -0.46,
+          1.28,
+          -0.72
         ],
         "rotationDeg": [
+          -5,
+          24,
+          0
+        ],
+        "scale": 0.00095
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "glass-hub",
+        "type": "asset"
+      },
+      "id": "panel-hub",
+      "name": "Command Hub Glass Panel",
+      "transform": {
+        "position": [
           0,
+          1.28,
+          -0.78
+        ],
+        "rotationDeg": [
+          -5,
           0,
           0
         ],
-        "scale": 0.105
+        "scale": 0.00095
       }
     },
     {
       "components": {
         "OneHandGrabbable": {},
         "PokeInteractable": {},
-        "RayInteractable": {},
-        "TaskData": {
-          "active": true,
-          "description": "Share feedback with the team",
-          "estimatedMinutes": 60,
-          "id": "seed-design-review",
-          "priority": "medium",
-          "slot": 1,
-          "status": "todo",
-          "title": "Review design brief"
-        }
+        "RayInteractable": {}
       },
       "content": {
-        "asset": "task-design-review",
+        "asset": "glass-pip",
         "type": "asset"
       },
-      "id": "task-card-design-review",
-      "name": "Design Review Task Card",
+      "id": "panel-right-pip",
+      "name": "Pip Companion Glass Panel",
       "transform": {
         "position": [
+          0.46,
+          1.44,
+          -0.72
+        ],
+        "rotationDeg": [
+          -5,
+          -24,
+          0
+        ],
+        "scale": 0.00095
+      }
+    },
+    {
+      "components": {
+        "OneHandGrabbable": {},
+        "PokeInteractable": {},
+        "RayInteractable": {}
+      },
+      "content": {
+        "asset": "pip-robot",
+        "type": "asset"
+      },
+      "id": "pip-robot",
+      "name": "Pip 3D Robot Companion",
+      "transform": {
+        "position": [
+          0.46,
+          1.45,
+          -0.62
+        ],
+        "rotationDeg": [
           0,
-          0.98,
-          -0.68
+          -24,
+          0
         ],
-        "scale": 0.105
+        "scale": 1
       }
     },
     {
       "components": {
         "OneHandGrabbable": {},
         "PokeInteractable": {},
-        "RayInteractable": {},
-        "TaskData": {
-          "active": true,
-          "description": "Clear the queue and flag follow-ups",
-          "estimatedMinutes": 60,
-          "id": "seed-inbox",
-          "priority": "low",
-          "slot": 2,
-          "status": "todo",
-          "title": "Inbox reset"
-        }
+        "RayInteractable": {}
       },
       "content": {
-        "asset": "task-inbox",
+        "asset": "glass-focus",
         "type": "asset"
       },
-      "id": "task-card-inbox",
-      "name": "Inbox Task Card",
+      "id": "panel-right-focus",
+      "name": "Focus Timer Glass Panel",
       "transform": {
         "position": [
-          0.34,
-          0.98,
-          -0.68
-        ],
-        "scale": 0.105
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {},
-        "TaskData": {
-          "active": true,
-          "description": "Align priorities with engineering",
-          "estimatedMinutes": 30,
-          "id": "seed-standup",
-          "priority": "medium",
-          "slot": 3,
-          "status": "todo",
-          "title": "Team sync & standup"
-        }
-      },
-      "content": {
-        "asset": "task-slot-4",
-        "type": "asset"
-      },
-      "id": "task-card-slot-4",
-      "name": "Task Card 4",
-      "transform": {
-        "position": [
-          -0.48,
-          0.82,
+          0.46,
+          1.13,
           -0.72
         ],
-        "scale": 0.13
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {},
-        "TaskData": {
-          "active": true,
-          "description": "Implement core prototype milestone",
-          "estimatedMinutes": 90,
-          "id": "seed-deep-focus",
-          "priority": "high",
-          "slot": 4,
-          "status": "todo",
-          "title": "Ship focus sprint"
-        }
-      },
-      "content": {
-        "asset": "task-slot-5",
-        "type": "asset"
-      },
-      "id": "task-card-slot-5",
-      "name": "Task Card 5",
-      "transform": {
-        "position": [
-          0,
-          0.82,
-          -0.72
+        "rotationDeg": [
+          -5,
+          -24,
+          0
         ],
-        "scale": 0.13
-      }
-    },
-    {
-      "components": {
-        "OneHandGrabbable": {},
-        "PokeInteractable": {},
-        "RayInteractable": {},
-        "TaskData": {
-          "active": true,
-          "description": "Reflect on wins and plan tomorrow",
-          "estimatedMinutes": 30,
-          "id": "seed-recap",
-          "priority": "low",
-          "slot": 5,
-          "status": "todo",
-          "title": "Daily recap & wrap-up"
-        }
-      },
-      "content": {
-        "asset": "task-slot-6",
-        "type": "asset"
-      },
-      "id": "task-card-slot-6",
-      "name": "Task Card 6",
-      "transform": {
-        "position": [
-          0.48,
-          0.82,
-          -0.72
-        ],
-        "scale": 0.13
+        "scale": 0.00095
       }
     },
     {
@@ -443,11 +199,11 @@
         "RayInteractable": {}
       },
       "content": {
-        "asset": "welcome-panel",
+        "asset": "glass-sheet",
         "type": "asset"
       },
-      "id": "welcome-panel",
-      "name": "Welcome Panel",
+      "id": "panel-edit-sheet",
+      "name": "Task Quick Edit Sheet",
       "transform": {
         "position": [
           0,
@@ -455,11 +211,11 @@
           0
         ],
         "rotationDeg": [
-          0,
+          -5,
           0,
           0
         ],
-        "scale": 0.0001
+        "scale": 0.00095
       }
     },
     {
