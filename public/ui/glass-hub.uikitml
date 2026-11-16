@@ -2,14 +2,14 @@
   <style>
     .glass-hub-panel {
       flex-direction: column;
-      width: 760px;
-      height: 620px;
-      padding: 16px;
+      width: 780px;
+      height: 700px;
+      padding: 14px;
       border-radius: 24px;
-      background-color: rgba(11, 16, 32, 0.78);
+      background-color: rgba(11, 16, 32, 0.82);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.16);
-      gap: 10px;
+      gap: 8px;
     }
 
     .panel-handle {
@@ -17,8 +17,8 @@
       justify-content: center;
       align-items: center;
       width: 100%;
-      height: 8px;
-      margin-bottom: 2px;
+      height: 6px;
+      margin-bottom: 1px;
     }
 
     .handle-bar {
@@ -28,6 +28,7 @@
       background-color: rgba(255, 255, 255, 0.28);
     }
 
+    /* Hub Header */
     .hub-header {
       flex-direction: row;
       justify-content: space-between;
@@ -37,57 +38,119 @@
     }
 
     .header-time-group {
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      min-width: 210px;
+    }
+
+    .time-date-stack {
       flex-direction: column;
-      gap: 2px;
-      min-width: 140px;
+      gap: 1px;
     }
 
     .header-date {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 500;
       color: rgba(255, 255, 255, 0.70);
     }
 
     .header-time {
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 800;
       color: #FFFFFF;
-      line-height: 28px;
+      line-height: 24px;
     }
 
-    .header-brand-group {
+    .weather-pill-btn {
       flex-direction: row;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      border-radius: 12px;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .weather-pill-btn:hover {
+      background-color: rgba(255, 255, 255, 0.18);
+      border-color: #F59E0B;
+    }
+
+    .weather-pill-btn:active {
+      background-color: rgba(245, 158, 11, 0.25);
+    }
+
+    .weather-icon {
+      font-size: 16px;
+    }
+
+    .weather-text-stack {
+      flex-direction: column;
+      gap: 0px;
+    }
+
+    .weather-temp {
+      font-size: 11px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .weather-city {
+      font-size: 9px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    .header-center-group {
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .brand-group {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
     }
 
     .brand-cube {
-      width: 24px;
-      height: 24px;
-      border-radius: 7px;
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
       background-color: #7C5CFF;
       align-items: center;
       justify-content: center;
     }
 
     .brand-title {
-      font-size: 20px;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 800;
       color: #FFFFFF;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
+    }
+
+    .brand-tagline {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.60);
     }
 
     .header-actions-group {
       flex-direction: row;
       align-items: center;
-      gap: 8px;
-      min-width: 140px;
+      gap: 6px;
+      min-width: 160px;
       justify-content: flex-end;
     }
 
     .icon-action-btn {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 999px;
       background-color: rgba(255, 255, 255, 0.08);
       border-width: 1px;
@@ -97,131 +160,259 @@
       padding: 0px;
     }
 
-    .greeting-section {
+    .icon-action-btn:hover {
+      background-color: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.50);
+    }
+
+    .icon-action-btn:active {
+      background-color: rgba(124, 92, 255, 0.45);
+      border-color: #A78BFA;
+    }
+
+    .icon-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background-color: #EF4444;
+      position: absolute;
+      top: 4px;
+      right: 4px;
+    }
+
+    /* Greeting & Banner */
+    .hero-banner-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding-top: 1px;
+      padding-bottom: 1px;
+    }
+
+    .greeting-group {
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
     }
 
     .greeting-title {
-      font-size: 21px;
+      font-size: 18px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
     .greeting-subtitle {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 500;
       color: rgba(255, 255, 255, 0.70);
     }
 
-    .nav-tiles-row {
+    .pip-speech-banner {
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      border-radius: 12px;
+      background-color: rgba(18, 25, 48, 0.90);
+      border-width: 1px;
+      border-color: rgba(6, 182, 212, 0.35);
+    }
+
+    .pip-speech-banner:hover {
+      border-color: #06B6D4;
+      background-color: rgba(6, 182, 212, 0.15);
+    }
+
+    .pip-banner-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: #E0F2FE;
+    }
+
+    /* 8 Navigation Tabs */
+    .nav-tabs-bar {
       flex-direction: row;
       justify-content: space-between;
-      gap: 8px;
+      gap: 4px;
       width: 100%;
     }
 
-    .nav-tile {
-      flex-direction: column;
+    .nav-tab-pill {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
       flex-grow: 1;
-      height: 56px;
-      padding-top: 6px;
-      padding-bottom: 6px;
-      padding-left: 10px;
-      padding-right: 10px;
-      border-radius: 14px;
+      height: 34px;
+      border-radius: 10px;
       background-color: rgba(255, 255, 255, 0.05);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.10);
-      justify-content: space-between;
+      padding-left: 6px;
+      padding-right: 6px;
     }
 
-    .nav-tile-active {
+    .nav-tab-pill:hover {
+      background-color: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.30);
+    }
+
+    .nav-tab-pill:active {
+      background-color: rgba(124, 92, 255, 0.25);
+    }
+
+    .nav-tab-active {
+      background-color: rgba(124, 92, 255, 0.22);
       border-color: #7C5CFF;
-      background-color: rgba(124, 92, 255, 0.18);
+      border-width: 1.5px;
     }
 
-    .nav-tile-garden {
-      border-color: rgba(34, 197, 94, 0.40);
-      background-color: rgba(34, 197, 94, 0.10);
+    .nav-tab-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
     }
 
-    .nav-tile-top {
-      flex-direction: row;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .nav-tile-name {
-      font-size: 13px;
-      font-weight: 700;
+    .nav-tab-label-active {
+      font-size: 11px;
+      font-weight: 800;
       color: #FFFFFF;
     }
 
-    .nav-tile-subtitle {
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.65);
-    }
-
-    .nav-tile-subtitle-active {
-      font-size: 11px;
-      font-weight: 700;
-      color: #A78BFA;
-    }
-
-    .nav-tile-subtitle-garden {
-      font-size: 11px;
-      font-weight: 700;
-      color: #4ADE80;
-    }
-
+    /* Schedule Section */
     .schedule-card {
       flex-direction: column;
       width: 100%;
-      height: 168px;
-      padding: 12px;
-      border-radius: 18px;
+      height: 156px;
+      padding: 10px;
+      border-radius: 16px;
       background-color: rgba(18, 25, 48, 0.85);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.12);
-      gap: 8px;
+      gap: 6px;
     }
 
     .schedule-card-header {
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
+      width: 100%;
     }
 
-    .schedule-card-title {
-      font-size: 15px;
+    .schedule-title {
+      font-size: 13px;
       font-weight: 700;
       color: #FFFFFF;
     }
 
-    .schedule-summary-badge {
-      font-size: 12px;
-      font-weight: 600;
-      color: #A78BFA;
+    .schedule-controls {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
     }
 
+    .schedule-view-tabs {
+      flex-direction: row;
+      gap: 2px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.06);
+      padding: 2px;
+    }
+
+    .sched-view-btn {
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      border-radius: 6px;
+      background-color: transparent;
+      border-width: 0px;
+    }
+
+    .sched-view-btn-active {
+      background-color: #3B82F6;
+    }
+
+    .sched-view-text {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .sched-view-text-active {
+      font-size: 10px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .sched-expand-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background-color: rgba(255, 255, 255, 0.08);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.15);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sched-expand-text {
+      font-size: 11px;
+      color: #FFFFFF;
+    }
+
+    /* Timeline */
     .timeline-container {
       flex-direction: column;
-      flex-grow: 1;
       width: 100%;
+      flex-grow: 1;
       justify-content: center;
+      gap: 2px;
+    }
+
+    .now-marker-row {
+      flex-direction: row;
+      width: 100%;
+      height: 18px;
+      align-items: center;
+    }
+
+    .now-marker-badge {
+      padding-left: 6px;
+      padding-right: 6px;
+      padding-top: 1px;
+      padding-bottom: 1px;
+      border-radius: 999px;
+      background-color: #8B5CF6;
+      border-width: 1px;
+      border-color: #DDD6FE;
+    }
+
+    .now-marker-text {
+      font-size: 9px;
+      font-weight: 800;
+      color: #FFFFFF;
     }
 
     .timeline-axis-labels {
       flex-direction: row;
       justify-content: space-between;
       width: 100%;
-      padding-bottom: 4px;
+      padding-left: 2px;
+      padding-right: 2px;
     }
 
     .axis-label {
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.50);
     }
@@ -229,175 +420,396 @@
     .timeline-track {
       flex-direction: row;
       width: 100%;
-      height: 66px;
-      border-radius: 12px;
+      height: 52px;
+      border-radius: 10px;
       background-color: rgba(255, 255, 255, 0.04);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.08);
       align-items: center;
       padding-left: 4px;
       padding-right: 4px;
+      gap: 6px;
     }
 
     .schedule-block {
       flex-direction: column;
-      height: 52px;
-      border-radius: 10px;
-      padding-left: 8px;
-      padding-right: 8px;
-      padding-top: 6px;
-      padding-bottom: 6px;
+      height: 44px;
+      border-radius: 8px;
+      padding-left: 6px;
+      padding-right: 6px;
+      padding-top: 4px;
+      padding-bottom: 4px;
       justify-content: center;
-      gap: 2px;
+      gap: 1px;
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.20);
+    }
+
+    .schedule-block:hover {
+      border-color: #FFFFFF;
+      border-width: 2px;
+    }
+
+    .schedule-block:active {
+      border-color: #C4B5FD;
+      border-width: 2px;
     }
 
     .block-title {
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
     .block-time {
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.85);
     }
 
+    /* Bottom 3 Cards Row */
     .bottom-cards-row {
       flex-direction: row;
       justify-content: space-between;
-      gap: 12px;
+      gap: 8px;
       width: 100%;
       flex-grow: 1;
     }
 
-    .summary-card {
-      flex-direction: row;
-      flex-grow: 1;
-      padding: 12px;
-      border-radius: 18px;
+    .card-base {
+      flex-direction: column;
+      width: 244px;
+      padding: 10px;
+      border-radius: 16px;
       background-color: rgba(18, 25, 48, 0.85);
       border-width: 1px;
       border-color: rgba(255, 255, 255, 0.12);
-      gap: 14px;
-      align-items: center;
+      gap: 6px;
+      justify-content: space-between;
     }
 
-    .donut-visual {
-      width: 72px;
-      height: 72px;
-      border-radius: 999px;
-      border-width: 6px;
-      border-color: #7C5CFF;
-      background-color: rgba(124, 92, 255, 0.15);
+    .card-header-row {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    /* Card 1: Tasks */
+    .filter-chips-row {
+      flex-direction: row;
+      gap: 2px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 2px;
+    }
+
+    .filter-chip {
+      padding-left: 6px;
+      padding-right: 6px;
+      padding-top: 1px;
+      padding-bottom: 1px;
+      border-radius: 6px;
+      background-color: transparent;
+      border-width: 0px;
+    }
+
+    .filter-chip-active {
+      background-color: rgba(124, 92, 255, 0.40);
+    }
+
+    .filter-chip-text {
+      font-size: 9px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.70);
+    }
+
+    .filter-chip-text-active {
+      font-size: 9px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .hub-task-rows {
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .hub-task-item {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 6px;
+      padding-right: 6px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.04);
+      width: 100%;
+    }
+
+    .hub-task-item:hover {
+      background-color: rgba(255, 255, 255, 0.10);
+    }
+
+    .hub-task-left {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chk-square {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border-width: 1.5px;
+      border-color: rgba(255, 255, 255, 0.35);
       align-items: center;
       justify-content: center;
     }
 
-    .donut-percent {
-      font-size: 20px;
+    .chk-square-checked {
+      background-color: #22C55E;
+      border-color: #22C55E;
+    }
+
+    .chk-square-mark {
+      font-size: 9px;
       font-weight: 800;
       color: #FFFFFF;
     }
 
-    .workload-info {
+    .hub-task-text {
+      font-size: 10px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    .hub-task-text-strike {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.40);
+    }
+
+    .hub-task-badge {
+      padding-left: 4px;
+      padding-right: 4px;
+      padding-top: 1px;
+      padding-bottom: 1px;
+      border-radius: 4px;
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .badge-high {
+      background-color: rgba(239, 68, 68, 0.25);
+      color: #F87171;
+    }
+
+    .badge-med {
+      background-color: rgba(245, 158, 11, 0.25);
+      color: #FBBF24;
+    }
+
+    .badge-low {
+      background-color: rgba(59, 130, 246, 0.25);
+      color: #60A5FA;
+    }
+
+    /* Card 2: Focus Session */
+    .focus-timer-body {
       flex-direction: column;
-      gap: 5px;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      width: 100%;
       flex-grow: 1;
     }
 
-    .workload-title {
-      font-size: 16px;
-      font-weight: 700;
+    .timer-ring {
+      width: 82px;
+      height: 82px;
+      border-radius: 999px;
+      border-width: 4px;
+      border-color: #7C5CFF;
+      background-color: rgba(124, 92, 255, 0.12);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0px;
+    }
+
+    .timer-digits {
+      font-size: 20px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 22px;
+    }
+
+    .timer-label {
+      font-size: 8px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    .hub-play-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      background-color: #7C5CFF;
+      align-items: center;
+      justify-content: center;
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .hub-play-btn:hover {
+      background-color: #906ffa;
+      border-color: #FFFFFF;
+    }
+
+    .hub-play-btn:active {
+      background-color: #633ef5;
+    }
+
+    .hub-play-icon {
+      font-size: 13px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .focus-footer-text {
+      font-size: 10px;
+      font-weight: 600;
+      color: #A78BFA;
+      text-align: center;
+    }
+
+    /* Card 3: Workload */
+    .workload-body {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .donut-gauge {
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      border-width: 5px;
+      border-color: #38BDF8;
+      background-color: rgba(56, 189, 248, 0.12);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .donut-gauge-text {
+      font-size: 17px;
+      font-weight: 800;
       color: #FFFFFF;
     }
 
     .workload-legend {
       flex-direction: column;
-      gap: 5px;
-    }
-
-    .legend-item {
-      flex-direction: row;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .legend-dot-blue {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background-color: #3B82F6;
-    }
-
-    .legend-dot-gray {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.50);
-    }
-
-    .legend-text {
-      font-size: 13px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.90);
-    }
-
-    .garden-visual {
-      width: 72px;
-      height: 72px;
-      border-radius: 18px;
-      background-color: rgba(34, 197, 94, 0.15);
-      border-width: 1px;
-      border-color: rgba(34, 197, 94, 0.40);
-      align-items: center;
-      justify-content: center;
-    }
-
-    .garden-info {
-      flex-direction: column;
-      gap: 4px;
+      gap: 3px;
       flex-grow: 1;
     }
 
-    .garden-title-row {
+    .legend-row {
       flex-direction: row;
-      justify-content: space-between;
       align-items: center;
+      gap: 6px;
     }
 
-    .garden-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-
-    .garden-level-badge {
-      font-size: 12px;
-      font-weight: 700;
-      color: #4ADE80;
-    }
-
-    .garden-subtitle {
-      font-size: 12px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.70);
-    }
-
-    .garden-progress-bar-bg {
-      width: 100%;
-      height: 8px;
+    .legend-dot-cyan {
+      width: 7px;
+      height: 7px;
       border-radius: 999px;
-      background-color: rgba(255, 255, 255, 0.10);
-      overflow: hidden;
-      margin-top: 4px;
+      background-color: #38BDF8;
     }
 
-    .garden-progress-bar-fill {
-      width: 65%;
-      height: 100%;
+    .legend-dot-green {
+      width: 7px;
+      height: 7px;
       border-radius: 999px;
       background-color: #22C55E;
+    }
+
+    .legend-dot-gray {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .legend-text {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .workload-insight-capsule {
+      padding-left: 8px;
+      padding-right: 8px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      border-radius: 8px;
+      background-color: rgba(245, 158, 11, 0.15);
+      border-width: 1px;
+      border-color: rgba(245, 158, 11, 0.35);
+      width: 100%;
+    }
+
+    .workload-insight-text {
+      font-size: 9px;
+      font-weight: 600;
+      color: #FDE68A;
+    }
+
+    /* Bottom Dock */
+    .dock-container {
+      flex-direction: row;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding-top: 2px;
+    }
+
+    .dock-btn {
+      flex-direction: row;
+      align-items: center;
+      gap: 4px;
+      padding-left: 10px;
+      padding-right: 10px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.06);
+      border-width: 1px;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .dock-btn:hover {
+      background-color: rgba(255, 255, 255, 0.16);
+      border-color: #7C5CFF;
+    }
+
+    .dock-btn:active {
+      background-color: rgba(124, 92, 255, 0.35);
+    }
+
+    .dock-btn-text {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.90);
     }
   </style>
 
@@ -405,159 +817,319 @@
     <div class="handle-bar"></div>
   </div>
 
+  <!-- Top Header -->
   <div class="hub-header">
     <div class="header-time-group">
-      <span id="hub-date" class="header-date">Mon, Nov 16</span>
-      <span id="hub-time" class="header-time">10:14 AM</span>
+      <div class="time-date-stack">
+        <span id="hub-date" class="header-date">Tue, Nov 18</span>
+        <span id="hub-time" class="header-time">10:24 AM</span>
+      </div>
+
+      <Button id="btn-weather" class="weather-pill-btn">
+        <span class="weather-icon">⛅</span>
+        <div class="weather-text-stack">
+          <ButtonLabel id="weather-temp" class="weather-temp">28°C</ButtonLabel>
+          <span id="weather-city" class="weather-city">Chennai</span>
+        </div>
+      </Button>
     </div>
 
-    <div class="header-brand-group">
-      <div class="brand-cube">
-        <Bot width="15" height="15" color="#FFFFFF"></Bot>
+    <div class="header-center-group">
+      <div class="brand-group">
+        <div class="brand-cube">
+          <Bot width="13" height="13" color="#FFFFFF"></Bot>
+        </div>
+        <span class="brand-title">DeskMate</span>
       </div>
-      <span class="brand-title">DeskMate</span>
+      <span class="brand-tagline">Your Spatial Productivity Studio</span>
     </div>
 
     <div class="header-actions-group">
+      <Button id="btn-search" class="icon-action-btn">
+        <ButtonLabel class="icon-text">🔍</ButtonLabel>
+      </Button>
       <Button id="btn-bell" class="icon-action-btn">
-        <ButtonIcon>
-          <Bell color="#FFFFFF"></Bell>
-        </ButtonIcon>
+        <ButtonLabel class="icon-text">🔔</ButtonLabel>
+        <div id="bell-badge" class="badge-dot"></div>
       </Button>
       <Button id="btn-settings" class="icon-action-btn">
-        <ButtonIcon>
-          <Settings color="#FFFFFF"></Settings>
-        </ButtonIcon>
+        <ButtonLabel class="icon-text">⚙️</ButtonLabel>
       </Button>
       <Button id="btn-profile" class="icon-action-btn">
-        <ButtonIcon>
-          <User color="#FFFFFF"></User>
-        </ButtonIcon>
+        <ButtonLabel class="icon-text">👤</ButtonLabel>
       </Button>
     </div>
   </div>
 
-  <div class="greeting-section">
-    <span id="hub-greeting-text" class="greeting-title">Good Morning, Madhavan</span>
-    <span class="greeting-subtitle">Let's plan, focus and get things done today.</span>
-  </div>
+  <!-- Dynamic Greeting & Pip Smart Recommendation Banner -->
+  <div class="hero-banner-row">
+    <div class="greeting-group">
+      <span id="hub-greeting-text" class="greeting-title">Good Morning 👋</span>
+      <span id="hub-task-summary" class="greeting-subtitle">You have 5 tasks today • 2 high priority • 6h 30m planned</span>
+    </div>
 
-  <div class="nav-tiles-row">
-    <Button id="nav-tasks" class="nav-tile">
-      <div class="nav-tile-top">
-        <Check width="16" height="16" color="#A78BFA"></Check>
-        <ButtonLabel class="nav-tile-name">Tasks</ButtonLabel>
-      </div>
-      <span id="nav-tasks-sub" class="nav-tile-subtitle">4 Active</span>
-    </Button>
-
-    <Button id="nav-schedule" class="nav-tile nav-tile-active">
-      <div class="nav-tile-top">
-        <Calendar width="16" height="16" color="#FFFFFF"></Calendar>
-        <ButtonLabel class="nav-tile-name">Schedule</ButtonLabel>
-      </div>
-      <span class="nav-tile-subtitle-active">Today</span>
-    </Button>
-
-    <Button id="nav-focus" class="nav-tile">
-      <div class="nav-tile-top">
-        <Play width="16" height="16" color="#FFFFFF"></Play>
-        <ButtonLabel class="nav-tile-name">Focus</ButtonLabel>
-      </div>
-      <span class="nav-tile-subtitle">Start Session</span>
-    </Button>
-
-    <Button id="nav-analytics" class="nav-tile">
-      <div class="nav-tile-top">
-        <ChartColumn width="16" height="16" color="#FFFFFF"></ChartColumn>
-        <ButtonLabel class="nav-tile-name">Analytics</ButtonLabel>
-      </div>
-      <span class="nav-tile-subtitle">Your Progress</span>
-    </Button>
-
-    <Button id="nav-garden" class="nav-tile nav-tile-garden">
-      <div class="nav-tile-top">
-        <Sprout width="16" height="16" color="#4ADE80"></Sprout>
-        <ButtonLabel class="nav-tile-name">Garden</ButtonLabel>
-      </div>
-      <span id="nav-garden-sub" class="nav-tile-subtitle-garden">Level 3</span>
+    <Button id="hub-pip-banner-btn" class="pip-speech-banner">
+      <ButtonLabel class="weather-icon">🤖</ButtonLabel>
+      <ButtonLabel id="hub-pip-text" class="pip-banner-text">Pip: Let's plan your day. You're on track! 🚀</ButtonLabel>
     </Button>
   </div>
 
+  <!-- 8 Navigation Tabs -->
+  <div class="nav-tabs-bar">
+    <Button id="nav-tasks" class="nav-tab-pill">
+      <Check width="13" height="13" color="#A78BFA"></Check>
+      <ButtonLabel class="nav-tab-label">Tasks</ButtonLabel>
+    </Button>
+
+    <Button id="nav-schedule" class="nav-tab-pill nav-tab-active">
+      <Calendar width="13" height="13" color="#FFFFFF"></Calendar>
+      <ButtonLabel class="nav-tab-label-active">Schedule</ButtonLabel>
+    </Button>
+
+    <Button id="nav-focus" class="nav-tab-pill">
+      <Play width="13" height="13" color="#FFFFFF"></Play>
+      <ButtonLabel class="nav-tab-label">Focus</ButtonLabel>
+    </Button>
+
+    <Button id="nav-analytics" class="nav-tab-pill">
+      <ChartColumn width="13" height="13" color="#FFFFFF"></ChartColumn>
+      <ButtonLabel class="nav-tab-label">Analytics</ButtonLabel>
+    </Button>
+
+    <Button id="nav-garden" class="nav-tab-pill">
+      <Sprout width="13" height="13" color="#4ADE80"></Sprout>
+      <ButtonLabel class="nav-tab-label">Garden</ButtonLabel>
+    </Button>
+
+    <Button id="nav-routines" class="nav-tab-pill">
+      <Clock width="13" height="13" color="#FFFFFF"></Clock>
+      <ButtonLabel class="nav-tab-label">Routines</ButtonLabel>
+    </Button>
+
+    <Button id="nav-notes" class="nav-tab-pill">
+      <ButtonLabel class="nav-tab-label">📝 Notes</ButtonLabel>
+    </Button>
+
+    <Button id="nav-goals" class="nav-tab-pill">
+      <ButtonLabel class="nav-tab-label">🎯 Goals</ButtonLabel>
+    </Button>
+  </div>
+
+  <!-- Today's Schedule Card -->
   <div class="schedule-card">
     <div class="schedule-card-header">
-      <span class="schedule-card-title">Today's Schedule (8:00 AM to 6:00 PM)</span>
-      <span id="schedule-summary-capsule" class="schedule-summary-badge">5.0h planned of 8h</span>
+      <span class="schedule-title">Today's Schedule (8:00 AM – 10:00 PM)</span>
+      <div class="schedule-controls">
+        <div class="schedule-view-tabs">
+          <Button id="tab-day" class="sched-view-btn sched-view-btn-active">
+            <ButtonLabel class="sched-view-text-active">Day</ButtonLabel>
+          </Button>
+          <Button id="tab-week" class="sched-view-btn">
+            <ButtonLabel class="sched-view-text">Week</ButtonLabel>
+          </Button>
+          <Button id="tab-month" class="sched-view-btn">
+            <ButtonLabel class="sched-view-text">Month</ButtonLabel>
+          </Button>
+        </div>
+        <Button id="btn-expand-sched" class="sched-expand-btn">
+          <ButtonLabel class="sched-expand-text">⛶</ButtonLabel>
+        </Button>
+      </div>
     </div>
 
     <div class="timeline-container">
+      <div class="now-marker-row">
+        <div id="now-marker" class="now-marker-badge" style="margin-left: 172px;">
+          <span id="now-marker-text" class="now-marker-text">10:24 AM</span>
+        </div>
+      </div>
+
       <div class="timeline-axis-labels">
         <span class="axis-label">8 AM</span>
+        <span class="axis-label">9 AM</span>
         <span class="axis-label">10 AM</span>
+        <span class="axis-label">11 AM</span>
         <span class="axis-label">12 PM</span>
+        <span class="axis-label">1 PM</span>
         <span class="axis-label">2 PM</span>
+        <span class="axis-label">3 PM</span>
         <span class="axis-label">4 PM</span>
-        <span class="axis-label">6 PM</span>
+        <span class="axis-label">5 PM</span>
+        <span class="axis-label">7 PM</span>
+        <span class="axis-label">8 PM</span>
+        <span class="axis-label">9 PM</span>
+        <span class="axis-label">10 PM</span>
       </div>
 
       <div id="timeline-track" class="timeline-track">
-        <Button id="block-0" class="schedule-block" style="background-color: #7C5CFF; width: 140px; margin-left: 55px;">
-          <ButtonLabel id="block-title-0" class="block-title">ML Sprint</ButtonLabel>
-          <ButtonLabel id="block-time-0" class="block-time">09:00 - 10:30</ButtonLabel>
+        <Button id="block-0" class="schedule-block" style="background-color: #2563EB; width: 110px; margin-left: 45px;">
+          <ButtonLabel id="block-title-0" class="block-title">ML Assignment</ButtonLabel>
+          <ButtonLabel id="block-time-0" class="block-time">9:00 - 10:30</ButtonLabel>
         </Button>
 
-        <Button id="block-1" class="schedule-block" style="background-color: #3B82F6; width: 180px; margin-left: 25px;">
-          <ButtonLabel id="block-title-1" class="block-title">API Build</ButtonLabel>
-          <ButtonLabel id="block-time-1" class="block-time">11:00 - 13:00</ButtonLabel>
+        <Button id="block-1" class="schedule-block" style="background-color: #D97706; width: 120px; margin-left: 20px;">
+          <ButtonLabel id="block-title-1" class="block-title">Implement API</ButtonLabel>
+          <ButtonLabel id="block-time-1" class="block-time">11:00 - 1:00</ButtonLabel>
         </Button>
 
-        <Button id="block-2" class="schedule-block" style="background-color: #F59E0B; width: 80px; margin-left: 55px;">
-          <ButtonLabel id="block-title-2" class="block-title">Team Sync</ButtonLabel>
-          <ButtonLabel id="block-time-2" class="block-time">14:00 - 14:30</ButtonLabel>
+        <Button id="block-2" class="schedule-block" style="background-color: #7C3AED; width: 68px; margin-left: 40px;">
+          <ButtonLabel id="block-title-2" class="block-title">Team Meet</ButtonLabel>
+          <ButtonLabel id="block-time-2" class="block-time">2:00 - 2:30</ButtonLabel>
         </Button>
 
-        <Button id="block-3" class="schedule-block" style="background-color: #22C55E; width: 95px; margin-left: 25px;">
-          <ButtonLabel id="block-title-3" class="block-title">Paper</ButtonLabel>
-          <ButtonLabel id="block-time-3" class="block-time">15:00 - 16:00</ButtonLabel>
+        <Button id="block-3" class="schedule-block" style="background-color: #0284C7; width: 85px; margin-left: 35px;">
+          <ButtonLabel id="block-title-3" class="block-title">Research</ButtonLabel>
+          <ButtonLabel id="block-time-3" class="block-time">3:30 - 5:00</ButtonLabel>
+        </Button>
+
+        <Button id="block-4" class="schedule-block" style="background-color: #16A34A; width: 75px; margin-left: 45px;">
+          <ButtonLabel id="block-title-4" class="block-title">Gym</ButtonLabel>
+          <ButtonLabel id="block-time-4" class="block-time">6:00 - 7:00</ButtonLabel>
         </Button>
       </div>
     </div>
   </div>
 
+  <!-- Bottom 3-Card Layout -->
   <div class="bottom-cards-row">
-    <div class="summary-card">
-      <div class="donut-visual">
-        <span id="donut-percentage-text" class="donut-percent">63%</span>
-      </div>
-      <div class="workload-info">
-        <span class="workload-title">Workload</span>
-        <div class="workload-legend">
-          <div class="legend-item">
-            <div class="legend-dot-blue"></div>
-            <span id="legend-scheduled-text" class="legend-text">Scheduled: 5.0h</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot-gray"></div>
-            <span id="legend-remaining-text" class="legend-text">Remaining: 3.0h</span>
-          </div>
+    <!-- Card 1: Tasks -->
+    <div class="card-base">
+      <div class="card-header-row">
+        <span id="hub-tasks-count" class="card-title">Tasks (5)</span>
+        <div class="filter-chips-row">
+          <Button id="chip-filter-all" class="filter-chip filter-chip-active">
+            <ButtonLabel class="filter-chip-text-active">All</ButtonLabel>
+          </Button>
+          <Button id="chip-filter-high" class="filter-chip">
+            <ButtonLabel class="filter-chip-text">High</ButtonLabel>
+          </Button>
+          <Button id="chip-filter-med" class="filter-chip">
+            <ButtonLabel class="filter-chip-text">Medium</ButtonLabel>
+          </Button>
+          <Button id="chip-filter-low" class="filter-chip">
+            <ButtonLabel class="filter-chip-text">Low</ButtonLabel>
+          </Button>
         </div>
+      </div>
+
+      <div class="hub-task-rows">
+        <Button id="hub-task-row-0" class="hub-task-item">
+          <div class="hub-task-left">
+            <div id="hub-chk-box-0" class="chk-square">
+              <span id="hub-chk-mark-0" class="chk-square-mark"></span>
+            </div>
+            <ButtonLabel id="hub-task-title-0" class="hub-task-text">Finish ML assignment</ButtonLabel>
+          </div>
+          <span class="hub-task-badge badge-high">High 1h 30m</span>
+        </Button>
+
+        <Button id="hub-task-row-1" class="hub-task-item">
+          <div class="hub-task-left">
+            <div id="hub-chk-box-1" class="chk-square">
+              <span id="hub-chk-mark-1" class="chk-square-mark"></span>
+            </div>
+            <ButtonLabel id="hub-task-title-1" class="hub-task-text">Implement API</ButtonLabel>
+          </div>
+          <span class="hub-task-badge badge-med">Medium 2h</span>
+        </Button>
+
+        <Button id="hub-task-row-2" class="hub-task-item">
+          <div class="hub-task-left">
+            <div id="hub-chk-box-2" class="chk-square">
+              <span id="hub-chk-mark-2" class="chk-square-mark"></span>
+            </div>
+            <ButtonLabel id="hub-task-title-2" class="hub-task-text">Team meeting</ButtonLabel>
+          </div>
+          <span class="hub-task-badge badge-low">Low 30m</span>
+        </Button>
+
+        <Button id="hub-task-row-3" class="hub-task-item">
+          <div class="hub-task-left">
+            <div id="hub-chk-box-3" class="chk-square chk-square-checked">
+              <span id="hub-chk-mark-3" class="chk-square-mark">✓</span>
+            </div>
+            <ButtonLabel id="hub-task-title-3" class="hub-task-text-strike">Read research paper</ButtonLabel>
+          </div>
+          <span class="hub-task-badge badge-med">Medium 1h</span>
+        </Button>
       </div>
     </div>
 
-    <div class="summary-card">
-      <div class="garden-visual">
-        <Sprout width="36" height="36" color="#22C55E"></Sprout>
+    <!-- Card 2: Focus Session -->
+    <div class="card-base">
+      <div class="card-header-row">
+        <span class="card-title">Focus Session</span>
+        <Button id="btn-focus-settings" class="cal-nav-btn">
+          <ButtonLabel class="cal-nav-text">⚙️</ButtonLabel>
+        </Button>
       </div>
-      <div class="garden-info">
-        <div class="garden-title-row">
-          <span class="garden-title">Garden Progress</span>
-          <span id="garden-level-text" class="garden-level-badge">Level 3</span>
+
+      <div class="focus-timer-body">
+        <div class="timer-ring">
+          <span id="hub-focus-time" class="timer-digits">25:00</span>
+          <span id="hub-focus-mode" class="timer-label">Pomodoro</span>
         </div>
-        <span class="garden-subtitle">Keep it growing!</span>
-        <div class="garden-progress-bar-bg">
-          <div id="garden-progress-bar-fill" class="garden-progress-bar-fill"></div>
+
+        <Button id="hub-focus-play-btn" class="hub-play-btn">
+          <ButtonLabel id="hub-focus-play-icon" class="hub-play-icon">▶</ButtonLabel>
+        </Button>
+      </div>
+
+      <span id="hub-focus-sessions-count" class="focus-footer-text">⏱ 4/8 Sessions Today</span>
+    </div>
+
+    <!-- Card 3: Workload -->
+    <div class="card-base">
+      <div class="card-header-row">
+        <span class="card-title">Workload</span>
+      </div>
+
+      <div class="workload-body">
+        <div class="donut-gauge">
+          <span id="donut-percentage-text" class="donut-gauge-text">72%</span>
         </div>
+
+        <div class="workload-legend">
+          <div class="legend-row">
+            <div class="legend-dot-cyan"></div>
+            <span id="legend-planned-text" class="legend-text">Planned 7h 30m</span>
+          </div>
+          <div class="legend-row">
+            <div class="legend-dot-green"></div>
+            <span id="legend-completed-text" class="legend-text">Completed 2h 00m</span>
+          </div>
+          <div class="legend-row">
+            <div class="legend-dot-gray"></div>
+            <span id="legend-remaining-text" class="legend-text">Remaining 5h 30m</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="workload-insight-capsule">
+        <span id="workload-insight-text" class="workload-insight-text">💡 You're on track! ~2h free after 7 PM.</span>
       </div>
     </div>
+  </div>
+
+  <!-- Bottom Floating Dock -->
+  <div class="dock-container">
+    <Button id="dock-timeline" class="dock-btn">
+      <ButtonLabel class="dock-btn-text">⏱ Timeline</ButtonLabel>
+    </Button>
+    <Button id="dock-calendar" class="dock-btn">
+      <ButtonLabel class="dock-btn-text">📅 Calendar</ButtonLabel>
+    </Button>
+    <Button id="dock-notes" class="dock-btn">
+      <ButtonLabel class="dock-btn-text">📝 Notes</ButtonLabel>
+    </Button>
+    <Button id="dock-goals" class="dock-btn">
+      <ButtonLabel class="dock-btn-text">🎯 Goals</ButtonLabel>
+    </Button>
+    <Button id="dock-reports" class="dock-btn">
+      <ButtonLabel class="dock-btn-text">📊 Reports</ButtonLabel>
+    </Button>
+    <Button id="dock-capture" class="dock-btn">
+      <ButtonLabel class="dock-btn-text">📷 Capture</ButtonLabel>
+    </Button>
   </div>
 </Panel>

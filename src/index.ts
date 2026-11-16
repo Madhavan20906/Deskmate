@@ -89,8 +89,37 @@ async function bootstrap() {
     { once: true },
   );
 
+  // Configure both left & right pointers to be fully active, visible, and vibrant
+  const configurePointers = () => {
+    const xr = world.input?.xr;
+    if (!xr?.multiPointers) return;
+    for (const handedness of ['left', 'right'] as const) {
+      const mp = xr.multiPointers[handedness] as any;
+      if (mp?.ray?.visual) {
+        // Mode 1 = Visible: always renders ray beam so user can see and aim both pointers
+        mp.ray.visual.rayDisplayMode = 1;
+        if (mp.ray.visual.ray?.material?.uniforms?.color) {
+          mp.ray.visual.ray.material.uniforms.color.value.setHex(0xA78BFA);
+        }
+      }
+    }
+  };
+
+  configurePointers();
+  if (!isQuestOrNativeXR()) {
+    void initDesktopPreviewIfNeeded();
+    window.setTimeout(() => {
+      configurePointers();
+      enforceSeatedXRPose();
+    }, 250);
+  }
+
   world.renderer.xr.addEventListener('sessionstart', () => {
     updateSessionUI();
+    configurePointers();
+    if (!isQuestOrNativeXR()) {
+      enforceSeatedXRPose();
+    }
   });
   world.renderer.xr.addEventListener('sessionend', () => {
     updateSessionUI();
