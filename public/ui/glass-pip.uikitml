@@ -192,6 +192,29 @@
  color: #FFFFFF;
  }
 
+ 
+ .pip-mute-btn {
+ padding-left: 10px;
+ padding-right: 10px;
+ height: 28px;
+ border-radius: 999px;
+ background-color: rgba(255, 255, 255, 0.10);
+ border-width: 1px;
+ border-color: rgba(255, 255, 255, 0.22);
+ align-items: center;
+ justify-content: center;
+ margin-left: 8px;
+ }
+ .pip-mute-btn:hover {
+ background-color: rgba(239, 68, 68, 0.35);
+ border-color: #EF4444;
+ }
+ .pip-mute-text {
+ font-size: 13px;
+ font-weight: 700;
+ color: #FFFFFF;
+ }
+
  .garden-card {
  flex-direction: column;
  width: 100%;
@@ -357,9 +380,9 @@
  }
  </style>
 
- <div class="panel-handle">
+ <Button id="handle-bar-pip" class="panel-handle">
  <div class="handle-bar"></div>
- </div>
+ </Button>
 
  <div id="pip-zoom-bar" class="zoom-top-bar" style="display: none;">
  <Button id="btn-pip-back" class="zoom-back-btn">
@@ -417,6 +440,9 @@
  </div>
  <Button id="btn-pip-mic" class="mic-btn">
  <ButtonLabel id="pip-mic-icon" class="mic-icon-text">Mic </ButtonLabel>
+ </Button>
+ <Button id="btn-pip-mute" class="pip-mute-btn">
+ <ButtonLabel id="pip-mute-text" class="pip-mute-text">Mute</ButtonLabel>
  </Button>
  </div>
  </div>

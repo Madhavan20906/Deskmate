@@ -65,6 +65,7 @@
   "nodes": [
     {
       "components": {
+        "OneHandGrabbable": {},
         "PokeInteractable": {},
         "RayInteractable": {}
       },
@@ -90,6 +91,7 @@
     },
     {
       "components": {
+        "OneHandGrabbable": {},
         "PokeInteractable": {},
         "RayInteractable": {}
       },
@@ -115,6 +117,7 @@
     },
     {
       "components": {
+        "OneHandGrabbable": {},
         "PokeInteractable": {},
         "RayInteractable": {}
       },
@@ -166,6 +169,7 @@
     },
     {
       "components": {
+        "OneHandGrabbable": {},
         "PokeInteractable": {},
         "RayInteractable": {}
       },
@@ -191,6 +195,7 @@
     },
     {
       "components": {
+        "OneHandGrabbable": {},
         "PokeInteractable": {},
         "RayInteractable": {}
       },
