@@ -110,15 +110,6 @@ export class WorkspaceSystem extends createSystem({
     this.workspaceRoot.name = 'Deskmate Workspace Anchor';
     this.workspaceRoot.position.fromArray([...DEFAULT_WORKSPACE_POSITION]);
     this.workspaceEntity = this.world.createTransformEntity(this.workspaceRoot);
-
-    for (const nodeId of WORKSPACE_NODE_IDS) {
-      const object = this.world.getSceneObject(nodeId);
-      if (object === undefined) {
-        continue;
-      }
-      object.position.sub(this.workspaceRoot.position);
-      this.workspaceRoot.add(object);
-    }
   }
 
   update(): void {

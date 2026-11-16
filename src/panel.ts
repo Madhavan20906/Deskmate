@@ -132,49 +132,52 @@ export class PanelSystem extends createSystem({
     this.bindPanels();
   }
 
+  private lastElementPressTime = new WeakMap<any, number>();
+
   /**
-   * Universal press listener with 250ms debounce.
+   * Universal press listener with 300ms debounce across both element and children.
    * Handles BOTH hand tracking (fingertip poke / pointerdown)
    * and controller ray (trigger select / click).
    * Also binds to children (e.g. ButtonLabel) to prevent missed ray hits.
    */
   private addPress(element: any, handler: () => void) {
     if (!element || typeof element.addEventListener !== 'function') return;
-    let lastTime = 0;
-    const debounced = () => {
+
+    const trigger = () => {
       const now = performance.now();
-      if (now - lastTime < 250) return;
-      lastTime = now;
+      const lastElem = this.lastElementPressTime.get(element) || 0;
+      if (now - lastElem < 300) return;
+      this.lastElementPressTime.set(element, now);
       handler();
     };
 
-    element.addEventListener('click', debounced);
+    element.addEventListener('click', trigger);
     this.cleanupFuncs.push(() => {
       try {
-        element.removeEventListener('click', debounced);
+        element.removeEventListener('click', trigger);
       } catch {}
     });
 
-    element.addEventListener('pointerdown', debounced);
+    element.addEventListener('pointerdown', trigger);
     this.cleanupFuncs.push(() => {
       try {
-        element.removeEventListener('pointerdown', debounced);
+        element.removeEventListener('pointerdown', trigger);
       } catch {}
     });
 
     if (Array.isArray(element.children)) {
       for (const child of element.children) {
         if (child && typeof child.addEventListener === 'function') {
-          child.addEventListener('click', debounced);
+          child.addEventListener('click', trigger);
           this.cleanupFuncs.push(() => {
             try {
-              child.removeEventListener('click', debounced);
+              child.removeEventListener('click', trigger);
             } catch {}
           });
-          child.addEventListener('pointerdown', debounced);
+          child.addEventListener('pointerdown', trigger);
           this.cleanupFuncs.push(() => {
             try {
-              child.removeEventListener('pointerdown', debounced);
+              child.removeEventListener('pointerdown', trigger);
             } catch {}
           });
         }
@@ -284,6 +287,13 @@ export class PanelSystem extends createSystem({
   }
 
   private bindPanels() {
+    if (this.isBound) return;
+    const hubAsset = this.getAsset('panel-hub');
+    const tasksAsset = this.getAsset('panel-left-tasks');
+    if (!hubAsset?.getElementById('hub-time') || !tasksAsset?.getElementById('btn-add-task')) {
+      return; // DOM not ready yet; update() will bind as soon as elements mount
+    }
+    this.isBound = true;
     this.bindTasksPanel();
     this.bindHubPanel();
     this.bindPipPanel();
@@ -941,12 +951,7 @@ export class PanelSystem extends createSystem({
   update(time: number, _delta: number) {
     // 1. Dynamically bind panels as soon as UIKitML elements are mounted in DOM
     if (!this.isBound) {
-      const hubAsset = this.getAsset('panel-hub');
-      const timeEl = hubAsset?.getElementById('hub-time');
-      if (timeEl) {
-        this.bindPanels();
-        this.isBound = true;
-      }
+      this.bindPanels();
     }
 
     // 2. Zero per-frame allocations: update Pip robot head bobbing

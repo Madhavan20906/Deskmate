@@ -35,82 +35,13 @@ let currentPitch = DEFAULT_POSE.pitchRad;
 let currentEnv: EnvironmentId = 'sunlit_living_room';
 let handsEnabled = true;
 
-function positionHandsOnDesk(device: any) {
-  if (!device.hands) return;
-  if (!handsEnabled) {
-    if (device.hands.left) device.hands.left.connected = false;
-    if (device.hands.right) device.hands.right.connected = false;
-    return;
-  }
-  // Position hands resting naturally on tabletop surface near the Desk Ruler
-  if (device.hands.left?.position) {
-    device.hands.left.connected = true;
-    device.hands.left.position.set(-0.25, 0.74, -0.42);
-  }
-  if (device.hands.right?.position) {
-    device.hands.right.connected = true;
-    device.hands.right.position.set(0.25, 0.74, -0.42);
-  }
+function positionHandsOnDesk(_device: any) {
+  // Let the user and IWER emulator control hands/controllers freely
 }
 
 export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
-  // In production builds (Vercel) or on Meta Quest Browser, keep default native XR mode
-  if (import.meta.env.PROD || isQuestOrNativeXR()) {
-    return false;
-  }
-
-  try {
-    const win = window as any;
-    if (!win.IWER_DEVICE) {
-      // Dynamic import of the IWSDK Dev / IWER runtime
-      const { startIwsdkDevRuntime } = await (
-        // @ts-expect-error Dev runtime import
-        import('../node_modules/@iwsdk/vite-plugin-dev/dist/injection/runtime.js')
-      );
-
-      win.__IWER_MCP_MANAGED = true;
-      try {
-        startIwsdkDevRuntime({
-          device: 'metaQuest3',
-          activation: 'always',
-          verbose: false,
-          sem: { defaultScene: 'sunlit_living_room' },
-          ai: { devUI: false },
-          workspace: null,
-          userAgentException: '/OculusBrowser/',
-          iwer: true,
-          nativeXRControl: false,
-        });
-      } finally {
-        delete win.__IWER_MCP_MANAGED;
-      }
-    }
-
-    const device = win.IWER_DEVICE;
-    if (device) {
-      device.primaryInputMode = 'hand';
-      device.stereoEnabled = false;
-      positionHandsOnDesk(device);
-      applyCameraPose(device, currentZ);
-
-      // Interactive hand tap response: when clicking, right hand pinches toward the tabletop
-      if (typeof window !== 'undefined') {
-        window.addEventListener('pointerdown', () => {
-          if (device.hands?.right?.position) {
-            device.hands.right.position.set(0.12, 0.73, -0.44);
-            setTimeout(() => {
-              device.hands?.right?.position?.set(0.25, 0.74, -0.42);
-            }, 250);
-          }
-        });
-      }
-    }
-
-    return true;
-  } catch (err) {
-    console.warn('[DeskMate] Desktop preview initialization bypassed:', err);
-    return false;
-  }
+  // Return false to use standard projectOptions and default IWER emulator without hijacking
+  return false;
 }
 
 function applyCameraPose(device: any, z: number) {
@@ -128,7 +59,6 @@ export function enforceSeatedXRPose() {
   const device = win.IWER_DEVICE;
   if (device) {
     applyCameraPose(device, currentZ);
-    positionHandsOnDesk(device);
   }
 }
 
