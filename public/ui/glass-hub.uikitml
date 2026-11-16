@@ -632,11 +632,11 @@
  }
 
  .filter-chip {
- padding-left: 6px;
- padding-right: 6px;
- padding-top: 2px;
- padding-bottom: 2px;
- border-radius: 6px;
+ padding-left: 5px;
+ padding-right: 5px;
+ padding-top: 1px;
+ padding-bottom: 1px;
+ border-radius: 5px;
  background-color: transparent;
  border-width: 0px;
  }
@@ -650,13 +650,13 @@
  }
 
  .filter-chip-text {
- font-size: 10px;
+ font-size: 9px;
  font-weight: 600;
  color: rgba(255, 255, 255, 0.70);
  }
 
  .filter-chip-text-active {
- font-size: 10px;
+ font-size: 9px;
  font-weight: 800;
  color: #FFFFFF;
  }
@@ -671,13 +671,14 @@
  flex-direction: row;
  align-items: center;
  justify-content: space-between;
- padding-left: 6px;
- padding-right: 6px;
+ padding-left: 4px;
+ padding-right: 4px;
  padding-top: 3px;
  padding-bottom: 3px;
  border-radius: 8px;
  background-color: rgba(255, 255, 255, 0.04);
  width: 100%;
+ gap: 4px;
  }
 
  .hub-task-item:hover {
@@ -687,18 +688,21 @@
  .hub-task-left {
  flex-direction: row;
  align-items: center;
- gap: 6px;
+ gap: 4px;
  flex-grow: 1;
+ max-width: 95px;
+ overflow: hidden;
  }
 
  .chk-square {
- width: 16px;
- height: 16px;
+ width: 14px;
+ height: 14px;
  border-radius: 4px;
  border-width: 1.5px;
  border-color: rgba(255, 255, 255, 0.35);
  align-items: center;
  justify-content: center;
+ flex-shrink: 0;
  }
 
  .chk-square-checked {
@@ -707,7 +711,7 @@
  }
 
  .chk-square-mark {
- font-size: 10px;
+ font-size: 9px;
  font-weight: 800;
  color: #FFFFFF;
  }
@@ -716,28 +720,33 @@
  font-size: 11px;
  font-weight: 600;
  color: #FFFFFF;
+ overflow: hidden;
  }
 
  .hub-task-text-strike {
  font-size: 11px;
  font-weight: 500;
  color: rgba(255, 255, 255, 0.40);
+ overflow: hidden;
  }
 
  .hub-task-right {
  flex-direction: row;
  align-items: center;
- gap: 4px;
+ gap: 3px;
+ flex-shrink: 0;
  }
 
  .hub-task-badge {
- padding-left: 4px;
- padding-right: 4px;
+ padding-left: 3px;
+ padding-right: 3px;
  padding-top: 1px;
  padding-bottom: 1px;
- border-radius: 4px;
- font-size: 9px;
+ border-radius: 3px;
+ font-size: 8px;
  font-weight: 700;
+ max-width: 32px;
+ text-align: center;
  }
 
  .badge-high {
@@ -756,12 +765,13 @@
  }
 
  .task-edit-btn {
- width: 20px;
- height: 20px;
+ width: 18px;
+ height: 18px;
  border-radius: 4px;
  background-color: rgba(255, 255, 255, 0.08);
  align-items: center;
  justify-content: center;
+ flex-shrink: 0;
  }
 
  .task-edit-btn:hover {
@@ -769,15 +779,16 @@
  }
 
  .task-del-btn {
- width: 20px;
- height: 20px;
+ width: 18px;
+ height: 18px;
  border-radius: 4px;
  background-color: rgba(239, 68, 68, 0.20);
  border-width: 1px;
  border-color: rgba(239, 68, 68, 0.40);
  align-items: center;
  justify-content: center;
- margin-left: 4px;
+ margin-left: 0px;
+ flex-shrink: 0;
  }
 
  .task-del-btn:hover {
@@ -786,13 +797,13 @@
  }
 
  .task-del-icon {
- font-size: 11px;
- font-weight: 700;
+ font-size: 9px;
+ font-weight: 800;
  color: #FCA5A5;
  }
 
  .task-edit-icon {
- font-size: 10px;
+ font-size: 9px;
  }
 
  .add-task-footer-btn {
@@ -1535,9 +1546,7 @@
  <div class="card-header-row">
  <div class="card-title-group">
  <span id="hub-tasks-count" class="card-title">Tasks (4)</span>
- <Button id="btn-zoom-tasks" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Expand</ButtonLabel>
- </Button>
+ 
  </div>
  <div class="filter-chips-row">
  <Button id="chip-filter-all" class="filter-chip filter-chip-active">
@@ -1564,9 +1573,9 @@
  <ButtonLabel id="hub-task-title-0" class="hub-task-text">Finish ML assignment</ButtonLabel>
  </div>
  <div class="hub-task-right">
- <span class="hub-task-badge badge-high">High 1h 30m</span>
+ <span id="hub-task-badge-0" class="hub-task-badge badge-high">High</span>
  <Button id="hub-task-edit-0" class="task-edit-btn">
- <ButtonLabel class="task-edit-icon">Edit </ButtonLabel>
+ <ButtonLabel class="task-edit-icon">Ed</ButtonLabel>
  </Button>
  <Button id="hub-task-del-0" class="task-del-btn">
  <ButtonLabel class="task-del-icon">Del</ButtonLabel>
@@ -1582,9 +1591,9 @@
  <ButtonLabel id="hub-task-title-1" class="hub-task-text">Implement API</ButtonLabel>
  </div>
  <div class="hub-task-right">
- <span class="hub-task-badge badge-med">Med 2h</span>
+ <span id="hub-task-badge-1" class="hub-task-badge badge-med">Med</span>
  <Button id="hub-task-edit-1" class="task-edit-btn">
- <ButtonLabel class="task-edit-icon">Edit </ButtonLabel>
+ <ButtonLabel class="task-edit-icon">Ed</ButtonLabel>
  </Button>
  <Button id="hub-task-del-1" class="task-del-btn">
  <ButtonLabel class="task-del-icon">Del</ButtonLabel>
@@ -1600,9 +1609,9 @@
  <ButtonLabel id="hub-task-title-2" class="hub-task-text">Team meeting</ButtonLabel>
  </div>
  <div class="hub-task-right">
- <span class="hub-task-badge badge-low">Low 30m</span>
+ <span id="hub-task-badge-2" class="hub-task-badge badge-low">Low</span>
  <Button id="hub-task-edit-2" class="task-edit-btn">
- <ButtonLabel class="task-edit-icon">Edit </ButtonLabel>
+ <ButtonLabel class="task-edit-icon">Ed</ButtonLabel>
  </Button>
  <Button id="hub-task-del-2" class="task-del-btn">
  <ButtonLabel class="task-del-icon">Del</ButtonLabel>
@@ -1618,9 +1627,9 @@
  <ButtonLabel id="hub-task-title-3" class="hub-task-text-strike">Read research paper</ButtonLabel>
  </div>
  <div class="hub-task-right">
- <span class="hub-task-badge badge-med">Med 1h</span>
+ <span id="hub-task-badge-3" class="hub-task-badge badge-med">Med</span>
  <Button id="hub-task-edit-3" class="task-edit-btn">
- <ButtonLabel class="task-edit-icon">Edit </ButtonLabel>
+ <ButtonLabel class="task-edit-icon">Ed</ButtonLabel>
  </Button>
  <Button id="hub-task-del-3" class="task-del-btn">
  <ButtonLabel class="task-del-icon">Del</ButtonLabel>
@@ -1638,12 +1647,10 @@
  <div class="card-header-row">
  <div class="card-title-group">
  <span class="card-title">Focus Session</span>
- <Button id="btn-zoom-focus" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Expand</ButtonLabel>
- </Button>
+ 
  </div>
  <Button id="btn-focus-settings" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Settings Mode</ButtonLabel>
+ <ButtonLabel class="card-zoom-text">Settings</ButtonLabel>
  </Button>
  </div>
 
@@ -1694,9 +1701,7 @@
  <div class="card-header-row">
  <div class="card-title-group">
  <span class="card-title">Workload</span>
- <Button id="btn-zoom-workload" class="card-zoom-btn">
- <ButtonLabel class="card-zoom-text">Zoom Expand</ButtonLabel>
- </Button>
+ 
  </div>
  </div>
 

@@ -17,10 +17,19 @@
  */
 
 import {
- createSystem,
- Grabbed,
- Object3D,
- UIKitMLAsset,
+  createSystem,
+  Grabbed,
+  Object3D,
+  UIKitMLAsset,
+  CylinderGeometry,
+  RingGeometry,
+  MeshBasicMaterial,
+  Mesh,
+  Raycaster,
+  Vector3,
+  Quaternion,
+  DoubleSide,
+  Color,
 } from '@iwsdk/core';
 
 import {
@@ -203,6 +212,18 @@ export class PanelSystem extends createSystem({
  private audio: GhostDeskmateAudio | null = null;
  private soundEnabled = true;
 
+  // Visual Laser Pointers & Cursor Reticles for controllers and hands
+  private leftBeam: Mesh | null = null;
+  private leftReticle: Mesh | null = null;
+  private rightBeam: Mesh | null = null;
+  private rightReticle: Mesh | null = null;
+  private pointersInitialized = false;
+  private pointerRaycaster = new Raycaster();
+  private pointerRayOrigin = new Vector3();
+  private pointerRayDir = new Vector3();
+  private pointerTempQuat = new Quaternion();
+  private lastTriggerPulseTime = { left: 0, right: 0 };
+
  init() {
  this.audio = new GhostDeskmateAudio();
  this.audio.init();
@@ -248,6 +269,8 @@ export class PanelSystem extends createSystem({
  const lastElem = this.lastElementPressTime.get(element) || 0;
  if (now - lastElem < 250) return;
  this.lastElementPressTime.set(element, now);
+    this.lastTriggerPulseTime.right = now / 1000;
+    this.lastTriggerPulseTime.left = now / 1000;
  if (this.soundEnabled && this.audio) {
  this.audio.playPinchTick();
  }
@@ -2834,6 +2857,11 @@ export class PanelSystem extends createSystem({
  borderColor: isDone ? '#22C55E' : 'rgba(255, 255, 255, 0.35)',
  });
  }
+      const badgeEl = asset.getElementById(`hub-task-badge-${i}`) as any;
+      if (badgeEl) {
+        const pri = task.priority === 'high' ? 'High' : task.priority === 'low' ? 'Low' : 'Med';
+        setText(badgeEl, pri);
+      }
  }
  }
 
@@ -2964,7 +2992,120 @@ export class PanelSystem extends createSystem({
  }
  }
 
+  private setupPointers() {
+    if (this.pointersInitialized) return;
+    const raySpaces = (this.player as any)?.raySpaces;
+    if (!raySpaces?.left || !raySpaces?.right) return;
+
+    const createPointerVisual = (handedness: 'left' | 'right') => {
+      // Cylindrical laser beam extending along negative Z
+      const beamGeo = new CylinderGeometry(0.0016, 0.0016, 1.8, 8, 1, true);
+      beamGeo.rotateX(Math.PI / 2).translate(0, 0, -0.9);
+      const beamMat = new MeshBasicMaterial({
+        color: handedness === 'left' ? 0x818CF8 : 0xA78BFA,
+        transparent: true,
+        opacity: 0.85,
+        depthWrite: false,
+      });
+      const beam = new Mesh(beamGeo, beamMat);
+      beam.renderOrder = 999;
+
+      // Cursor reticle ring at end of pointer
+      const reticleGeo = new RingGeometry(0.008, 0.016, 32);
+      const reticleMat = new MeshBasicMaterial({
+        color: 0xF3B27A,
+        side: DoubleSide,
+        transparent: true,
+        opacity: 0.95,
+        depthWrite: false,
+      });
+      const reticle = new Mesh(reticleGeo, reticleMat);
+      reticle.position.set(0, 0, -1.8);
+      reticle.renderOrder = 1000;
+
+      raySpaces[handedness].add(beam);
+      raySpaces[handedness].add(reticle);
+
+      return { beam, reticle };
+    };
+
+    const left = createPointerVisual('left');
+    this.leftBeam = left.beam;
+    this.leftReticle = left.reticle;
+
+    const right = createPointerVisual('right');
+    this.rightBeam = right.beam;
+    this.rightReticle = right.reticle;
+
+    this.pointersInitialized = true;
+  }
+
+  private updatePointers(time: number, _delta: number) {
+    const raySpaces = (this.player as any)?.raySpaces;
+    if (!raySpaces) return;
+
+    const panelNames = ['panel-hub', 'panel-left-tasks', 'panel-right-pip', 'panel-right-focus', 'panel-sheet'];
+    const panelObjects: Object3D[] = [];
+    for (const name of panelNames) {
+      const obj = this.world.getSceneObject(name);
+      if (obj && obj.visible) {
+        panelObjects.push(obj);
+      }
+    }
+
+    const hands: Array<'left' | 'right'> = ['left', 'right'];
+    for (const hand of hands) {
+      const space = raySpaces[hand];
+      const beam = hand === 'left' ? this.leftBeam : this.rightBeam;
+      const reticle = hand === 'left' ? this.leftReticle : this.rightReticle;
+      if (!space || !beam || !reticle) continue;
+
+      space.getWorldPosition(this.pointerRayOrigin);
+      space.getWorldQuaternion(this.pointerTempQuat);
+      this.pointerRayDir.set(0, 0, -1).applyQuaternion(this.pointerTempQuat);
+
+      this.pointerRaycaster.set(this.pointerRayOrigin, this.pointerRayDir);
+      this.pointerRaycaster.far = 4.0;
+
+      let hitDist = 1.8;
+      let hasHit = false;
+
+      if (panelObjects.length > 0) {
+        const hits = this.pointerRaycaster.intersectObjects(panelObjects, true);
+        if (hits.length > 0 && hits[0].distance > 0.05) {
+          hitDist = hits[0].distance;
+          hasHit = true;
+        }
+      }
+
+      beam.scale.set(1, 1, hitDist / 1.8);
+      reticle.position.set(0, 0, -hitDist + 0.002);
+
+      const beamMat = beam.material as MeshBasicMaterial;
+      const reticleMat = reticle.material as MeshBasicMaterial;
+
+      const isPulsed = (time - this.lastTriggerPulseTime[hand]) < 0.25;
+      if (isPulsed) {
+        beamMat.color.setHex(0xF97316);
+        reticleMat.color.setHex(0x22C55E);
+        reticle.scale.setScalar(0.75);
+      } else {
+        beamMat.color.setHex(hand === 'left' ? 0x818CF8 : 0xA78BFA);
+        reticleMat.color.setHex(hasHit ? 0xF3B27A : 0xCBD5E1);
+        reticle.scale.setScalar(hasHit ? 1.0 : 0.85);
+      }
+      beamMat.opacity = hasHit ? 0.90 : 0.65;
+      reticleMat.opacity = hasHit ? 0.95 : 0.50;
+    }
+  }
+
  update(time: number, delta: number) {
+    if (!this.pointersInitialized) {
+      this.setupPointers();
+    }
+    if (this.pointersInitialized) {
+      this.updatePointers(time, delta);
+    }
  if (!this.isBound) {
  this.bindPanels();
  }
