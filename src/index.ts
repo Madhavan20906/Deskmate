@@ -74,10 +74,15 @@ async function bootstrap() {
       .catch(() => {});
   }
 
-  // Any user gesture enters XR mode on devices/browsers that support it
+  // Any user gesture enters XR mode on devices/browsers that support it & unlocks audio/speech
   window.addEventListener(
     'pointerdown',
     () => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.resume();
+        } catch {}
+      }
       if (!world.session && !world.sessionRequestPending) {
         try {
           world.launchXR();

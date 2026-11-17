@@ -2888,15 +2888,29 @@ export class PanelSystem extends createSystem({
 
   public speakTextAloud(text: string, force = false) {
     if (this.isPipMuted && !force) return;
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      try {
-        window.speechSynthesis.cancel();
-        const clean = text.replace(/[*_#`[\]()]/g, ' ').replace(/\s+/g, ' ').trim();
-        const utterance = new SpeechSynthesisUtterance(clean);
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
-        // Select the most natural human-like voice available in the environment
-        const voices = window.speechSynthesis.getVoices();
-        const naturalVoice = voices.find((v) =>
+    try {
+      const synth = window.speechSynthesis;
+      // Resume if browser suspended audio or speech synthesis
+      if (synth.paused) {
+        synth.resume();
+      }
+      synth.cancel();
+
+      const clean = text
+        .replace(/[*_#`[\]()]/g, ' ')
+        .replace(/https?:\/\/\S+/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (!clean) return;
+
+      const utterance = new SpeechSynthesisUtterance(clean);
+
+      // Select the most natural human-like voice available in the environment
+      const voices = synth.getVoices();
+      const naturalVoice =
+        voices.find((v) =>
           v.lang.startsWith('en') && (
             v.name.includes('Natural') ||
             v.name.includes('Neural') ||
@@ -2905,20 +2919,33 @@ export class PanelSystem extends createSystem({
             v.name.includes('Aria') ||
             v.name.includes('Jenny') ||
             v.name.includes('Guy') ||
+            v.name.includes('Daniel') ||
+            v.name.includes('Karen') ||
             v.name.includes('Premium')
           )
         ) || voices.find((v) => v.lang.startsWith('en')) || voices[0];
 
-        if (naturalVoice) {
-          utterance.voice = naturalVoice;
-        }
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
-        utterance.volume = 1.0;
-        window.speechSynthesis.speak(utterance);
-      } catch (e) {
-        console.warn('Speech synthesis failed:', e);
+      if (naturalVoice) {
+        utterance.voice = naturalVoice;
       }
+      utterance.rate = 1.05;
+      utterance.pitch = 1.05; // Natural, friendly companion pitch
+      utterance.volume = 1.0;
+
+      // Chrome V8 garbage collection safeguard: pin utterance to window so it isn't collected mid-speech
+      (window as any).__pipCurrentUtterance = utterance;
+      utterance.onend = () => {
+        if ((window as any).__pipCurrentUtterance === utterance) {
+          (window as any).__pipCurrentUtterance = null;
+        }
+      };
+      utterance.onerror = (e) => {
+        console.warn('[Pip Voice] speech synthesis error:', e);
+      };
+
+      synth.speak(utterance);
+    } catch (e) {
+      console.warn('Speech synthesis failed:', e);
     }
   }
 
@@ -3549,7 +3576,7 @@ User command: "${transcript}"`;
  }
  }
 
- public setPipSpeech(text: string, speakAloud: boolean = false, force = false) {
+ public setPipSpeech(text: string, speakAloud: boolean = true, force = false) {
     const pipAsset = this.getAsset('panel-right-pip');
     if (pipAsset) {
       const speechEl = pipAsset.getElementById('pip-speech-text') as any;
