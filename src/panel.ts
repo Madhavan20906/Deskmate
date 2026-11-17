@@ -26,6 +26,7 @@ import {
   MeshBasicMaterial,
   Mesh,
   Raycaster,
+  Vector2,
   Vector3,
   Quaternion,
   Euler,
@@ -333,8 +334,87 @@ export class PanelSystem extends createSystem({
       this.cleanupFuncs.push(() => document.removeEventListener('visibilitychange', onVisibilityChange));
     }
 
- this.bindPanels();
- }
+    this.bindPanels();
+    this.setupDesktopCanvasInteractions();
+  }
+
+  private elementIdPressHandlers = new Map<string, () => void>();
+  private desktopMouseRaycaster = new Raycaster();
+  private desktopMouseNdc = new Vector2();
+  private lastDesktopPointerMoveTime = 0;
+  private desktopPointerHitPoint = new Vector3();
+  private hasDesktopPointerHit = false;
+
+  private setupDesktopCanvasInteractions() {
+    if (typeof window === 'undefined') return;
+    const canvas = this.world.renderer?.domElement;
+    if (!canvas) return;
+
+    const getPanelObjects = (): Object3D[] => {
+      const panelNames = ['panel-hub', 'panel-left-tasks', 'panel-right-pip', 'panel-right-focus', 'panel-sheet'];
+      const panelObjects: Object3D[] = [];
+      for (const name of panelNames) {
+        const obj = this.world.getSceneObject(name);
+        if (obj && obj.visible) panelObjects.push(obj);
+      }
+      return panelObjects;
+    };
+
+    const onPointerMove = (e: PointerEvent | MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      this.desktopMouseNdc.set(ndcX, ndcY);
+      this.desktopMouseRaycaster.setFromCamera(this.desktopMouseNdc, this.world.camera);
+      const panels = getPanelObjects();
+      if (panels.length === 0) return;
+
+      const hits = this.desktopMouseRaycaster.intersectObjects(panels, true);
+      if (hits.length > 0 && hits[0].distance > 0.05) {
+        this.desktopPointerHitPoint.copy(hits[0].point);
+        this.hasDesktopPointerHit = true;
+        this.lastDesktopPointerMoveTime = performance.now();
+      } else {
+        this.hasDesktopPointerHit = false;
+      }
+    };
+
+    const onPointerDown = (e: PointerEvent | MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      this.desktopMouseNdc.set(ndcX, ndcY);
+      this.desktopMouseRaycaster.setFromCamera(this.desktopMouseNdc, this.world.camera);
+      const panels = getPanelObjects();
+      if (panels.length === 0) return;
+
+      const hits = this.desktopMouseRaycaster.intersectObjects(panels, true);
+      if (hits.length > 0) {
+        let curr: any = hits[0].object;
+        while (curr) {
+          const id = curr?.properties?.signal?.id?.value ?? curr?.name ?? curr?.id;
+          if (id && this.elementIdPressHandlers.has(id)) {
+            const handler = this.elementIdPressHandlers.get(id);
+            if (handler) {
+              handler();
+              break;
+            }
+          }
+          curr = curr.parent;
+        }
+      }
+    };
+
+    canvas.addEventListener('pointermove', onPointerMove, { passive: true });
+    canvas.addEventListener('pointerdown', onPointerDown, { passive: true });
+    this.cleanupFuncs.push(() => {
+      canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerdown', onPointerDown);
+    });
+  }
+
 
  private lastElementPressTime = new WeakMap<any, number>();
  private lastHoverSoundTime = 0;
@@ -4446,6 +4526,7 @@ User command: "${transcript}"`;
       });
       const beam = new Mesh(beamGeo, beamMat);
       beam.renderOrder = 999;
+      beam.raycast = () => {}; // Never intercept or block pointer raycasts
 
       // Cursor reticle ring at end of pointer - pure clean white
       const reticleGeo = new RingGeometry(0.007, 0.015, 32);
@@ -4459,6 +4540,7 @@ User command: "${transcript}"`;
       const reticle = new Mesh(reticleGeo, reticleMat);
       reticle.position.set(0, 0, -1.8);
       reticle.renderOrder = 1000;
+      reticle.raycast = () => {}; // Never intercept or block pointer raycasts
 
       raySpaces[handedness].add(beam);
       raySpaces[handedness].add(reticle);
@@ -4609,9 +4691,9 @@ User command: "${transcript}"`;
     if (this.pointersInitialized) {
       this.updatePointers(time, delta);
     }
- if (!this.isBound) {
- this.bindPanels();
- }
+    if (!this.isBound) {
+      this.bindPanels();
+    }
 
  if (!this.pipRobotObject) {
  this.pipRobotObject = this.world.getSceneObject('pip-robot');

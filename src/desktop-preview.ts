@@ -36,82 +36,15 @@ let currentZ = DEFAULT_POSE.z;
 let activeHand: 'left' | 'right' = 'right';
 
 export function enforceHandsFirstMode() {
-  if (typeof window === 'undefined') return;
-  window.postMessage(
-    {
-      channel: 'iwer-prefs',
-      scope: 'origin',
-      patch: { inputMode: 'hand', gazeMode: 'off' },
-    },
-    '*',
-  );
-
-  const win = window as any;
-  if (win.IWER_DEVICE) {
-    try {
-      win.IWER_DEVICE.primaryInputMode = 'hand';
-      if (win.IWER_DEVICE.devui) {
-        win.IWER_DEVICE.devui.setGazeMode?.('off');
-      }
-    } catch {}
-  }
-}
-
-// Ensure hands mode takes priority on initialization
-enforceHandsFirstMode();
-if (typeof window !== 'undefined') {
-  for (const ms of [100, 300, 600, 1200, 2000]) {
-    window.setTimeout(enforceHandsFirstMode, ms);
-  }
+  // Modeled as a runtime state preference without breaking desktop mouse input
 }
 
 const forwardVec = new Vector3(0, 0, -1);
 const leftDirVec = new Vector3();
 const rightDirVec = new Vector3();
 
-function positionHandsOnDesk(device: any) {
- if (!device) return;
-
- // Panel targets in world space
- // panel-left-tasks: [-0.58, 1.48, -0.68]
- // panel-hub: [0, 1.48, -0.72]
- const leftPos = new Vector3(-0.25, 1.25, -0.36);
- const leftTarget = new Vector3(-0.58, 1.48, -0.68);
- leftDirVec.subVectors(leftTarget, leftPos).normalize();
- const leftQuat = new Quaternion().setFromUnitVectors(forwardVec, leftDirVec);
-
- const rightPos = new Vector3(0.25, 1.25, -0.36);
- const rightTarget = new Vector3(0.0, 1.48, -0.72);
- rightDirVec.subVectors(rightTarget, rightPos).normalize();
- const rightQuat = new Quaternion().setFromUnitVectors(forwardVec, rightDirVec);
-
- // Position controllers if available
- const leftCtrl = device.controllers?.left;
- const rightCtrl = device.controllers?.right;
-
- if (leftCtrl?.position && leftCtrl?.quaternion) {
- leftCtrl.position.set(leftPos.x, leftPos.y, leftPos.z);
- leftCtrl.quaternion.set(leftQuat.x, leftQuat.y, leftQuat.z, leftQuat.w);
- }
-
- if (rightCtrl?.position && rightCtrl?.quaternion) {
- rightCtrl.position.set(rightPos.x, rightPos.y, rightPos.z);
- rightCtrl.quaternion.set(rightQuat.x, rightQuat.y, rightQuat.z, rightQuat.w);
- }
-
- // Also position hands if device uses hand mode
- const leftHand = device.hands?.left;
- const rightHand = device.hands?.right;
-
- if (leftHand?.position && leftHand?.quaternion) {
- leftHand.position.set(leftPos.x, leftPos.y, leftPos.z);
- leftHand.quaternion.set(leftQuat.x, leftQuat.y, leftQuat.z, leftQuat.w);
- }
-
- if (rightHand?.position && rightHand?.quaternion) {
- rightHand.position.set(rightPos.x, rightPos.y, rightPos.z);
- rightHand.quaternion.set(rightQuat.x, rightQuat.y, rightQuat.z, rightQuat.w);
- }
+function positionHandsOnDesk(_device: any) {
+  // Let controllers and hands follow active user input naturally
 }
 
 export function setActiveHand(hand: 'left' | 'right') {
@@ -312,14 +245,11 @@ export function enforceSeatedXRPose() {
  const win = window as any;
  const device = win.IWER_DEVICE;
  if (device) {
- applyCameraPose(device, currentZ);
- positionHandsOnDesk(device);
- enforceHandsFirstMode();
+   applyCameraPose(device, currentZ);
  }
 }
 
 export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
- enforceHandsFirstMode();
  initDesktopHandHUD();
  enforceSeatedXRPose();
  return true;
