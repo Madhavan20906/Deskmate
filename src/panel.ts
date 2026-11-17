@@ -57,7 +57,14 @@ import {
  getClockViewModel,
  calculateFocusRing,
  formatMinutesDuration,
- UndoStack,  WORKDAY_START_MINUTE,  WORKDAY_END_MINUTE,  WORKDAY_TOTAL_MINUTES,} from './glass-data-adapters.js';
+ UndoStack,
+  WORKDAY_START_MINUTE,
+  WORKDAY_END_MINUTE,
+  WORKDAY_TOTAL_MINUTES,
+  getCityFromTimezone,
+  mapWeatherCodeToCondition,
+  generateSeedTasksForCurrentWeek,
+} from './glass-data-adapters.js';
 
 import { GhostDeskmateAudio } from './audio.js';
 import { recommendWhatNext, planDaySchedule, TaskItem, parseVoiceTaskCommand } from './productivity-engine.js';
@@ -150,11 +157,11 @@ export class PanelSystem extends createSystem({
  private weather: WeatherData = { ...SEED_WEATHER };
  private calendarDays: CalendarDayViewModel[] = JSON.parse(JSON.stringify(SEED_CALENDAR_DAYS));
  private calendarStartDay = 16;
- private calendarDate = new Date(2026, 10, 16);
+ private calendarDate = new Date();
   public isPipMuted = false;
   private pulledPanels: Record<string, boolean> = {};
- private selectedDayNumber = 18;
- private selectedMonthIndex = 10; // November
+ private selectedDayNumber = new Date().getDate();
+ private selectedMonthIndex = new Date().getMonth(); // November
  private readonly monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
  private agendaItems: AgendaItemViewModel[] = JSON.parse(JSON.stringify(SEED_AGENDA_ITEMS));
  private routines: RoutineGroup[] = JSON.parse(JSON.stringify(SEED_ROUTINES));
@@ -217,6 +224,9 @@ export class PanelSystem extends createSystem({
  private editDraftStartTime: number | null = 540; // 09:00
  private deleteTapCount = 0;
  private deleteResetTimer: number | null = null;
+  private editDraftDayNumber = new Date().getDate();
+  private previousHubViewBeforeEdit: HubContentView = 'overview';
+  private isDeskMateOpen = true;
 
  // Audio & Settings
  private audio: GhostDeskmateAudio | null = null;
@@ -269,6 +279,17 @@ export class PanelSystem extends createSystem({
  }
  } catch {}
  this.applyWorkspaceOffset();
+    this.detectUserLocationAndWeather();
+
+    if (typeof window !== 'undefined') {
+      const onWheel = (e: WheelEvent) => {
+        const zoomDelta = e.deltaY * -0.001;
+        this.workspaceOffset.z = Math.max(-0.45, Math.min(0.40, Number((this.workspaceOffset.z + zoomDelta).toFixed(3))));
+        this.applyWorkspaceOffset();
+      };
+      window.addEventListener('wheel', onWheel, { passive: true });
+      this.cleanupFuncs.push(() => window.removeEventListener('wheel', onWheel));
+    }
 
  // 1-second interval for clock check and focus countdown
  const interval = window.setInterval(() => {
@@ -400,77 +421,21 @@ export class PanelSystem extends createSystem({
   }
 
  private ensureWeekTasksPopulated() {
- for (const t of this.tasks) {
- if (t.dayNumber === undefined) {
- t.dayNumber = 18;
- }
- }
+    const curDay = this.selectedDayNumber || new Date().getDate();
+    for (const t of this.tasks) {
+      if (t.dayNumber === undefined) {
+        t.dayNumber = curDay;
+      }
+    }
+    const defaultMultiDayTasks = generateSeedTasksForCurrentWeek(new Date());
+    for (const defTask of defaultMultiDayTasks) {
+      if (!this.tasks.some((t) => t.id === defTask.id || (t.dayNumber === defTask.dayNumber && t.title === defTask.title))) {
+        this.tasks.push(defTask);
+      }
+    }
+  }
 
- const defaultMultiDayTasks: GlassTask[] = [
- {
- id: 'seed-task-16-a',
- title: 'Review System Specs',
- priority: 'medium',
- estimatedMinutes: 60,
- scheduledStartMinute: 10 * 60,
- status: 'completed',
- dayNumber: 16,
- },
- {
- id: 'seed-task-17-a',
- title: 'Data Pipeline Benchmark',
- priority: 'high',
- estimatedMinutes: 90,
- scheduledStartMinute: 11 * 60,
- status: 'completed',
- dayNumber: 17,
- },
- {
- id: 'seed-task-19-a',
- title: 'Code Refactoring',
- priority: 'medium',
- estimatedMinutes: 90,
- scheduledStartMinute: 10 * 60,
- status: 'todo',
- dayNumber: 19,
- },
- {
- id: 'seed-task-20-a',
- title: 'Write Technical Report',
- priority: 'high',
- estimatedMinutes: 60,
- scheduledStartMinute: 14 * 60,
- status: 'todo',
- dayNumber: 20,
- },
- {
- id: 'seed-task-21-a',
- title: 'Project Submission & Demo',
- priority: 'high',
- estimatedMinutes: 60,
- scheduledStartMinute: 11 * 60,
- status: 'todo',
- dayNumber: 21,
- },
- {
- id: 'seed-task-22-a',
- title: 'Weekly Review & Planning',
- priority: 'low',
- estimatedMinutes: 45,
- scheduledStartMinute: 16 * 60,
- status: 'todo',
- dayNumber: 22,
- },
- ];
-
- for (const defTask of defaultMultiDayTasks) {
- if (!this.tasks.some((t) => t.id === defTask.id || (t.dayNumber === defTask.dayNumber && t.title === defTask.title))) {
- this.tasks.push(defTask);
- }
- }
- }
-
- private saveTasks(recordUndo = true, undoLabel = 'Update task') {
+  private saveTasks(recordUndo = true, undoLabel = 'Update task') {
  if (recordUndo) {
  this.undoStack.push(this.tasks, undoLabel);
  this.showUndoBar(undoLabel);
@@ -578,17 +543,34 @@ export class PanelSystem extends createSystem({
   this.setPipSpeech(`Workspace layout switched to ${preset} preset.`);
  }
 
- public togglePanelPull(panelId: string) {
+ public ensureSingleCenterPanel(activePanelId: string) {
+    const panels = ['panel-left-tasks', 'panel-hub', 'panel-right-pip', 'panel-right-focus'];
+    let modified = false;
+    for (const pid of panels) {
+      if (pid === activePanelId) continue;
+      const custom = this.customPanelPositions.get(pid);
+      const obj = this.world.getSceneObject(pid);
+      const posX = custom ? custom.pos.x : (obj ? obj.position.x : 100);
+      if (Math.abs(posX) < 0.32 || this.pulledPanels[pid]) {
+        this.pulledPanels[pid] = false;
+        this.customPanelPositions.delete(pid);
+        modified = true;
+      }
+    }
+    if (modified) {
+      this.applyWorkspaceOffset();
+    }
+  }
+
+  public togglePanelPull(panelId: string) {
     const obj = this.world.getSceneObject(panelId);
     if (!obj) return;
     this.pulledPanels[panelId] = !this.pulledPanels[panelId];
     if (this.pulledPanels[panelId]) {
       obj.position.set(0, 1.45, -0.50);
       obj.rotation.set(0, 0, 0);
-      this.customPanelPositions.set(panelId, {
-        pos: obj.position.clone(),
-        rot: obj.rotation.clone(),
-      });
+      this.customPanelPositions.set(panelId, { pos: obj.position.clone(), rot: obj.rotation.clone() });
+      this.ensureSingleCenterPanel(panelId);
       this.setPipSpeech(`Pulled ${panelId} directly in front of you. Squeeze or pinch to move anywhere in the room!`);
     } else {
       this.customPanelPositions.delete(panelId);
@@ -654,6 +636,12 @@ export class PanelSystem extends createSystem({
         pos: obj.position.clone(),
         rot: obj.rotation.clone(),
       });
+    }
+    if (this.activeDrag) {
+      const obj = this.world.getSceneObject(this.activeDrag.panelId);
+      if (obj && Math.abs(obj.position.x) < 0.32) {
+        this.ensureSingleCenterPanel(this.activeDrag.panelId);
+      }
     }
     this.activeDrag = null;
   }
@@ -761,6 +749,71 @@ export class PanelSystem extends createSystem({
     }
   }
 
+  public computeCurrentWeek(refDate: Date = new Date()): Array<{ dayNumber: number; dayOfWeek: string; date: Date; isToday: boolean }> {
+    const startOfWeek = new Date(refDate);
+    startOfWeek.setDate(refDate.getDate() - refDate.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const week: Array<{ dayNumber: number; dayOfWeek: string; date: Date; isToday: boolean }> = [];
+    const todayStr = refDate.toDateString();
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(startOfWeek.getDate() + i);
+      week.push({
+        dayNumber: d.getDate(),
+        dayOfWeek: daysOfWeek[d.getDay()],
+        date: d,
+        isToday: d.toDateString() === todayStr,
+      });
+    }
+    return week;
+  }
+
+  private async detectUserLocationAndWeather() {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+      const city = getCityFromTimezone(tz);
+      this.weather.city = city;
+
+      const hubAsset = this.getAsset('panel-hub');
+      if (hubAsset) {
+        const cityEl = hubAsset.getElementById('weather-city') as any;
+        if (cityEl) setText(cityEl, city);
+      }
+
+      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
+      const geoRes = await fetch(geoUrl);
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        if (geoData.results && geoData.results.length > 0) {
+          const lat = geoData.results[0].latitude;
+          const lon = geoData.results[0].longitude;
+          const foundCity = geoData.results[0].name || city;
+          this.weather.city = foundCity;
+
+          const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`;
+          const wRes = await fetch(weatherUrl);
+          if (wRes.ok) {
+            const wData = await wRes.json();
+            if (wData.current) {
+              const tempC = Math.round(wData.current.temperature_2m);
+              const tempF = Math.round((tempC * 9) / 5 + 32);
+              const code = wData.current.weather_code;
+              this.weather.tempC = tempC;
+              this.weather.tempF = tempF;
+              this.weather.condition = mapWeatherCodeToCondition(code);
+              this.refreshHubPanelUI();
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[DeskMate] Dynamic weather fetch fallback:', e);
+    }
+  }
+
   public applyWorkspaceOffset() {
   const presets: Record<string, Record<string, { pos: [number, number, number]; rotDeg: [number, number, number]; scale: number }>> = {
    Arc: {
@@ -830,9 +883,84 @@ export class PanelSystem extends createSystem({
  } catch {}
  }
 
- public resetPanelTransforms() {
- this.applyWorkspaceOffset();
- }
+  public resetPanelTransforms() {
+    this.customPanelPositions.clear();
+    this.workspaceOffset.x = 0;
+    this.workspaceOffset.y = 0;
+    this.workspaceOffset.z = 0;
+    this.applyWorkspaceOffset();
+    if (!this.isDeskMateOpen) {
+      this.openDeskMate();
+    }
+    if (this.soundEnabled && this.audio) {
+      this.audio.playPinchTick();
+    }
+    this.setPipSpeech('All panels reset to original startup positions.');
+  }
+
+  public openDeskMate() {
+    this.isDeskMateOpen = true;
+    this.applyWorkspaceOffset();
+    const hubAsset = this.getAsset('panel-hub');
+    if (hubAsset) {
+      const closedLauncher = hubAsset.getElementById('deskmate-closed-launcher') as any;
+      if (closedLauncher && typeof closedLauncher.setProperties === 'function') {
+        closedLauncher.setProperties({ display: 'none' });
+      }
+      const openContainer = hubAsset.getElementById('deskmate-open-container') as any;
+      if (openContainer && typeof openContainer.setProperties === 'function') {
+        openContainer.setProperties({ display: 'flex' });
+      }
+    }
+    if (this.soundEnabled && this.audio) {
+      this.audio.playPinchTick();
+    }
+    this.setPipSpeech('DeskMate opened! All panels are active.');
+  }
+
+  public closeDeskMate() {
+    this.isDeskMateOpen = false;
+    const hidePanels = ['panel-left-tasks', 'panel-right-pip', 'panel-right-focus', 'pip-robot'];
+    for (const id of hidePanels) {
+      const obj = this.world.getSceneObject(id);
+      if (obj) {
+        obj.visible = false;
+      }
+    }
+    const hubAsset = this.getAsset('panel-hub');
+    if (hubAsset) {
+      const closedLauncher = hubAsset.getElementById('deskmate-closed-launcher') as any;
+      if (closedLauncher && typeof closedLauncher.setProperties === 'function') {
+        closedLauncher.setProperties({ display: 'flex' });
+      }
+      const openContainer = hubAsset.getElementById('deskmate-open-container') as any;
+      if (openContainer && typeof openContainer.setProperties === 'function') {
+        openContainer.setProperties({ display: 'none' });
+      }
+    }
+    const hubObj = this.world.getSceneObject('panel-hub');
+    if (hubObj) {
+      hubObj.visible = true;
+    }
+    if (this.soundEnabled && this.audio) {
+      this.audio.playPinchTick();
+    }
+    this.setPipSpeech('DeskMate closed. Click "Open DeskMate" to reopen anytime.');
+  }
+
+  public findNextAvailableSlot(dayNumber: number, durationMinutes = 45): number {
+    const dayTasks = this.tasks.filter(
+      (t) => (t.dayNumber ?? 18) === dayNumber && t.scheduledStartMinute != null
+    );
+    if (dayTasks.length === 0) return 9 * 60;
+    let latestEnd = 9 * 60;
+    for (const t of dayTasks) {
+      const tEnd = (t.scheduledStartMinute ?? 540) + (t.estimatedMinutes ?? 60);
+      if (tEnd > latestEnd) latestEnd = tEnd;
+    }
+    const nextSlot = Math.ceil((latestEnd + 15) / 15) * 15;
+    return Math.min(nextSlot, 18 * 60 - durationMinutes);
+  }
 
  public zoomSection(panelId: string, sectionTitle = 'Section View', _offsetY = 1.25, _zoomScale = 0.155) {
  this.zoomedPanelId = panelId;
@@ -1042,7 +1170,7 @@ export class PanelSystem extends createSystem({
           this.calendarDays.forEach((d) => {
             d.isSelected = d.dayNumber === this.selectedDayNumber;
           });
-          const count = this.tasks.filter((t) => (t.dayNumber ?? 16) === this.selectedDayNumber).length;
+          const count = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber).length;
           const d = new Date(this.calendarDate.getTime() + i * 24 * 60 * 60 * 1000);
           const mName = this.monthNames[d.getMonth()] || 'Nov';
           this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, ${mName} ${selected.dayNumber} (${count} tasks).`);
@@ -1052,52 +1180,90 @@ export class PanelSystem extends createSystem({
       }
     }
 
- // Agenda Checkboxes & Titles (linked dynamically to selected day's tasks)
- for (let i = 0; i < 5; i++) {
- const chkBtn = asset.getElementById(`agenda-chk-${i}`);
- if (chkBtn) {
- this.addPress(chkBtn, () => this.toggleAgendaItem(i));
- }
- const rowName = asset.getElementById(`agenda-name-${i}`);
- if (rowName) {
- this.addPress(rowName, () => {
- const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 17) === this.selectedDayNumber);
- const task = dayTasks[i];
- if (task) {
- this.openEditSheet(task.id);
- } else {
- this.openEditSheet(null);
- }
- });
- }
- }
+  // Agenda Checkboxes & Titles (linked dynamically to selected day's tasks)
+  for (let i = 0; i < 5; i++) {
+    const chkBtn = asset.getElementById(`agenda-chk-${i}`);
+    if (chkBtn) {
+      this.addPress(chkBtn, () => this.toggleAgendaItem(i));
+    }
+    const rowName = asset.getElementById(`agenda-name-${i}`);
+    if (rowName) {
+      this.addPress(rowName, () => {
+        const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+        const task = dayTasks[i];
+        if (task) {
+          this.openEditSheet(task.id);
+        } else {
+          this.openEditSheet(null, this.selectedDayNumber);
+        }
+      });
+    }
+  }
 
- // Quick Add Pills
- const quickTask = asset.getElementById('quick-add-task');
- if (quickTask) {
- this.addPress(quickTask, () => this.openEditSheet(null));
- }
- const quickEvent = asset.getElementById('quick-add-event');
- if (quickEvent) {
- this.addPress(quickEvent, () => {
- const newEvent: GlassTask = {
- id: `event-${Date.now()}`,
- title: 'Design Review & Sync',
- priority: 'medium',
- estimatedMinutes: 60,
- scheduledStartMinute: 16 * 60,
- status: 'todo',
- dayNumber: this.selectedDayNumber,
- };
- this.tasks.push(newEvent);
- this.saveTasks(true, 'Added "Design Review & Sync" event');
- this.setPipSpeech(`Added new event "Design Review & Sync" on Nov ${this.selectedDayNumber} at 4:00 PM.`);
- });
- }
- const quickFocus = asset.getElementById('quick-add-focus');
- if (quickFocus) {
- this.addPress(quickFocus, () => this.toggleFocusTimer());
- }
+  // Quick Add Pills — Genuinely create and add tasks to this selected day
+  const quickTask = asset.getElementById('quick-add-task');
+  if (quickTask) {
+    this.addPress(quickTask, () => {
+      const nextSlot = this.findNextAvailableSlot(this.selectedDayNumber, 45);
+      const newTask: GlassTask = {
+        id: `task-${Date.now()}`,
+        title: 'Deep Work Sprint',
+        estimatedMinutes: 45,
+        priority: 'medium',
+        scheduledStartMinute: nextSlot,
+        status: 'todo',
+            dayNumber: this.editDraftDayNumber,
+      };
+      this.tasks.push(newTask);
+      this.saveTasks(true, `Added "${newTask.title}"`);
+      this.refreshAllUI();
+      this.openEditSheet(newTask.id, this.selectedDayNumber);
+      this.setPipSpeech(`Added task to Nov ${this.selectedDayNumber}. Modify details or save.`);
+    });
+  }
+  const quickEvent = asset.getElementById('quick-add-event');
+  if (quickEvent) {
+    this.addPress(quickEvent, () => {
+      const nextSlot = this.findNextAvailableSlot(this.selectedDayNumber, 30);
+      const newEvent: GlassTask = {
+        id: `task-${Date.now()}`,
+        title: 'Team Sync & Review',
+        estimatedMinutes: 30,
+        priority: 'medium',
+        scheduledStartMinute: nextSlot,
+        status: 'todo',
+        dayNumber: this.selectedDayNumber,
+      };
+      this.tasks.push(newEvent);
+      this.saveTasks(true, `Added "${newEvent.title}"`);
+      this.refreshAllUI();
+      this.openEditSheet(newEvent.id, this.selectedDayNumber);
+      this.setPipSpeech(`Added event for Nov ${this.selectedDayNumber}. Customize title or time.`);
+    });
+  }
+  const quickFocus = asset.getElementById('quick-add-focus');
+  if (quickFocus) {
+    this.addPress(quickFocus, () => {
+      const nextSlot = this.findNextAvailableSlot(this.selectedDayNumber, 45);
+      const newFocusTask: GlassTask = {
+        id: `task-${Date.now()}`,
+        title: 'Deep Focus Sprint',
+        estimatedMinutes: 45,
+        priority: 'high',
+        scheduledStartMinute: nextSlot,
+        status: 'todo',
+        dayNumber: this.selectedDayNumber,
+      };
+      this.tasks.push(newFocusTask);
+      this.saveTasks(true, `Added "${newFocusTask.title}"`);
+      this.focusRemainingSeconds = 45 * 60;
+      this.focusTotalSeconds = 45 * 60;
+      this.focusRunning = true;
+      this.refreshAllUI();
+      this.setPipSpeech(`Added & started 45m Focus Sprint on Nov ${this.selectedDayNumber}!`);
+      this.triggerPipEmote('celebrate');
+    });
+  }
 
  // Routines Rows
  const morningRow = asset.getElementById('routine-morning-row');
@@ -1136,18 +1302,30 @@ export class PanelSystem extends createSystem({
  if (undoBtn) {
  this.addPress(undoBtn, () => this.triggerUndo());
  }
+
+    const resetPanelsBtn = asset.getElementById('btn-tasks-reset-panels');
+    if (resetPanelsBtn) {
+      this.addPress(resetPanelsBtn, () => this.resetPanelTransforms());
+    }
+
+    const closeDeskmateBtn = asset.getElementById('btn-tasks-close-deskmate');
+    if (closeDeskmateBtn) {
+      this.addPress(closeDeskmateBtn, () => this.closeDeskMate());
+    }
  }
 
  private updateCalendarDays() {
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     this.calendarDays = [];
+    const now = new Date();
+    const todayStr = now.toDateString();
     for (let i = 0; i < 3; i++) {
-      const d = new Date(this.calendarDate.getTime() + i * 24 * 60 * 60 * 1000);
+      const d = new Date(this.calendarDate.getTime() + (i - 1) * 24 * 60 * 60 * 1000);
       const dayNum = d.getDate();
       this.calendarDays.push({
         dayOfWeek: daysOfWeek[d.getDay()],
         dayNumber: dayNum,
-        isToday: d.getFullYear() === 2026 && d.getMonth() === 10 && dayNum === 16,
+        isToday: d.toDateString() === todayStr,
         isSelected: dayNum === this.selectedDayNumber,
       });
     }
@@ -1166,7 +1344,7 @@ export class PanelSystem extends createSystem({
   }
 
  private toggleAgendaItem(index: number) {
- const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 17) === this.selectedDayNumber);
+ const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
  const task = dayTasks[index];
  if (task) {
  task.status = task.status === 'completed' ? 'todo' : 'completed';
@@ -1302,17 +1480,23 @@ export class PanelSystem extends createSystem({
  this.addPress(zoomSchedBtn, () => this.zoomSection('panel-hub', "Today's Schedule"));
  }
 
- // Schedule Blocks (Click to open edit sheet)
- for (let i = 0; i < 5; i++) {
- const blockEl = asset.getElementById(`block-${i}`);
- if (blockEl) {
- this.addPress(blockEl, () => {
- if (this.tasks[i]) {
- this.openEditSheet(this.tasks[i].id);
- }
- });
- }
- }
+  // Schedule Blocks (Click to open edit sheet)
+  for (let i = 0; i < 5; i++) {
+    const blockEl = asset.getElementById(`block-${i}`);
+    if (blockEl) {
+      this.addPress(blockEl, () => {
+        const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+        const schedBlocks = tasksToScheduleBlocks(dayTasks);
+        if (schedBlocks[i]) {
+          this.openEditSheet(schedBlocks[i].id);
+        } else if (dayTasks[i]) {
+          this.openEditSheet(dayTasks[i].id);
+        } else {
+          this.openEditSheet(null, this.selectedDayNumber);
+        }
+      });
+    }
+  }
 
  // Card 1 (Tasks): Zoom Button & Filter Chips
  const zoomTasksBtn = asset.getElementById('btn-zoom-tasks');
@@ -1579,27 +1763,44 @@ export class PanelSystem extends createSystem({
  const weekTabMonth = asset.getElementById('week-tab-month');
  if (weekTabMonth) this.addPress(weekTabMonth, () => this.setScheduleView('month'));
 
- const weekDays = ['Sun 16', 'Mon 17', 'Tue 18', 'Wed 19', 'Thu 20', 'Fri 21', 'Sat 22'];
- for (let i = 0; i < 7; i++) {
- const dayNum = 16 + i;
- const dayBtn = asset.getElementById(`week-day-btn-${i}`);
- if (dayBtn) {
- this.addPress(dayBtn, () => {
- this.selectedDayNumber = dayNum;
- this.scheduleView = 'day';
- this.setHubView('overview');
- this.setPipSpeech(`Switched to ${weekDays[i]} schedule. Add or modify tasks for this day.`);
- });
- }
+  const weekDays = ['Sun 16', 'Mon 17', 'Tue 18', 'Wed 19', 'Thu 20', 'Fri 21', 'Sat 22'];
+  for (let i = 0; i < 7; i++) {
+    const dayNum = 16 + i;
+    const dayBtn = asset.getElementById(`week-day-btn-${i}`);
+    if (dayBtn) {
+      this.addPress(dayBtn, () => {
+        this.selectedDayNumber = dayNum;
+        this.calendarDays.forEach((d) => { d.isSelected = d.dayNumber === this.selectedDayNumber; });
+        this.scheduleView = 'day';
+        this.setHubView('overview');
+        this.setPipSpeech(`Switched to ${weekDays[i]} schedule. Add or modify tasks for this day.`);
+        this.refreshAllUI();
+      });
+    }
 
- const addBtn = asset.getElementById(`week-day-add-${i}`);
- if (addBtn) {
- this.addPress(addBtn, () => {
- this.selectedDayNumber = dayNum;
- this.openEditSheet(null);
- });
- }
- }
+    const addBtn = asset.getElementById(`week-day-add-${i}`);
+    if (addBtn) {
+      this.addPress(addBtn, () => {
+        this.selectedDayNumber = dayNum;
+        this.calendarDays.forEach((d) => { d.isSelected = d.dayNumber === this.selectedDayNumber; });
+        this.openEditSheet(null, dayNum);
+      });
+    }
+
+    for (let s = 0; s < 3; s++) {
+      const taskBtn = asset.getElementById(`week-task-btn-${i}-${s}`);
+      if (taskBtn) {
+        this.addPress(taskBtn, () => {
+          const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === dayNum);
+          if (dayTasks[s]) {
+            this.openEditSheet(dayTasks[s].id, dayNum);
+          } else {
+            this.openEditSheet(null, dayNum);
+          }
+        });
+      }
+    }
+  }
 
  // Month View Subview Controls
  const monthTabDay = asset.getElementById('month-tab-day');
@@ -1721,59 +1922,81 @@ export class PanelSystem extends createSystem({
  this.addPress(editorBack, () => this.closeEditSheet());
  }
 
- const onSaveTask = () => {
- if (this.editingTaskId) {
- const t = this.tasks.find((x) => x.id === this.editingTaskId);
- if (t) {
- t.title = this.editDraftTitle;
- t.estimatedMinutes = this.editDraftDuration;
- t.priority = this.editDraftPriority;
- t.scheduledStartMinute = this.editDraftStartTime;
- }
- this.saveTasks(true, `Updated "${this.editDraftTitle}"`);
- this.setPipSpeech(`Updated task "${this.editDraftTitle}".`);
- } else {
- const newTask: GlassTask = {
- id: `task-${Date.now()}`,
- title: this.editDraftTitle,
- estimatedMinutes: this.editDraftDuration,
- priority: this.editDraftPriority,
- scheduledStartMinute: this.editDraftStartTime,
- status: 'todo',
- dayNumber: this.selectedDayNumber,
- };
- this.tasks.push(newTask);
- this.saveTasks(true, `Added "${this.editDraftTitle}"`);
- this.setPipSpeech(`Created new task "${this.editDraftTitle}" for Nov ${this.selectedDayNumber}.`);
- this.triggerPipEmote('celebrate');
- }
- this.closeEditSheet();
- };
+  const onSaveTask = () => {
+    if (this.editingTaskId) {
+      const t = this.tasks.find((x) => x.id === this.editingTaskId);
+      if (t) {
+        t.title = this.editDraftTitle;
+        t.estimatedMinutes = this.editDraftDuration;
+        t.priority = this.editDraftPriority;
+        t.scheduledStartMinute = this.editDraftStartTime;
+        t.dayNumber = this.editDraftDayNumber;
+      }
+      this.selectedDayNumber = this.editDraftDayNumber;
+      this.calendarDays.forEach((d) => { d.isSelected = d.dayNumber === this.selectedDayNumber; });
+      this.saveTasks(true, `Updated "${this.editDraftTitle}"`);
+      this.setPipSpeech(`Updated task "${this.editDraftTitle}" on Nov ${this.editDraftDayNumber}.`);
+    } else {
+      const newTask: GlassTask = {
+        id: `task-${Date.now()}`,
+        title: this.editDraftTitle,
+        estimatedMinutes: this.editDraftDuration,
+        priority: this.editDraftPriority,
+        scheduledStartMinute: this.editDraftStartTime,
+        status: 'todo',
+        dayNumber: this.editDraftDayNumber,
+      };
+      this.tasks.push(newTask);
+      this.selectedDayNumber = this.editDraftDayNumber;
+      this.calendarDays.forEach((d) => { d.isSelected = d.dayNumber === this.selectedDayNumber; });
+      this.saveTasks(true, `Added "${this.editDraftTitle}"`);
+      this.setPipSpeech(`Created new task "${this.editDraftTitle}" for Nov ${this.editDraftDayNumber}.`);
+      this.triggerPipEmote('celebrate');
+    }
+    this.closeEditSheet();
+  };
 
- const editorSaveTop = asset.getElementById('btn-editor-save');
- if (editorSaveTop) this.addPress(editorSaveTop, onSaveTask);
+  const editorSaveTop = asset.getElementById('btn-editor-save');
+  if (editorSaveTop) this.addPress(editorSaveTop, onSaveTask);
 
- const editorSaveBottom = asset.getElementById('ed-btn-save-bottom');
- if (editorSaveBottom) this.addPress(editorSaveBottom, onSaveTask);
+  const editorSaveBottom = asset.getElementById('ed-btn-save-bottom');
+  if (editorSaveBottom) this.addPress(editorSaveBottom, onSaveTask);
 
- const presets = [
- 'Deep Work Sprint',
- 'Team Sync',
- 'Code Review',
- 'Write Report',
- 'ML Benchmark',
- 'Gym / Health',
- ];
- for (let i = 0; i < presets.length; i++) {
- const btn = asset.getElementById(`ed-preset-${i}`);
- if (btn) {
- this.addPress(btn, () => {
- this.editDraftTitle = presets[i];
- this.updateTaskEditorDisplay();
- this.setPipSpeech(`Title set to "${presets[i]}".`);
- });
- }
- }
+  const currentWeek = this.computeCurrentWeek();
+    for (let i = 0; i < 7; i++) {
+      const dayInfo = currentWeek[i];
+      const d = dayInfo.dayNumber;
+      const dBtn = asset.getElementById(`ed-day-${i}`) || asset.getElementById(`ed-day-${d}`);
+      if (dBtn) {
+        this.addPress(dBtn, () => {
+          this.editDraftDayNumber = d;
+          this.updateTaskEditorDisplay();
+          this.setPipSpeech(`Task day set to ${dayInfo.dayOfWeek} ${d}.`);
+        });
+      }
+    }
+
+    const presets = [
+    'Deep Work Sprint',
+    'Team Sync',
+    'Code Review',
+    'Write Report',
+    'ML Benchmark',
+    'Gym / Health',
+    'Architecture Review',
+    'API Integration',
+    'User Testing',
+  ];
+  for (let i = 0; i < presets.length; i++) {
+    const btn = asset.getElementById(`ed-preset-${i}`);
+    if (btn) {
+      this.addPress(btn, () => {
+        this.editDraftTitle = presets[i];
+        this.updateTaskEditorDisplay();
+        this.setPipSpeech(`Title set to "${presets[i]}".`);
+      });
+    }
+  }
 
  const durSteps: Array<{ id: string; delta: number }> = [
  { id: 'ed-dur-minus15', delta: -15 },
@@ -1837,27 +2060,18 @@ export class PanelSystem extends createSystem({
  }
  }
 
- const edDeleteBtn = asset.getElementById('ed-btn-delete');
- if (edDeleteBtn) {
- this.addPress(edDeleteBtn, () => {
- if (!this.editingTaskId) return;
- if (this.deleteTapCount === 0) {
- this.deleteTapCount = 1;
- this.updateTaskEditorDisplay();
- if (this.deleteResetTimer) window.clearTimeout(this.deleteResetTimer);
- this.deleteResetTimer = window.setTimeout(() => {
- this.deleteTapCount = 0;
- this.updateTaskEditorDisplay();
- }, 5000);
- } else {
- const taskToDelete = this.tasks.find((t) => t.id === this.editingTaskId);
- this.tasks = this.tasks.filter((t) => t.id !== this.editingTaskId);
- this.saveTasks(true, `Deleted "${taskToDelete?.title || 'task'}"`);
- this.setPipSpeech(`Deleted task "${taskToDelete?.title || ''}".`);
- this.closeEditSheet();
- }
- });
- }
+  const edDeleteBtn = asset.getElementById('ed-btn-delete');
+  if (edDeleteBtn) {
+    this.addPress(edDeleteBtn, () => {
+      if (!this.editingTaskId) return;
+      const taskToDelete = this.tasks.find((t) => t.id === this.editingTaskId);
+      const title = taskToDelete?.title || 'task';
+      this.tasks = this.tasks.filter((t) => t.id !== this.editingTaskId);
+      this.saveTasks(true, `Deleted "${title}"`);
+      this.setPipSpeech(`Deleted task "${title}".`);
+      this.closeEditSheet();
+    });
+  }
 
  // Garden Subview Controls
  const gardenWater = asset.getElementById('btn-garden-water');
@@ -2049,6 +2263,21 @@ export class PanelSystem extends createSystem({
  });
  }
 
+  const hubOpenDeskMate = asset.getElementById('btn-open-deskmate');
+  if (hubOpenDeskMate) this.addPress(hubOpenDeskMate, () => this.openDeskMate());
+
+  const hubLauncherReset = asset.getElementById('btn-launcher-reset');
+  if (hubLauncherReset) this.addPress(hubLauncherReset, () => this.resetPanelTransforms());
+
+  const hubResetBtn = asset.getElementById('btn-hub-reset-panels');
+  if (hubResetBtn) this.addPress(hubResetBtn, () => this.resetPanelTransforms());
+
+  const hubCloseBtn = asset.getElementById('btn-hub-close-deskmate');
+  if (hubCloseBtn) this.addPress(hubCloseBtn, () => this.closeDeskMate());
+
+  const moverClose = asset.getElementById('btn-mover-close');
+  if (moverClose) this.addPress(moverClose, () => this.closeDeskMate());
+
  const moverReset = asset.getElementById('btn-mover-reset');
  if (moverReset) {
  this.addPress(moverReset, () => {
@@ -2155,6 +2384,12 @@ export class PanelSystem extends createSystem({
  if (zoomGarden) {
  this.addPress(zoomGarden, () => this.zoomSection('panel-right-pip', 'Productivity Garden', 1.38, 0.16));
  }
+  const pipResetBtn = asset.getElementById('btn-pip-reset-panels');
+  if (pipResetBtn) this.addPress(pipResetBtn, () => this.resetPanelTransforms());
+
+  const pipCloseBtn = asset.getElementById('btn-pip-close-deskmate');
+  if (pipCloseBtn) this.addPress(pipCloseBtn, () => this.closeDeskMate());
+
  const pipBack = asset.getElementById('btn-pip-back');
  if (pipBack) {
  this.addPress(pipBack, () => this.resetZoom());
@@ -2246,6 +2481,19 @@ export class PanelSystem extends createSystem({
   }
 
   private handleVoiceInputTrigger() {
+    if (this.voiceListening) {
+      if (this.currentSpeechRec) {
+        try { this.currentSpeechRec.stop(); } catch {}
+        this.currentSpeechRec = null;
+      }
+      this.voiceListening = false;
+      this.refreshPipPanelUI();
+      return;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch {}
+    }
+    
     const SpeechRec =
       typeof window !== 'undefined' &&
       ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
@@ -2597,65 +2845,127 @@ User command: "${transcript}"`;
   private executeLocalVoiceFallback(transcript: string) {
  const lower = transcript.toLowerCase().trim();
 
- // 1. Section Navigation
- if (
- lower.includes('switch to') ||
- lower.includes('open ') ||
- lower.includes('show ') ||
- lower.includes('bring ') ||
- lower.includes('view ') ||
- lower.includes('go to ') ||
- lower.includes('navigate to ')
- ) {
- if (lower.includes('calendar') || lower.includes('month')) {
- this.zoomSection('panel-left-tasks', 'Mini Calendar');
- this.setPipSpeech('Brought Mini Calendar to view.');
- return;
- }
- if (lower.includes('task') || lower.includes('agenda')) {
- this.zoomSection('panel-left-tasks', 'Agenda');
- this.setPipSpeech("Brought Today's Agenda and Tasks to view.");
- return;
- }
- if (lower.includes('habit') || lower.includes('streak')) {
- this.zoomSection('panel-right-focus', 'Habits & Streaks');
- this.setPipSpeech('Brought Habits and Streaks to view.');
- return;
- }
- if (lower.includes('deadline') || lower.includes('upcoming')) {
- this.zoomSection('panel-right-focus', 'Upcoming Deadlines');
- this.setPipSpeech('Brought Upcoming Deadlines to view.');
- return;
- }
- if (lower.includes('schedule') || lower.includes('day')) {
- this.switchNavTab('schedule');
- this.resetZoom();
- this.setPipSpeech('Brought Day Schedule to view.');
- return;
- }
- if (lower.includes('timer') || lower.includes('focus')) {
- this.zoomSection('panel-hub', 'Focus Session');
- this.setPipSpeech('Brought Focus Timer to view.');
- return;
- }
- if (lower.includes('routine')) {
- this.zoomSection('panel-left-tasks', 'Routines');
- this.setPipSpeech('Brought Routines to view.');
- return;
- }
- if (lower.includes('garden')) {
- this.zoomSection('panel-right-pip', 'Productivity Garden');
- this.setPipSpeech('Brought Productivity Garden to view.');
- return;
- }
- if (lower.includes('overview') || lower.includes('dashboard') || lower.includes('back')) {
- this.resetZoom();
- this.setPipSpeech('Returned to full workspace overview.');
- return;
- }
- }
+ // 0. Workspace Controls (Reset, Open, Close DeskMate)
+    if (lower.includes('reset panel') || lower.includes('reset workspace') || lower.includes('reset positions')) {
+      this.resetPanelTransforms();
+      this.setPipSpeech('All panels have been reset to their startup positions.');
+      return;
+    }
+    if (lower.includes('close deskmate') || lower.includes('hide deskmate')) {
+      this.closeDeskMate();
+      this.setPipSpeech('DeskMate closed. Click open anytime to return.');
+      return;
+    }
+    if (lower.includes('open deskmate') || lower.includes('launch deskmate') || lower.includes('show deskmate')) {
+      this.openDeskMate();
+      this.setPipSpeech('Welcome back to DeskMate!');
+      return;
+    }
 
- // 2. Delete / Remove Task
+    // Timer Controls
+    if (lower.includes('pause timer') || lower.includes('stop timer')) {
+      this.focusRunning = false;
+      this.refreshHubPanelUI();
+      this.setPipSpeech('Paused focus timer.');
+      return;
+    }
+    if (lower.includes('resume timer')) {
+      this.focusRunning = true;
+      this.refreshHubPanelUI();
+      this.setPipSpeech('Resumed focus timer.');
+      return;
+    }
+    if (lower.includes('reset timer')) {
+      this.focusRunning = false;
+      this.focusRemainingSeconds = this.focusTotalSeconds;
+      this.refreshHubPanelUI();
+      this.setPipSpeech('Focus timer has been reset.');
+      return;
+    }
+    if (lower.includes('start timer') || lower.includes('set timer') || lower.includes('timer on') || lower.includes('timer for')) {
+      const matchMin = lower.match(/(\d+)\s*(?:minute|min|m)?/);
+      const minutes = matchMin && matchMin[1] ? parseInt(matchMin[1], 10) : 25;
+      this.focusRemainingSeconds = minutes * 60;
+      this.focusTotalSeconds = minutes * 60;
+      this.focusRunning = true;
+      this.refreshHubPanelUI();
+      this.triggerPipEmote('celebrate');
+      this.setPipSpeech(`Started focus timer for ${minutes} minutes. Let's do this!`);
+      return;
+    }
+
+    // 1. Section Navigation
+    if (
+      lower.includes('switch to') ||
+      lower.includes('open ') ||
+      lower.includes('show ') ||
+      lower.includes('bring ') ||
+      lower.includes('view ') ||
+      lower.includes('go to ') ||
+      lower.includes('navigate to ') ||
+      lower.includes('section')
+    ) {
+      if (lower.includes('focus') || lower.includes('timer') || lower.includes('studio')) {
+        this.switchNavTab('focus');
+        this.setPipSpeech('Opened Focus Studio. You can customize duration, sprint mode, or start your timer.');
+        return;
+      }
+      if (lower.includes('week')) {
+        this.switchNavTab('schedule');
+        this.setScheduleView('week');
+        this.setPipSpeech('Opened Week Schedule view.');
+        return;
+      }
+      if (lower.includes('month') || lower.includes('calendar')) {
+        this.switchNavTab('schedule');
+        this.setScheduleView('month');
+        this.setPipSpeech('Opened Month Calendar view.');
+        return;
+      }
+      if (lower.includes('schedule') || lower.includes('day')) {
+        this.switchNavTab('schedule');
+        this.setScheduleView('day');
+        this.setPipSpeech('Opened Day Schedule view.');
+        return;
+      }
+      if (lower.includes('task') || lower.includes('agenda')) {
+        this.switchNavTab('tasks');
+        this.setPipSpeech("Opened Today's Tasks and Agenda.");
+        return;
+      }
+      if (lower.includes('habit') || lower.includes('routine')) {
+        this.switchNavTab('routines');
+        this.setPipSpeech('Opened Routines and Habits section.');
+        return;
+      }
+      if (lower.includes('note')) {
+        this.switchNavTab('notes');
+        this.setPipSpeech('Opened Notes section.');
+        return;
+      }
+      if (lower.includes('analytic') || lower.includes('workload')) {
+        this.switchNavTab('analytics');
+        this.setPipSpeech('Opened Analytics and Workload section.');
+        return;
+      }
+      if (lower.includes('garden')) {
+        this.switchNavTab('garden');
+        this.setPipSpeech('Opened Productivity Garden.');
+        return;
+      }
+      if (lower.includes('goal')) {
+        this.switchNavTab('goals');
+        this.setPipSpeech('Opened Goals and Milestones section.');
+        return;
+      }
+      if (lower.includes('overview') || lower.includes('dashboard') || lower.includes('back')) {
+        this.resetZoom();
+        this.setPipSpeech('Returned to full workspace overview.');
+        return;
+      }
+    }
+
+    // 2. Delete / Remove Task
  if (lower.startsWith('delete') || lower.startsWith('remove') || lower.includes('delete task') || lower.includes('remove task')) {
  const query = lower
  .replace(/^(?:delete|remove)\s+(?:task\s+)?/, '')
@@ -2939,6 +3249,12 @@ User command: "${transcript}"`;
  if (zoomDeadlines) {
  this.addPress(zoomDeadlines, () => this.zoomSection('panel-right-focus', 'Upcoming Deadlines', 1.38, 0.16));
  }
+  const focusResetBtn = asset.getElementById('btn-focus-reset-panels');
+  if (focusResetBtn) this.addPress(focusResetBtn, () => this.resetPanelTransforms());
+
+  const focusCloseBtn = asset.getElementById('btn-focus-close-deskmate');
+  if (focusCloseBtn) this.addPress(focusCloseBtn, () => this.closeDeskMate());
+
  const habitsBack = asset.getElementById('btn-habits-back');
  if (habitsBack) {
  this.addPress(habitsBack, () => this.resetZoom());
@@ -3057,29 +3373,19 @@ User command: "${transcript}"`;
  }
 
  const deleteBtn = asset.getElementById('btn-sheet-delete');
- if (deleteBtn) {
- this.addPress(deleteBtn, () => {
- if (this.deleteTapCount === 0) {
- this.deleteTapCount = 1;
- this.updateEditSheetDisplay();
+    if (deleteBtn) {
+      this.addPress(deleteBtn, () => {
+        if (this.editingTaskId) {
+          const taskToDelete = this.tasks.find((t) => t.id === this.editingTaskId);
+          this.tasks = this.tasks.filter((t) => t.id !== this.editingTaskId);
+          this.saveTasks(true, `Deleted "${taskToDelete?.title || 'task'}"`);
+          this.setPipSpeech(`Deleted task "${taskToDelete?.title || 'task'}".`);
+        }
+        this.closeEditSheet();
+      });
+    }
 
- if (this.deleteResetTimer !== null) window.clearTimeout(this.deleteResetTimer);
- this.deleteResetTimer = window.setTimeout(() => {
- this.deleteTapCount = 0;
- this.updateEditSheetDisplay();
- }, 5000);
- } else {
- if (this.editingTaskId) {
- const taskToDelete = this.tasks.find((t) => t.id === this.editingTaskId);
- this.tasks = this.tasks.filter((t) => t.id !== this.editingTaskId);
- this.saveTasks(true, `Deleted "${taskToDelete?.title || 'task'}"`);
- }
- this.closeEditSheet();
- }
- });
- }
-
- const saveBtn = asset.getElementById('btn-sheet-save');
+    const saveBtn = asset.getElementById('btn-sheet-save');
  if (saveBtn) {
  this.addPress(saveBtn, () => {
  if (this.editingTaskId) {
@@ -3089,7 +3395,8 @@ User command: "${transcript}"`;
  t.estimatedMinutes = this.editDraftDuration;
  t.priority = this.editDraftPriority;
  t.scheduledStartMinute = this.editDraftStartTime;
- }
+          t.dayNumber = this.editDraftDayNumber;
+        }
  this.saveTasks(true, `Updated "${this.editDraftTitle}"`);
  } else {
  const newTask: GlassTask = {
@@ -3103,61 +3410,69 @@ User command: "${transcript}"`;
  };
  this.tasks.push(newTask);
  this.saveTasks(true, `Added "${this.editDraftTitle}"`);
- }
- this.closeEditSheet();
+        }
+        this.selectedDayNumber = this.editDraftDayNumber;
+        this.calendarDays.forEach((d) => { d.isSelected = d.dayNumber === this.selectedDayNumber; });
+        this.closeEditSheet();
  });
  }
  }
 
- private openEditSheet(taskId: string | null) {
- this.isEditSheetOpen = true;
- this.editingTaskId = taskId;
- this.deleteTapCount = 0;
+  private openEditSheet(taskId: string | null, dayOverride?: number) {
+    this.isEditSheetOpen = true;
+    this.editingTaskId = taskId;
+    this.deleteTapCount = 0;
+    this.previousHubViewBeforeEdit = this.activeHubView === 'editor' ? 'overview' : this.activeHubView;
 
- if (taskId) {
- const task = this.tasks.find((t) => t.id === taskId);
- if (task) {
- this.editDraftTitle = task.title;
- this.editDraftDuration = task.estimatedMinutes;
- this.editDraftPriority = task.priority;
- this.editDraftStartTime = task.scheduledStartMinute;
- }
- } else {
- this.editDraftTitle = 'Deep Work Sprint';
- this.editDraftDuration = 45;
- this.editDraftPriority = 'medium';
- this.editDraftStartTime = 540;
- }
+    if (taskId) {
+      const task = this.tasks.find((t) => t.id === taskId);
+      if (task) {
+        this.editDraftTitle = task.title;
+        this.editDraftDuration = task.estimatedMinutes;
+        this.editDraftPriority = task.priority;
+        this.editDraftStartTime = task.scheduledStartMinute;
+        this.editDraftDayNumber = task.dayNumber ?? (dayOverride ?? this.selectedDayNumber);
+      }
+    } else {
+      this.editDraftDayNumber = dayOverride ?? this.selectedDayNumber;
+      this.editDraftTitle = 'Deep Work Sprint';
+      this.editDraftDuration = 45;
+      this.editDraftPriority = 'medium';
+      this.editDraftStartTime = this.findNextAvailableSlot(this.editDraftDayNumber, this.editDraftDuration);
+    }
 
- // Keep old 3D floating sheet hidden offscreen - task editor lives in-place in Center Hub!
- const sheetObj = this.world.getSceneObject('panel-edit-sheet');
- if (sheetObj) {
- sheetObj.position.set(0, -50, 0);
- sheetObj.visible = false;
- }
+    // Keep old 3D floating sheet hidden offscreen - task editor lives in-place in Center Hub!
+    const sheetObj = this.world.getSceneObject('panel-edit-sheet');
+    if (sheetObj) {
+      sheetObj.position.set(0, -50, 0);
+      sheetObj.visible = false;
+    }
 
- // Switch Center Hub in-place to the Task Editor subview
- this.setHubView('editor');
- this.updateTaskEditorDisplay();
- this.setPipSpeech(
- taskId
- ? `Editing "${this.editDraftTitle}". Modify settings and click Save Task.`
- : 'Create New Task. Choose presets, duration, and click Save Task.',
- );
- }
+    // Switch Center Hub in-place to the Task Editor subview
+    this.setHubView('editor');
+    this.updateTaskEditorDisplay();
+    this.setPipSpeech(
+      taskId
+        ? `Editing "${this.editDraftTitle}". Modify settings and click Save Task.`
+        : 'Create New Task. Choose presets, duration, and click Save Task.',
+    );
+  }
 
- private closeEditSheet() {
- this.isEditSheetOpen = false;
- this.editingTaskId = null;
- this.deleteTapCount = 0;
- const sheetObj = this.world.getSceneObject('panel-edit-sheet');
- if (sheetObj) {
- sheetObj.position.set(0, -50, 0);
- sheetObj.visible = false;
- }
- this.setHubView('overview');
- this.refreshAllUI();
- }
+  private closeEditSheet() {
+    this.isEditSheetOpen = false;
+    this.editingTaskId = null;
+    this.deleteTapCount = 0;
+    const sheetObj = this.world.getSceneObject('panel-edit-sheet');
+    if (sheetObj) {
+      sheetObj.position.set(0, -50, 0);
+      sheetObj.visible = false;
+    }
+    const returnView = (this.previousHubViewBeforeEdit && this.previousHubViewBeforeEdit !== 'editor')
+      ? this.previousHubViewBeforeEdit
+      : 'overview';
+    this.setHubView(returnView as any);
+    this.refreshAllUI();
+  }
 
  private updateTaskEditorDisplay() {
  const hubAsset = this.getAsset('panel-hub');
@@ -3173,7 +3488,25 @@ User command: "${transcript}"`;
  setText(durEl, `${this.editDraftDuration}m`);
  }
 
- // Priority button styling
+    const currentWeek = this.computeCurrentWeek();
+    for (let i = 0; i < 7; i++) {
+      const dayInfo = currentWeek[i];
+      const d = dayInfo.dayNumber;
+      const isSel = this.editDraftDayNumber === d;
+
+      const txtEl = hubAsset.getElementById(`ed-day-txt-${i}`) as any;
+      if (txtEl) setText(txtEl, `${dayInfo.dayOfWeek} ${d}`);
+
+      const dBtn = (hubAsset.getElementById(`ed-day-${i}`) || hubAsset.getElementById(`ed-day-${d}`)) as any;
+      if (dBtn && typeof dBtn.setProperties === 'function') {
+        dBtn.setProperties({
+          backgroundColor: isSel ? 'rgba(235, 94, 40, 0.40)' : 'rgba(255, 255, 255, 0.05)',
+          borderColor: isSel ? '#EB5E28' : 'rgba(255, 255, 255, 0.15)',
+        });
+      }
+    }
+
+    // Priority button styling
  const priButtons: Array<{ id: string; textId: string; pri: 'low' | 'medium' | 'high'; activeBg: string; activeBorder: string; activeColor: string }> = [
  { id: 'ed-pri-low', textId: 'ed-pri-low-text', pri: 'low', activeBg: 'rgba(59, 130, 246, 0.40)', activeBorder: '#3B82F6', activeColor: '#93C5FD' },
  { id: 'ed-pri-med', textId: 'ed-pri-med-text', pri: 'medium', activeBg: 'rgba(234, 179, 8, 0.40)', activeBorder: '#EAB308', activeColor: '#FDE047' },
@@ -3304,7 +3637,7 @@ User command: "${transcript}"`;
         setText(dayTxt, day.dayNumber);
       }
       if (day && dayBtn && typeof dayBtn.setProperties === 'function') {
-        const hasTasks = this.tasks.some((t) => (t.dayNumber ?? 16) === day.dayNumber);
+        const hasTasks = this.tasks.some((t) => (t.dayNumber ?? 18) === day.dayNumber);
         if (day.isSelected) {
           dayBtn.setProperties({
             backgroundColor: '#D97736',
@@ -3324,7 +3657,7 @@ User command: "${transcript}"`;
       }
     }
 
-    const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 17) === this.selectedDayNumber);
+    const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
     const completedCount = dayTasks.filter((t) => t.status === 'completed').length;
     const badgeEl = asset.getElementById('agenda-count-badge') as any;
     if (badgeEl) setText(badgeEl, `${completedCount}/${dayTasks.length} done`);
@@ -3491,54 +3824,72 @@ User command: "${transcript}"`;
  }
  }
 
- // Dynamic Week View updates
- for (let i = 0; i < 7; i++) {
- const dayNum = 16 + i;
- const tasksForDay = this.tasks.filter((t) => (t.dayNumber ?? 18) === dayNum);
- const countEl = asset.getElementById(`week-day-count-${i}`) as any;
- if (countEl) setText(countEl, `${tasksForDay.length} task${tasksForDay.length === 1 ? '' : 's'}`);
+  // Dynamic Week View updates
+    const currentWeek = this.computeCurrentWeek();
+    const weekViewTitle = asset.getElementById('week-view-title') as any;
+    if (weekViewTitle) {
+      const startD = currentWeek[0].date;
+      const endD = currentWeek[6].date;
+      const startM = this.monthNames[startD.getMonth()]?.slice(0, 3) || 'Nov';
+      const endM = this.monthNames[endD.getMonth()]?.slice(0, 3) || 'Nov';
+      const mStr = startM === endM ? `${startM} ${startD.getDate()} - ${endD.getDate()}, ${endD.getFullYear()}` : `${startM} ${startD.getDate()} - ${endM} ${endD.getDate()}, ${endD.getFullYear()}`;
+      setText(weekViewTitle, `Week Schedule - ${mStr}`);
+    }
 
- const colEl = asset.getElementById(`week-col-${i}`) as any;
- if (colEl && typeof colEl.setProperties === 'function') {
- const isSelected = dayNum === this.selectedDayNumber;
- colEl.setProperties({
- backgroundColor: isSelected ? 'rgba(217, 119, 54, 0.25)' : 'rgba(255, 255, 255, 0.04)',
- borderColor: isSelected ? '#D97736' : 'rgba(255, 255, 255, 0.08)',
- });
- }
- }
+    for (let i = 0; i < 7; i++) {
+      const dayInfo = currentWeek[i];
+      const dayNum = dayInfo.dayNumber;
 
- const t0 = this.tasks.find((t) => (t.dayNumber ?? 18) === 16);
- const w0 = asset.getElementById('week-task-0') as any;
- if (w0) setText(w0, t0 ? t0.title : 'No tasks');
+      const dayNameEl = asset.getElementById(`week-day-name-${i}`) as any;
+      if (dayNameEl) {
+        setText(dayNameEl, `${dayInfo.dayOfWeek} ${dayNum}${dayInfo.isToday ? ' - Today' : ''}`);
+      }
 
- const t1 = this.tasks.find((t) => (t.dayNumber ?? 18) === 17);
- const w1 = asset.getElementById('week-task-1') as any;
- if (w1) setText(w1, t1 ? t1.title : 'No tasks');
+      const tasksForDay = this.tasks.filter((t) => (t.dayNumber ?? this.selectedDayNumber) === dayNum).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+      const countEl = asset.getElementById(`week-day-count-${i}`) as any;
+      if (countEl) setText(countEl, `${tasksForDay.length} task${tasksForDay.length === 1 ? '' : 's'}`);
 
- const t2s = this.tasks.filter((t) => (t.dayNumber ?? 18) === 18);
- const w2a = asset.getElementById('week-task-2-a') as any;
- const w2b = asset.getElementById('week-task-2-b') as any;
- const w2c = asset.getElementById('week-task-2-c') as any;
- if (w2a) setText(w2a, t2s[0]?.title || 'Finish ML');
- if (w2b) setText(w2b, t2s[1]?.title || 'Implement API');
- if (w2c) setText(w2c, t2s[2]?.title || 'Team Meet');
+      const colEl = asset.getElementById(`week-col-${i}`) as any;
+      if (colEl && typeof colEl.setProperties === 'function') {
+        const isSelected = dayNum === this.selectedDayNumber;
+        colEl.setProperties({
+          backgroundColor: isSelected ? 'rgba(217, 119, 54, 0.25)' : (dayInfo.isToday ? 'rgba(217, 119, 54, 0.12)' : 'rgba(255, 255, 255, 0.04)'),
+          borderColor: isSelected ? '#D97736' : (dayInfo.isToday ? 'rgba(217, 119, 54, 0.50)' : 'rgba(255, 255, 255, 0.08)'),
+        });
+      }
 
- const t3 = this.tasks.find((t) => (t.dayNumber ?? 18) === 19);
- const w3 = asset.getElementById('week-task-3') as any;
- if (w3) setText(w3, t3 ? t3.title : 'No tasks');
+      for (let s = 0; s < 3; s++) {
+        const task = tasksForDay[s];
+        const btnEl = asset.getElementById(`week-task-btn-${i}-${s}`) as any;
+        const txtEl = asset.getElementById(`week-task-txt-${i}-${s}`) as any;
+        if (task) {
+          if (txtEl) setText(txtEl, shortenScheduleTitle(task.title));
+          if (btnEl && typeof btnEl.setProperties === 'function') {
+            btnEl.setProperties({
+              display: 'flex',
+              backgroundColor: task.priority === 'high' ? 'rgba(239, 68, 68, 0.25)' : task.priority === 'low' ? 'rgba(59, 130, 246, 0.20)' : 'rgba(234, 179, 8, 0.20)',
+              borderColor: task.priority === 'high' ? 'rgba(239, 68, 68, 0.60)' : task.priority === 'low' ? 'rgba(59, 130, 246, 0.50)' : 'rgba(234, 179, 8, 0.50)',
+            });
+          }
+        } else {
+          if (btnEl && typeof btnEl.setProperties === 'function') {
+            btnEl.setProperties({ display: s === 0 ? 'flex' : 'none' });
+          }
+          if (txtEl && s === 0) setText(txtEl, '+ Add Task');
+        }
+      }
+    }
 
- const t4 = this.tasks.find((t) => (t.dayNumber ?? 18) === 20);
- const w4 = asset.getElementById('week-task-4') as any;
- if (w4) setText(w4, t4 ? t4.title : 'No tasks');
-
- const t5 = this.tasks.find((t) => (t.dayNumber ?? 18) === 21);
- const w5 = asset.getElementById('week-task-5') as any;
- if (w5) setText(w5, t5 ? t5.title : 'No tasks');
-
- const t6 = this.tasks.find((t) => (t.dayNumber ?? 18) === 22);
- const w6 = asset.getElementById('week-task-6') as any;
- if (w6) setText(w6, t6 ? t6.title : 'Weekend Rest');
+    // Dynamic weather updates on hub header
+    const tempEl = asset.getElementById('weather-temp') as any;
+    if (tempEl) {
+      const tempStr = this.weather.isCelsius ? `${this.weather.tempC}°C` : `${this.weather.tempF}°F`;
+      setText(tempEl, tempStr);
+    }
+    const cityEl = asset.getElementById('weather-city') as any;
+    if (cityEl) {
+      setText(cityEl, this.weather.city);
+    }
 
  // Dynamic Month View updates
  for (let d = 16; d <= 22; d++) {
@@ -3557,7 +3908,7 @@ User command: "${transcript}"`;
  const selTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
  setText(
  monthSelectedDayLabel,
- `Selected Day: Nov ${this.selectedDayNumber} - ${selTasks.length} task${selTasks.length === 1 ? '' : 's'}`,
+ `Selected Day: ${this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov'} ${this.selectedDayNumber} - ${selTasks.length} task${selTasks.length === 1 ? '' : 's'}`,
  );
  }
 
@@ -3729,6 +4080,15 @@ User command: "${transcript}"`;
     for (const hand of hands) {
       const space = raySpaces[hand];
       const gamepad = inputXr?.gamepads?.[hand];
+      if (gamepad) {
+        const axes = gamepad.gamepad?.axes || [];
+        const thumbstickY = axes[3] ?? axes[1] ?? (typeof (gamepad as any)?.getAxisValueByIdx === 'function' ? (gamepad as any).getAxisValueByIdx(3) : 0);
+        if (Math.abs(thumbstickY) > 0.30) {
+          const step = -thumbstickY * _delta * 0.40;
+          this.workspaceOffset.z = Math.max(-0.45, Math.min(0.40, Number((this.workspaceOffset.z + step).toFixed(3))));
+          this.applyWorkspaceOffset();
+        }
+      }
       const selectState = inputXr?.getSelectState(hand);
 
       const triggerHeld = gamepad ? (gamepad.getButtonValueByIdx(0) > 0.5 || Boolean(gamepad.gamepad?.buttons?.[0]?.pressed)) : false;
@@ -3741,7 +4101,8 @@ User command: "${transcript}"`;
           this.stopDraggingPanel();
         }
       } else if (!this.activeDrag) {
-        if (gripHeld || selectState?.start) {
+        if (gripHeld) {
+
           const gripSpace = (this.player as any)?.gripSpaces?.[hand] || space;
           gripSpace.getWorldPosition(this.dragTempPos);
 
@@ -3756,13 +4117,14 @@ User command: "${transcript}"`;
           }
 
           if (!this.activeDrag && panelObjects.length > 0) {
+
             space.getWorldPosition(this.pointerRayOrigin);
             space.getWorldQuaternion(this.pointerTempQuat);
             this.pointerRayDir.set(0, 0, -1).applyQuaternion(this.pointerTempQuat);
             this.pointerRaycaster.set(this.pointerRayOrigin, this.pointerRayDir);
 
             const hits = this.pointerRaycaster.intersectObjects(panelObjects, true);
-            if (hits.length > 0 && hits[0].distance > 0.05) {
+            if (hits.length > 0 && hits[0].distance > 0.005) {
               let hitRoot: Object3D | null = hits[0].object;
               while (hitRoot && !panelNames.includes(hitRoot.name) && hitRoot.parent) {
                 hitRoot = hitRoot.parent;

@@ -169,10 +169,38 @@ export interface FocusRingViewModel {
  isRunning: boolean;
 }
 
+export function getUserLocalTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+  } catch {
+    return 'Asia/Kolkata';
+  }
+}
+
+export function getCityFromTimezone(tz: string): string {
+  if (!tz) return 'Local City';
+  const parts = tz.split('/');
+  const rawCity = parts[parts.length - 1] || 'City';
+  return rawCity.replace(/_/g, ' ');
+}
+
+export function mapWeatherCodeToCondition(code: number): string {
+  if (code === 0) return 'Clear Sky';
+  if (code === 1 || code === 2) return 'Partly Cloudy';
+  if (code === 3) return 'Overcast';
+  if (code >= 45 && code <= 48) return 'Foggy';
+  if (code >= 51 && code <= 55) return 'Drizzle';
+  if (code >= 61 && code <= 65) return 'Rain';
+  if (code >= 71 && code <= 77) return 'Snow';
+  if (code >= 80 && code <= 82) return 'Rain Showers';
+  if (code >= 95) return 'Thunderstorm';
+  return 'Partly Cloudy';
+}
+
 export const SEED_WEATHER: WeatherData = {
  tempC: 28,
  tempF: 82,
- city: 'Chennai',
+ city: getCityFromTimezone(getUserLocalTimezone()),
  condition: 'Partly Cloudy',
  isCelsius: true,
 };
@@ -234,80 +262,210 @@ export const SEED_DEADLINES: UpcomingDeadline[] = [
  { id: 'dl-3', title: 'API Integration', dateFormatted: 'Mon, Nov 24', icon: '', color: '#3B82F6' },
 ];
 
-export const SEED_TASKS: GlassTask[] = [
-  {
-    id: 'seed-task-ml',
-    title: 'Finish ML assignment',
-    priority: 'high',
-    estimatedMinutes: 90,
-    scheduledStartMinute: 9 * 60, // 09:00 to 10:30
-    status: 'todo',
-    dayNumber: 18,
-  },
-  {
-    id: 'seed-task-api',
-    title: 'Implement API',
-    priority: 'medium',
-    estimatedMinutes: 90,
-    scheduledStartMinute: 11 * 60, // 11:00 to 12:30
-    status: 'todo',
-    dayNumber: 18,
-  },
-  {
-    id: 'seed-task-meeting',
-    title: 'Team meeting',
-    priority: 'low',
-    estimatedMinutes: 30,
-    scheduledStartMinute: 14 * 60, // 14:00 to 14:30
-    status: 'todo',
-    dayNumber: 18,
-  },
-  {
-    id: 'seed-task-review',
-    title: 'Code review',
-    priority: 'medium',
-    estimatedMinutes: 45,
-    scheduledStartMinute: 14 * 60 + 45, // 14:45 to 15:30
-    status: 'todo',
-    dayNumber: 18,
-  },
-  {
-    id: 'seed-task-paper',
-    title: 'Read research paper',
-    priority: 'medium',
-    estimatedMinutes: 60,
-    scheduledStartMinute: 15 * 60 + 45, // 15:45 to 16:45
-    status: 'todo',
-    dayNumber: 18,
-  },
-  {
-    id: 'seed-task-gym',
-    title: 'Gym / Health sprint',
-    priority: 'low',
-    estimatedMinutes: 45,
-    scheduledStartMinute: 17 * 60, // 17:00 to 17:45
-    status: 'todo',
-    dayNumber: 18,
-  },
-  {
-    id: 'seed-task-docs',
-    title: 'Update documentation',
-    priority: 'low',
-    estimatedMinutes: 45,
-    scheduledStartMinute: null, // unscheduled
-    status: 'todo',
-    dayNumber: 18,
-  },
-  {
-    id: 'seed-task-weekly',
-    title: 'Weekly planning prep',
-    priority: 'medium',
-    estimatedMinutes: 30,
-    scheduledStartMinute: null, // unscheduled
-    status: 'todo',
-    dayNumber: 18,
-  },
-];
+
+export function generateSeedTasksForCurrentWeek(referenceDate: Date = new Date()): GlassTask[] {
+  const startOfWeek = new Date(referenceDate);
+  startOfWeek.setDate(referenceDate.getDate() - referenceDate.getDay());
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const getDay = (offset: number) => {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + offset);
+    return d.getDate();
+  };
+
+  return [
+    // Sunday (offset 0)
+    {
+      id: 'seed-task-sun-arch',
+      title: 'Weekly Architecture Review',
+      priority: 'medium',
+      estimatedMinutes: 60,
+      scheduledStartMinute: 10 * 60,
+      status: 'completed',
+      dayNumber: getDay(0),
+    },
+    {
+      id: 'seed-task-sun-gym',
+      title: 'Gym & Core Fitness',
+      priority: 'low',
+      estimatedMinutes: 45,
+      scheduledStartMinute: 16 * 60 + 30,
+      status: 'completed',
+      dayNumber: getDay(0),
+    },
+    // Monday (offset 1)
+    {
+      id: 'seed-task-mon-pipe',
+      title: 'Data Pipeline Optimization',
+      priority: 'high',
+      estimatedMinutes: 90,
+      scheduledStartMinute: 9 * 60,
+      status: 'completed',
+      dayNumber: getDay(1),
+    },
+    {
+      id: 'seed-task-mon-sync',
+      title: 'Sprint Planning & Sync',
+      priority: 'medium',
+      estimatedMinutes: 60,
+      scheduledStartMinute: 11 * 60 + 30,
+      status: 'completed',
+      dayNumber: getDay(1),
+    },
+    {
+      id: 'seed-task-mon-rev',
+      title: 'Peer Code Reviews',
+      priority: 'medium',
+      estimatedMinutes: 45,
+      scheduledStartMinute: 14 * 60,
+      status: 'completed',
+      dayNumber: getDay(1),
+    },
+    // Tuesday (offset 2)
+    {
+      id: 'seed-task-tue-arch',
+      title: 'Deep Work: Core Architecture',
+      priority: 'high',
+      estimatedMinutes: 90,
+      scheduledStartMinute: 9 * 60,
+      status: 'todo',
+      dayNumber: getDay(2),
+    },
+    {
+      id: 'seed-task-tue-api',
+      title: 'API Integration & Tests',
+      priority: 'medium',
+      estimatedMinutes: 75,
+      scheduledStartMinute: 11 * 60,
+      status: 'todo',
+      dayNumber: getDay(2),
+    },
+    {
+      id: 'seed-task-tue-sync',
+      title: 'Team Sync & Standup',
+      priority: 'medium',
+      estimatedMinutes: 45,
+      scheduledStartMinute: 13 * 60 + 30,
+      status: 'todo',
+      dayNumber: getDay(2),
+    },
+    {
+      id: 'seed-task-tue-feat',
+      title: 'Feature Development Sprint',
+      priority: 'high',
+      estimatedMinutes: 75,
+      scheduledStartMinute: 14 * 60 + 45,
+      status: 'todo',
+      dayNumber: getDay(2),
+    },
+    {
+      id: 'seed-task-tue-qa',
+      title: 'Code Review & QA Check',
+      priority: 'low',
+      estimatedMinutes: 60,
+      scheduledStartMinute: 16 * 60 + 30,
+      status: 'todo',
+      dayNumber: getDay(2),
+    },
+    // Wednesday (offset 3)
+    {
+      id: 'seed-task-wed-db',
+      title: 'Database Migration Review',
+      priority: 'high',
+      estimatedMinutes: 90,
+      scheduledStartMinute: 9 * 60,
+      status: 'todo',
+      dayNumber: getDay(3),
+    },
+    {
+      id: 'seed-task-wed-demo',
+      title: 'Cross-Team Architecture Demo',
+      priority: 'medium',
+      estimatedMinutes: 45,
+      scheduledStartMinute: 11 * 60,
+      status: 'todo',
+      dayNumber: getDay(3),
+    },
+    {
+      id: 'seed-task-wed-sec',
+      title: 'Security & Permissions Audit',
+      priority: 'high',
+      estimatedMinutes: 75,
+      scheduledStartMinute: 14 * 60,
+      status: 'todo',
+      dayNumber: getDay(3),
+    },
+    // Thursday (offset 4)
+    {
+      id: 'seed-task-thu-perf',
+      title: 'Performance Profiling',
+      priority: 'high',
+      estimatedMinutes: 90,
+      scheduledStartMinute: 9 * 60 + 30,
+      status: 'todo',
+      dayNumber: getDay(4),
+    },
+    {
+      id: 'seed-task-thu-ui',
+      title: 'UI Polish & Component Library',
+      priority: 'medium',
+      estimatedMinutes: 90,
+      scheduledStartMinute: 14 * 60,
+      status: 'todo',
+      dayNumber: getDay(4),
+    },
+    // Friday (offset 5)
+    {
+      id: 'seed-task-fri-prod',
+      title: 'Production Deployment',
+      priority: 'high',
+      estimatedMinutes: 90,
+      scheduledStartMinute: 9 * 60,
+      status: 'todo',
+      dayNumber: getDay(5),
+    },
+    {
+      id: 'seed-task-fri-qa',
+      title: 'QA Sign-off & Regression Tests',
+      priority: 'high',
+      estimatedMinutes: 60,
+      scheduledStartMinute: 11 * 60 + 30,
+      status: 'todo',
+      dayNumber: getDay(5),
+    },
+    {
+      id: 'seed-task-fri-demo',
+      title: 'Weekly Demo & Sprint Retro',
+      priority: 'medium',
+      estimatedMinutes: 60,
+      scheduledStartMinute: 14 * 60 + 30,
+      status: 'todo',
+      dayNumber: getDay(5),
+    },
+    // Saturday (offset 6)
+    {
+      id: 'seed-task-sat-retro',
+      title: 'Weekly Retro & Brainstorming',
+      priority: 'low',
+      estimatedMinutes: 60,
+      scheduledStartMinute: 10 * 60,
+      status: 'todo',
+      dayNumber: getDay(6),
+    },
+    {
+      id: 'seed-task-sat-read',
+      title: 'Research Reading & Exploration',
+      priority: 'low',
+      estimatedMinutes: 60,
+      scheduledStartMinute: 14 * 60,
+      status: 'todo',
+      dayNumber: getDay(6),
+    },
+  ];
+}
+
+export const SEED_TASKS: GlassTask[] = generateSeedTasksForCurrentWeek();
 
 export const PRIORITY_COLORS: Record<PriorityLevel, string> = {
  high: '#EF4444',
@@ -387,11 +545,20 @@ export function tasksToRowViewModels(tasks: GlassTask[]): TaskRowViewModel[] {
 
 export function shortenScheduleTitle(title: string): string {
  const t = title.trim();
- if (/research|paper/i.test(t)) return 'Paper';
- if (/meeting|sync/i.test(t)) return 'Team Sync';
- if (/api/i.test(t)) return 'API Build';
- if (/ml|assignment/i.test(t)) return 'ML Sprint';
- return t.length > 12 ? t.slice(0, 10) + '...' : t;
+ if (/listening|thinking/i.test(t)) return 'Focus Sprint';
+ if (/architecture/i.test(t)) return 'Core Arch';
+ if (/deep work|deep focus/i.test(t)) return 'Deep Work';
+ if (/research|paper/i.test(t)) return 'Research';
+ if (/meeting|sync|standup/i.test(t)) return 'Team Sync';
+ if (/api/i.test(t)) return 'API Integration';
+ if (/code review|refactor/i.test(t)) return 'Code Review';
+ if (/ml|assignment|model/i.test(t)) return 'ML Sprint';
+ if (/report|documentation/i.test(t)) return 'Tech Report';
+ if (/gym|health|workout/i.test(t)) return 'Gym & Health';
+ if (/deploy|production/i.test(t)) return 'Deploy';
+ if (/qa|test/i.test(t)) return 'QA Tests';
+ if (/retro|demo/i.test(t)) return 'Retro & Demo';
+ return t.length > 18 ? t.slice(0, 16) + '...' : t;
 }
 
 export function tasksToScheduleBlocks(tasks: GlassTask[]): ScheduleBlockViewModel[] {

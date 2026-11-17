@@ -330,6 +330,15 @@
  <div class="handle-bar"></div>
  </Button>
 
+ <div style="flex-direction: row; justify-content: flex-end; align-items: center; width: 100%; padding-right: 4px; margin-bottom: 2px; gap: 6px;">
+ <Button id="btn-focus-reset-panels" style="height: 20px; padding-left: 8px; padding-right: 8px; border-radius: 999px; background-color: rgba(255, 255, 255, 0.08); border-width: 1px; border-color: rgba(255, 255, 255, 0.20); align-items: center; justify-content: center;">
+ <ButtonLabel style="font-size: 10px; font-weight: 700; color: #FCA5A5;">Reset</ButtonLabel>
+ </Button>
+ <Button id="btn-focus-close-deskmate" style="height: 20px; padding-left: 8px; padding-right: 8px; border-radius: 999px; background-color: rgba(239, 68, 68, 0.28); border-width: 1px; border-color: #EF4444; align-items: center; justify-content: center;">
+ <ButtonLabel style="font-size: 10px; font-weight: 800; color: #FFFFFF;">Close</ButtonLabel>
+ </Button>
+ </div>
+
  <div id="focus-zoom-bar" class="zoom-top-bar" style="display: none;">
  <Button id="btn-habits-back" class="zoom-back-btn">
  <ButtonLabel class="zoom-back-text">Back to Overview</ButtonLabel>

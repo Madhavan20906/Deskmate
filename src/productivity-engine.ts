@@ -235,7 +235,9 @@ export interface ParsedVoiceTask {
  * - "Schedule Code Review tomorrow at 2 PM 45 minutes"
  * - "Add Team Sync on Thursday"
  */
-export function parseVoiceTaskCommand(transcript: string, baseDay = 18): ParsedVoiceTask | null {
+export function parseVoiceTaskCommand(transcript: string, baseDay?: number, referenceDate?: Date): ParsedVoiceTask | null {
+  const ref = referenceDate || new Date();
+  const base = baseDay ?? ref.getDate();
  const lower = transcript.toLowerCase().trim();
  if (!lower.includes('add') && !lower.includes('schedule') && !lower.includes('create') && !lower.includes('task')) {
  return null;
@@ -278,36 +280,35 @@ export function parseVoiceTaskCommand(transcript: string, baseDay = 18): ParsedV
  }
 
  // 3. Resolve Day
- let targetDay = baseDay;
- if (remainder.includes('tomorrow')) {
- targetDay = baseDay + 1;
- } else if (remainder.includes('today')) {
- targetDay = baseDay;
- } else if (/\bsunday\b/.test(remainder)) {
- targetDay = 16;
- } else if (/\bmonday\b/.test(remainder)) {
- targetDay = 17;
- } else if (/\btuesday\b/.test(remainder)) {
- targetDay = 18;
- } else if (/\bwednesday\b/.test(remainder)) {
- targetDay = 19;
- } else if (/\bthursday\b/.test(remainder)) {
- targetDay = 20;
- } else if (/\bfriday\b/.test(remainder)) {
- targetDay = 21;
- } else if (/\bsaturday\b/.test(remainder)) {
- targetDay = 22;
- } else {
- const dayMatch = remainder.match(/\b(?:(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+|on\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+|on\s+the\s+|on\s+)(\d{1,2})(?:st|nd|rd|th)?\b/i);
- if (dayMatch && dayMatch[1]) {
- const parsedNum = parseInt(dayMatch[1], 10);
- if (parsedNum >= 1 && parsedNum <= 31) {
- targetDay = parsedNum;
- }
- }
- }
+  let targetDay = base;
+  if (remainder.includes('tomorrow')) {
+    targetDay = base + 1;
+  } else if (remainder.includes('today')) {
+    targetDay = base;
+  } else {
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    let foundWeekday = false;
+    for (let i = 0; i < 7; i++) {
+      if (new RegExp('\\b' + dayNames[i] + '\\b').test(remainder)) {
+        const startOfWeek = new Date(ref);
+        startOfWeek.setDate(ref.getDate() - ref.getDay() + i);
+        targetDay = startOfWeek.getDate();
+        foundWeekday = true;
+        break;
+      }
+    }
+    if (!foundWeekday) {
+      const dayMatch = remainder.match(/\b(?:(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+|on\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+|on\s+the\s+|on\s+)(\d{1,2})(?:st|nd|rd|th)?\b/i);
+      if (dayMatch && dayMatch[1]) {
+        const parsedNum = parseInt(dayMatch[1], 10);
+        if (parsedNum >= 1 && parsedNum <= 31) {
+          targetDay = parsedNum;
+        }
+      }
+    }
+  }
 
- // 4. Resolve Priority
+  // 4. Resolve Priority
  let priority: 'low' | 'medium' | 'high' = 'medium';
  if (/high\s+priority|urgent|critical|important/.test(remainder)) {
  priority = 'high';

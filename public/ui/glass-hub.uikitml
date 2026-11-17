@@ -225,34 +225,34 @@
  }
 
  .workspace-mover-bar {
- flex-direction: row;
- justify-content: center;
- align-items: center;
- width: 100%;
- height: 38px;
- gap: 8px;
- padding-top: 4px;
- padding-bottom: 4px;
- padding-left: 10px;
- padding-right: 10px;
- border-radius: 14px;
- background-color: rgba(26, 29, 36, 0.75);
- border-width: 1px;
- border-color: rgba(255, 255, 255, 0.12);
- margin-top: 4px;
- }
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 44px;
+  gap: 8px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 14px;
+  background-color: rgba(26, 29, 36, 0.88);
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, 0.18);
+  margin-top: 4px;
+  }
 
  .mover-chip {
- height: 28px;
- padding-left: 10px;
- padding-right: 10px;
- border-radius: 8px;
- background-color: rgba(255, 255, 255, 0.06);
- border-width: 1px;
- border-color: rgba(255, 255, 255, 0.12);
- align-items: center;
- justify-content: center;
- }
+  height: 34px;
+  padding-left: 14px;
+  padding-right: 14px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, 0.18);
+  align-items: center;
+  justify-content: center;
+  }
 
  .mover-chip:hover {
  background-color: rgba(217, 119, 54, 0.30);
@@ -260,16 +260,16 @@
  }
 
  .mover-chip-handle {
- height: 28px;
- padding-left: 14px;
- padding-right: 14px;
- border-radius: 8px;
- background-color: rgba(217, 119, 54, 0.28);
- border-width: 1px;
- border-color: #D97736;
- align-items: center;
- justify-content: center;
- }
+  height: 34px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-radius: 8px;
+  background-color: rgba(217, 119, 54, 0.35);
+  border-width: 1px;
+  border-color: #D97736;
+  align-items: center;
+  justify-content: center;
+  }
 
  .mover-chip-handle:hover {
  background-color: #D97736;
@@ -277,10 +277,10 @@
  }
 
  .mover-chip-text {
- font-size: 11px;
- font-weight: 700;
- color: #F5F2EB;
- }
+  font-size: 14px;
+  font-weight: 800;
+  color: #FFFFFF;
+  }
 
  .badge-dot {
  width: 6px;
@@ -631,10 +631,10 @@
  }
 
  .card-zoom-text {
- font-size: 10px;
- font-weight: 700;
- color: #E2E8F0;
- }
+  font-size: 13px;
+  font-weight: 800;
+  color: #FFFFFF;
+  }
 
  .filter-chips-row {
  flex-direction: row;
@@ -841,10 +841,10 @@
  }
 
  .add-task-footer-text {
- font-size: 11px;
- font-weight: 700;
- color: #FFFFFF;
- }
+  font-size: 13px;
+  font-weight: 800;
+  color: #FFFFFF;
+  }
 
  .focus-timer-body {
  flex-direction: column;
@@ -1046,33 +1046,34 @@
  }
 
  .dock-btn {
- flex-direction: row;
- align-items: center;
- gap: 4px;
- padding-left: 10px;
- padding-right: 10px;
- padding-top: 4px;
- padding-bottom: 4px;
- border-radius: 10px;
- background-color: rgba(255, 255, 255, 0.06);
- border-width: 1px;
- border-color: rgba(255, 255, 255, 0.12);
- }
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding-left: 14px;
+  padding-right: 14px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-width: 1px;
+  border-color: rgba(255, 255, 255, 0.16);
+  }
 
- .dock-btn:hover {
- background-color: rgba(255, 255, 255, 0.16);
- border-color: #D97736;
- }
+  .dock-btn:hover {
+  background-color: rgba(255, 255, 255, 0.20);
+  border-color: #D97736;
+  }
 
- .dock-btn:active {
- background-color: rgba(217, 119, 54, 0.35);
- }
+  .dock-btn:active {
+  background-color: rgba(217, 119, 54, 0.35);
+  }
 
- .dock-btn-text {
- font-size: 11px;
- font-weight: 600;
- color: rgba(255, 255, 255, 0.90);
- }
+  .dock-btn-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  }
 
  .hub-main-view {
  flex-direction: column;
@@ -1207,6 +1208,15 @@
  border-width: 1px;
  border-color: rgba(59, 130, 246, 0.50);
  width: 100%;
+ }
+
+ .week-task-badge:hover {
+ background-color: rgba(217, 119, 54, 0.45);
+ border-color: #F3B27A;
+ }
+
+ .week-task-badge:active {
+ background-color: #D97736;
  }
 
  .week-task-text {
@@ -1378,6 +1388,22 @@
  <div class="handle-bar"></div>
  </Button>
 
+ <!-- Floating Launcher Shown When DeskMate Workspace is Closed -->
+ <div id="deskmate-closed-launcher" style="display: none; width: 100%; align-items: center; justify-content: center; padding-top: 24px; padding-bottom: 24px;">
+  <div style="flex-direction: row; align-items: center; justify-content: center; gap: 14px; padding-left: 28px; padding-right: 28px; padding-top: 14px; padding-bottom: 14px; border-radius: 999px; background-color: rgba(18, 25, 48, 0.95); border-width: 2px; border-color: #D97736;">
+   <span style="font-size: 16px; font-weight: 800; color: #FFFFFF;">DeskMate</span>
+   <span style="font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, 0.65);">Workspace Closed</span>
+   <Button id="btn-open-deskmate" style="background-color: #D97736; border-radius: 999px; padding-left: 20px; padding-right: 20px; padding-top: 8px; padding-bottom: 8px; border-width: 1px; border-color: #F3B27A;">
+    <ButtonLabel style="font-size: 13px; font-weight: 800; color: #FFFFFF;">Open DeskMate</ButtonLabel>
+   </Button>
+   <Button id="btn-launcher-reset" style="background-color: rgba(255, 255, 255, 0.08); border-radius: 999px; padding-left: 14px; padding-right: 14px; padding-top: 8px; padding-bottom: 8px; border-width: 1px; border-color: rgba(255, 255, 255, 0.20);">
+    <ButtonLabel style="font-size: 12px; font-weight: 700; color: #FCA5A5;">Reset Panels</ButtonLabel>
+   </Button>
+  </div>
+ </div>
+
+ <div id="deskmate-open-container" style="display: flex; flex-direction: column; width: 100%; gap: 6px;">
+
  <div id="hub-zoom-bar" class="hub-zoom-bar" style="display: none;">
  <Button id="btn-zoom-back" class="zoom-back-btn">
  <ButtonLabel class="zoom-back-text">Back to Overview</ButtonLabel>
@@ -1424,6 +1450,12 @@
  </Button>
  <Button id="btn-profile" class="header-action-pill">
  <ButtonLabel class="header-action-text">Stats</ButtonLabel>
+ </Button>
+ <Button id="btn-hub-reset-panels" class="header-action-pill" style="border-color: rgba(252, 165, 165, 0.40); background-color: rgba(239, 68, 68, 0.15);">
+ <ButtonLabel class="header-action-text" style="color: #FCA5A5;">Reset</ButtonLabel>
+ </Button>
+ <Button id="btn-hub-close-deskmate" class="header-action-pill" style="border-color: rgba(239, 68, 68, 0.60); background-color: rgba(239, 68, 68, 0.35);">
+ <ButtonLabel class="header-action-text" style="color: #FFFFFF; font-weight: 800;">Close</ButtonLabel>
  </Button>
  </div>
  </div>
@@ -1753,7 +1785,7 @@
  <Button id="btn-week-back" class="subview-back-btn">
  <ButtonLabel class="subview-back-text">Back to Day Schedule</ButtonLabel>
  </Button>
- <span class="subview-title">Week Schedule - Nov 16 - Nov 22, 2026</span>
+ <span id="week-view-title" class="subview-title">Week Schedule</span>
  <div class="schedule-view-tabs">
  <Button id="week-tab-day" class="sched-view-btn">
  <ButtonLabel class="sched-view-text">Day</ButtonLabel>
@@ -1770,11 +1802,13 @@
  <div class="week-columns-row">
  <div class="week-day-col" id="week-col-0">
  <Button id="week-day-btn-0" class="week-day-header-btn">
- <ButtonLabel class="week-day-name">Sun 16</ButtonLabel>
+ <ButtonLabel id="week-day-name-0" class="week-day-name">Sun 16</ButtonLabel>
  <ButtonLabel id="week-day-count-0" class="week-day-date">1 task</ButtonLabel>
  </Button>
  <div class="week-day-tasks">
- <div class="week-task-badge"><span id="week-task-0" class="week-task-text">ML Dataset</span></div>
+ <Button id="week-task-btn-0-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-0" class="week-task-text">Weekly Plan</ButtonLabel></Button>
+ <Button id="week-task-btn-0-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-0-1" class="week-task-text"></ButtonLabel></Button>
+ <Button id="week-task-btn-0-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-0-2" class="week-task-text"></ButtonLabel></Button>
  </div>
  <Button id="week-day-add-0" class="week-add-btn">
  <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
@@ -1783,11 +1817,13 @@
 
  <div class="week-day-col" id="week-col-1">
  <Button id="week-day-btn-1" class="week-day-header-btn">
- <ButtonLabel class="week-day-name">Mon 17</ButtonLabel>
+ <ButtonLabel id="week-day-name-1" class="week-day-name">Mon 17</ButtonLabel>
  <ButtonLabel id="week-day-count-1" class="week-day-date">1 task</ButtonLabel>
  </Button>
  <div class="week-day-tasks">
- <div class="week-task-badge"><span id="week-task-1" class="week-task-text">Design API</span></div>
+ <Button id="week-task-btn-1-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-1" class="week-task-text">Pipeline Bench</ButtonLabel></Button>
+ <Button id="week-task-btn-1-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-1-1" class="week-task-text"></ButtonLabel></Button>
+ <Button id="week-task-btn-1-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-1-2" class="week-task-text"></ButtonLabel></Button>
  </div>
  <Button id="week-day-add-1" class="week-add-btn">
  <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
@@ -1796,13 +1832,13 @@
 
  <div class="week-day-col week-day-col-active" id="week-col-2">
  <Button id="week-day-btn-2" class="week-day-header-btn">
- <ButtonLabel class="week-day-name">Tue 18 - Today</ButtonLabel>
+ <ButtonLabel id="week-day-name-2" class="week-day-name">Tue 18 - Today</ButtonLabel>
  <ButtonLabel id="week-day-count-2" class="week-day-date">4 tasks</ButtonLabel>
  </Button>
  <div class="week-day-tasks">
- <div class="week-task-badge"><span id="week-task-2-a" class="week-task-text">Finish ML</span></div>
- <div class="week-task-badge"><span id="week-task-2-b" class="week-task-text">Implement API</span></div>
- <div class="week-task-badge"><span id="week-task-2-c" class="week-task-text">Team Meet</span></div>
+ <Button id="week-task-btn-2-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-2-a" class="week-task-text">Core Arch</ButtonLabel></Button>
+ <Button id="week-task-btn-2-1" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-2-b" class="week-task-text">API Tests</ButtonLabel></Button>
+ <Button id="week-task-btn-2-2" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-2-c" class="week-task-text">Team Sync</ButtonLabel></Button>
  </div>
  <Button id="week-day-add-2" class="week-add-btn">
  <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
@@ -1811,11 +1847,13 @@
 
  <div class="week-day-col" id="week-col-3">
  <Button id="week-day-btn-3" class="week-day-header-btn">
- <ButtonLabel class="week-day-name">Wed 19</ButtonLabel>
+ <ButtonLabel id="week-day-name-3" class="week-day-name">Wed 19</ButtonLabel>
  <ButtonLabel id="week-day-count-3" class="week-day-date">1 task</ButtonLabel>
  </Button>
  <div class="week-day-tasks">
- <div class="week-task-badge"><span id="week-task-3" class="week-task-text">Code Review</span></div>
+ <Button id="week-task-btn-3-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-3" class="week-task-text">DB Migration</ButtonLabel></Button>
+ <Button id="week-task-btn-3-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-3-1" class="week-task-text"></ButtonLabel></Button>
+ <Button id="week-task-btn-3-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-3-2" class="week-task-text"></ButtonLabel></Button>
  </div>
  <Button id="week-day-add-3" class="week-add-btn">
  <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
@@ -1824,11 +1862,13 @@
 
  <div class="week-day-col" id="week-col-4">
  <Button id="week-day-btn-4" class="week-day-header-btn">
- <ButtonLabel class="week-day-name">Thu 20</ButtonLabel>
+ <ButtonLabel id="week-day-name-4" class="week-day-name">Thu 20</ButtonLabel>
  <ButtonLabel id="week-day-count-4" class="week-day-date">1 task</ButtonLabel>
  </Button>
  <div class="week-day-tasks">
- <div class="week-task-badge"><span id="week-task-4" class="week-task-text">Write Report</span></div>
+ <Button id="week-task-btn-4-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-4" class="week-task-text">Performance</ButtonLabel></Button>
+ <Button id="week-task-btn-4-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-4-1" class="week-task-text"></ButtonLabel></Button>
+ <Button id="week-task-btn-4-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-4-2" class="week-task-text"></ButtonLabel></Button>
  </div>
  <Button id="week-day-add-4" class="week-add-btn">
  <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
@@ -1837,11 +1877,13 @@
 
  <div class="week-day-col" id="week-col-5">
  <Button id="week-day-btn-5" class="week-day-header-btn">
- <ButtonLabel class="week-day-name">Fri 21</ButtonLabel>
+ <ButtonLabel id="week-day-name-5" class="week-day-name">Fri 21</ButtonLabel>
  <ButtonLabel id="week-day-count-5" class="week-day-date">1 task</ButtonLabel>
  </Button>
  <div class="week-day-tasks">
- <div class="week-task-badge"><span id="week-task-5" class="week-task-text">Project Sub</span></div>
+ <Button id="week-task-btn-5-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-5" class="week-task-text">Production</ButtonLabel></Button>
+ <Button id="week-task-btn-5-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-5-1" class="week-task-text"></ButtonLabel></Button>
+ <Button id="week-task-btn-5-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-5-2" class="week-task-text"></ButtonLabel></Button>
  </div>
  <Button id="week-day-add-5" class="week-add-btn">
  <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
@@ -1850,11 +1892,13 @@
 
  <div class="week-day-col" id="week-col-6">
  <Button id="week-day-btn-6" class="week-day-header-btn">
- <ButtonLabel class="week-day-name">Sat 22</ButtonLabel>
+ <ButtonLabel id="week-day-name-6" class="week-day-name">Sat 22</ButtonLabel>
  <ButtonLabel id="week-day-count-6" class="week-day-date">0 tasks</ButtonLabel>
  </Button>
  <div class="week-day-tasks">
- <div class="week-task-badge"><span id="week-task-6" class="week-task-text">Weekend Rest</span></div>
+ <Button id="week-task-btn-6-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-6" class="week-task-text">Weekend Rest</ButtonLabel></Button>
+ <Button id="week-day-btn-6-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-6-1" class="week-task-text"></ButtonLabel></Button>
+ <Button id="week-day-btn-6-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-6-2" class="week-task-text"></ButtonLabel></Button>
  </div>
  <Button id="week-day-add-6" class="week-add-btn">
  <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
@@ -1978,6 +2022,18 @@
  </div>
 
  <div class="subview-body" style="gap: 8px;">
+ <!-- Day Selection: Crucial for adding tasks to specific days -->
+ <span class="greeting-subtitle" style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.60);">SCHEDULE FOR DAY</span>
+ <div style="flex-direction: row; gap: 6px; width: 100%;">
+ <Button id="ed-day-0" class="sched-view-btn" style="flex-grow: 1; height: 32px;"><ButtonLabel id="ed-day-text-0" class="sched-view-text">Sun</ButtonLabel></Button>
+ <Button id="ed-day-1" class="sched-view-btn" style="flex-grow: 1; height: 32px;"><ButtonLabel id="ed-day-text-1" class="sched-view-text">Mon</ButtonLabel></Button>
+ <Button id="ed-day-2" class="sched-view-btn" style="flex-grow: 1; height: 32px;"><ButtonLabel id="ed-day-text-2" class="sched-view-text">Tue</ButtonLabel></Button>
+ <Button id="ed-day-3" class="sched-view-btn" style="flex-grow: 1; height: 32px;"><ButtonLabel id="ed-day-text-3" class="sched-view-text">Wed</ButtonLabel></Button>
+ <Button id="ed-day-4" class="sched-view-btn" style="flex-grow: 1; height: 32px;"><ButtonLabel id="ed-day-text-4" class="sched-view-text">Thu</ButtonLabel></Button>
+ <Button id="ed-day-5" class="sched-view-btn" style="flex-grow: 1; height: 32px;"><ButtonLabel id="ed-day-text-5" class="sched-view-text">Fri</ButtonLabel></Button>
+ <Button id="ed-day-6" class="sched-view-btn" style="flex-grow: 1; height: 32px;"><ButtonLabel id="ed-day-text-6" class="sched-view-text">Sat</ButtonLabel></Button>
+ </div>
+
  <!-- Quick Title Presets -->
  <span class="greeting-subtitle" style="font-size: 11px; font-weight: 700; color: rgba(255, 255, 255, 0.60);">QUICK TITLE PRESETS</span>
  <div style="flex-direction: row; gap: 6px; width: 100%; flex-wrap: wrap;">
@@ -1987,6 +2043,9 @@
  <Button id="ed-preset-3" class="focus-quick-chip" style="width: 115px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">Write Report</ButtonLabel></Button>
  <Button id="ed-preset-4" class="focus-quick-chip" style="width: 125px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">ML Benchmark</ButtonLabel></Button>
  <Button id="ed-preset-5" class="focus-quick-chip" style="width: 115px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">Gym / Health</ButtonLabel></Button>
+ <Button id="ed-preset-6" class="focus-quick-chip" style="width: 130px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">API Integration</ButtonLabel></Button>
+ <Button id="ed-preset-7" class="focus-quick-chip" style="width: 145px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">Architecture Design</ButtonLabel></Button>
+ <Button id="ed-preset-8" class="focus-quick-chip" style="width: 110px; height: 30px;"><ButtonLabel class="focus-quick-chip-text">Bug Triage</ButtonLabel></Button>
  </div>
 
  <!-- Duration Steppers & Quick Chips -->
@@ -2400,5 +2459,9 @@
  <Button id="btn-mover-reset" class="mover-chip">
  <ButtonLabel class="mover-chip-text">Reset</ButtonLabel>
  </Button>
+ <Button id="btn-mover-close" class="mover-chip" style="background-color: rgba(239, 68, 68, 0.28); border-color: #EF4444;">
+ <ButtonLabel class="mover-chip-text" style="color: #FCA5A5; font-weight: 800;">Close DeskMate</ButtonLabel>
+ </Button>
+ </div>
  </div>
 </Panel>
