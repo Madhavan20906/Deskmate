@@ -165,6 +165,11 @@ export class PanelSystem extends createSystem({
  private readonly monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
  private agendaItems: AgendaItemViewModel[] = JSON.parse(JSON.stringify(SEED_AGENDA_ITEMS));
  private routines: RoutineGroup[] = JSON.parse(JSON.stringify(SEED_ROUTINES));
+  private notes: Array<{ id: string; text: string; createdAt: number }> = [
+    { id: 'note-1', text: 'ML Assignment: Finalize test loss graphs and submit report', createdAt: Date.now() - 3600000 },
+    { id: 'note-2', text: 'API Architecture: Check headers, rate limits, and token refresh flow', createdAt: Date.now() - 7200000 },
+    { id: 'note-3', text: 'Sprint Goals: Deliver 60fps WebXR spatial command center', createdAt: Date.now() - 10800000 },
+  ];
  private habits: HabitItem[] = JSON.parse(JSON.stringify(SEED_HABITS));
  private deadlines: UpcomingDeadline[] = JSON.parse(JSON.stringify(SEED_DEADLINES));
 
@@ -283,8 +288,11 @@ export class PanelSystem extends createSystem({
 
     if (typeof window !== 'undefined') {
       const onWheel = (e: WheelEvent) => {
-        const zoomDelta = e.deltaY * -0.001;
-        this.workspaceOffset.z = Math.max(-0.45, Math.min(0.40, Number((this.workspaceOffset.z + zoomDelta).toFixed(3))));
+        let dy = e.deltaY;
+        if (e.deltaMode === 1) dy *= 33;
+        else if (e.deltaMode === 2) dy *= 100;
+        const zoomDelta = -dy * 0.0015;
+        this.workspaceOffset.z = Math.max(-0.75, Math.min(0.65, Number((this.workspaceOffset.z + zoomDelta).toFixed(3))));
         this.applyWorkspaceOffset();
       };
       window.addEventListener('wheel', onWheel, { passive: true });
@@ -567,9 +575,12 @@ export class PanelSystem extends createSystem({
     if (!obj) return;
     this.pulledPanels[panelId] = !this.pulledPanels[panelId];
     if (this.pulledPanels[panelId]) {
-      obj.position.set(0, 1.45, -0.50);
+      obj.position.set(0, 1.45, -0.50 + this.workspaceOffset.z);
       obj.rotation.set(0, 0, 0);
-      this.customPanelPositions.set(panelId, { pos: obj.position.clone(), rot: obj.rotation.clone() });
+      this.customPanelPositions.set(panelId, {
+        pos: new Vector3(0, 1.45, -0.50),
+        rot: obj.rotation.clone(),
+      });
       this.ensureSingleCenterPanel(panelId);
       this.setPipSpeech(`Pulled ${panelId} directly in front of you. Squeeze or pinch to move anywhere in the room!`);
     } else {
@@ -633,7 +644,11 @@ export class PanelSystem extends createSystem({
     const obj = this.world.getSceneObject(this.activeDrag.panelId);
     if (obj) {
       this.customPanelPositions.set(this.activeDrag.panelId, {
-        pos: obj.position.clone(),
+        pos: new Vector3(
+          obj.position.x - this.workspaceOffset.x,
+          obj.position.y - this.workspaceOffset.y,
+          obj.position.z - this.workspaceOffset.z,
+        ),
         rot: obj.rotation.clone(),
       });
     }
@@ -859,7 +874,11 @@ export class PanelSystem extends createSystem({
    if (obj) {
     const custom = this.customPanelPositions.get(id);
     if (custom) {
-      obj.position.copy(custom.pos);
+      obj.position.set(
+        custom.pos.x + this.workspaceOffset.x,
+        custom.pos.y + this.workspaceOffset.y,
+        custom.pos.z + this.workspaceOffset.z,
+      );
       obj.rotation.copy(custom.rot);
     } else {
       obj.position.set(
@@ -882,6 +901,113 @@ export class PanelSystem extends createSystem({
  window.localStorage.setItem('deskmate.workspace-offset.v1', JSON.stringify(this.workspaceOffset));
  } catch {}
  }
+
+  public saveNotes() {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('deskmate.notes.v1', JSON.stringify(this.notes));
+      }
+    } catch {}
+  }
+
+  public addQuickNote(textOverride?: string) {
+    let noteText = textOverride;
+    if (!noteText && typeof window !== 'undefined' && window.prompt) {
+      const input = window.prompt('Enter your quick note:');
+      if (input && input.trim()) noteText = input.trim();
+    }
+    if (!noteText) {
+      const activeTask = this.tasks.find((t) => (t.dayNumber ?? this.selectedDayNumber) === this.selectedDayNumber);
+      noteText = `Note: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${activeTask?.title || 'Review architecture & metrics'}`;
+    }
+    const newNote = {
+      id: `note-${Date.now()}`,
+      text: noteText,
+      createdAt: Date.now(),
+    };
+    this.notes.unshift(newNote);
+    this.saveNotes();
+    this.refreshNotesUI();
+    this.setPipSpeech(`Note added: "${noteText}".`, false);
+  }
+
+  public deleteNote(noteId: string) {
+    this.notes = this.notes.filter((n) => n.id !== noteId);
+    this.saveNotes();
+    this.refreshNotesUI();
+    this.setPipSpeech('Note deleted.', false);
+  }
+
+  public refreshNotesUI() {
+    const hubAsset = this.getAsset('panel-hub');
+    if (!hubAsset) return;
+    for (let i = 0; i < 6; i++) {
+      const row = hubAsset.getElementById(`note-row-${i}`) as any;
+      const txt = hubAsset.getElementById(`note-txt-${i}`) as any;
+      const note = this.notes[i];
+      if (note) {
+        if (txt) setText(txt, note.text);
+        if (row && typeof row.setProperties === 'function') {
+          row.setProperties({ display: 'flex' });
+        }
+      } else {
+        if (row && typeof row.setProperties === 'function') {
+          row.setProperties({ display: 'none' });
+        }
+      }
+    }
+  }
+
+  public refreshAllTasksListUI() {
+    const hubAsset = this.getAsset('panel-hub');
+    if (!hubAsset) return;
+    const sortedTasks = [...this.tasks].sort((a, b) => {
+      const dayA = a.dayNumber ?? this.selectedDayNumber;
+      const dayB = b.dayNumber ?? this.selectedDayNumber;
+      if (dayA !== dayB) return dayA - dayB;
+      return (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540);
+    });
+
+    for (let i = 0; i < 8; i++) {
+      const row = hubAsset.getElementById(`all-task-row-${i}`) as any;
+      const txt = hubAsset.getElementById(`all-task-txt-${i}`) as any;
+      const chkTxt = hubAsset.getElementById(`all-task-chk-txt-${i}`) as any;
+      const timeEl = hubAsset.getElementById(`all-task-time-${i}`) as any;
+      const badgeEl = hubAsset.getElementById(`all-task-badge-${i}`) as any;
+
+      const task = sortedTasks[i];
+      if (task) {
+        if (txt) setText(txt, task.title);
+        if (chkTxt) setText(chkTxt, task.status === 'completed' ? '✓' : '');
+        if (timeEl) {
+          const start = task.scheduledStartMinute ?? 540;
+          const h = Math.floor(start / 60);
+          const m = start % 60;
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          const dh = h % 12 === 0 ? 12 : h % 12;
+          const timeStr = `${task.dayNumber ? 'Day ' + task.dayNumber + ' · ' : ''}${dh}:${m < 10 ? '0' : ''}${m} ${ampm}`;
+          setText(timeEl, timeStr);
+        }
+        if (badgeEl) {
+          const pri = task.priority === 'high' ? 'High' : task.priority === 'low' ? 'Low' : 'Med';
+          setText(badgeEl, pri);
+          if (typeof badgeEl.setProperties === 'function') {
+            badgeEl.setProperties({
+              color: task.priority === 'high' ? '#EF4444' : task.priority === 'low' ? '#3B82F6' : '#F59E0B',
+              backgroundColor: task.priority === 'high' ? 'rgba(239, 68, 68, 0.20)' : task.priority === 'low' ? 'rgba(59, 130, 246, 0.20)' : 'rgba(245, 158, 11, 0.20)',
+            });
+          }
+        }
+        if (row && typeof row.setProperties === 'function') {
+          row.setProperties({ display: 'flex' });
+        }
+      } else {
+        if (row && typeof row.setProperties === 'function') {
+          row.setProperties({ display: 'none' });
+        }
+      }
+    }
+  }
 
   public resetPanelTransforms() {
     this.customPanelPositions.clear();
@@ -1477,7 +1603,7 @@ export class PanelSystem extends createSystem({
 
  const zoomSchedBtn = asset.getElementById('btn-zoom-schedule');
  if (zoomSchedBtn) {
- this.addPress(zoomSchedBtn, () => this.zoomSection('panel-hub', "Today's Schedule"));
+ this.addPress(zoomSchedBtn, () => this.setScheduleView("week"));
  }
 
   // Schedule Blocks (Click to open edit sheet)
@@ -1709,19 +1835,19 @@ export class PanelSystem extends createSystem({
  if (btn) {
  this.addPress(btn, () => {
  if (item.id === 'dock-calendar') {
- this.setHubView('month');
- } else if (item.id === 'dock-timeline') {
- this.setHubView('week');
- } else if (item.id === 'dock-notes') {
- this.setHubView('notes');
- } else if (item.id === 'dock-goals') {
- this.setHubView('goals');
- } else if (item.id === 'dock-reports') {
- this.setHubView('analytics');
- } else if (item.id === 'dock-capture') {
- this.openEditSheet(null);
- }
- this.setPipSpeech(`Dock: Opened ${item.label}.`);
+          this.setScheduleView('month');
+        } else if (item.id === 'dock-timeline') {
+          this.setScheduleView('day');
+        } else if (item.id === 'dock-notes') {
+          this.setHubView('notes');
+        } else if (item.id === 'dock-goals') {
+          this.setHubView('goals');
+        } else if (item.id === 'dock-reports') {
+          this.setHubView('analytics');
+        } else if (item.id === 'dock-capture') {
+          this.openEditSheet(null, this.selectedDayNumber);
+        }
+        this.setPipSpeech(`Opened ${item.label}.`, false);
  });
  }
  }
@@ -1756,53 +1882,56 @@ export class PanelSystem extends createSystem({
  }
 
  // Week View Subview Controls
- const weekTabDay = asset.getElementById('week-tab-day');
- if (weekTabDay) this.addPress(weekTabDay, () => this.setScheduleView('day'));
- const weekTabWeek = asset.getElementById('week-tab-week');
- if (weekTabWeek) this.addPress(weekTabWeek, () => this.setScheduleView('week'));
- const weekTabMonth = asset.getElementById('week-tab-month');
- if (weekTabMonth) this.addPress(weekTabMonth, () => this.setScheduleView('month'));
+    const weekTabDay = asset.getElementById('week-tab-day');
+    if (weekTabDay) this.addPress(weekTabDay, () => this.setScheduleView('day'));
+    const weekTabWeek = asset.getElementById('week-tab-week');
+    if (weekTabWeek) this.addPress(weekTabWeek, () => this.setScheduleView('week'));
+    const weekTabMonth = asset.getElementById('week-tab-month');
+    if (weekTabMonth) this.addPress(weekTabMonth, () => this.setScheduleView('month'));
 
-  const weekDays = ['Sun 16', 'Mon 17', 'Tue 18', 'Wed 19', 'Thu 20', 'Fri 21', 'Sat 22'];
-  for (let i = 0; i < 7; i++) {
-    const dayNum = 16 + i;
-    const dayBtn = asset.getElementById(`week-day-btn-${i}`);
-    if (dayBtn) {
-      this.addPress(dayBtn, () => {
-        this.selectedDayNumber = dayNum;
-        this.calendarDays.forEach((d) => { d.isSelected = d.dayNumber === this.selectedDayNumber; });
-        this.scheduleView = 'day';
-        this.setHubView('overview');
-        this.setPipSpeech(`Switched to ${weekDays[i]} schedule. Add or modify tasks for this day.`);
-        this.refreshAllUI();
-      });
-    }
+    const currentWeekForBindings = this.computeCurrentWeek();
+    for (let i = 0; i < 7; i++) {
+      const dayInfo = currentWeekForBindings[i];
+      const dayNum = dayInfo.dayNumber;
 
-    const addBtn = asset.getElementById(`week-day-add-${i}`);
-    if (addBtn) {
-      this.addPress(addBtn, () => {
-        this.selectedDayNumber = dayNum;
-        this.calendarDays.forEach((d) => { d.isSelected = d.dayNumber === this.selectedDayNumber; });
-        this.openEditSheet(null, dayNum);
-      });
-    }
-
-    for (let s = 0; s < 3; s++) {
-      const taskBtn = asset.getElementById(`week-task-btn-${i}-${s}`);
-      if (taskBtn) {
-        this.addPress(taskBtn, () => {
-          const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === dayNum);
-          if (dayTasks[s]) {
-            this.openEditSheet(dayTasks[s].id, dayNum);
-          } else {
-            this.openEditSheet(null, dayNum);
-          }
+      const dayBtn = asset.getElementById(`week-day-btn-${i}`);
+      if (dayBtn) {
+        this.addPress(dayBtn, () => {
+          this.selectedDayNumber = dayNum;
+          this.calendarDays.forEach((d) => { d.isSelected = d.dayNumber === this.selectedDayNumber; });
+          this.scheduleView = 'day';
+          this.setHubView('overview');
+          this.setPipSpeech(`Viewing ${dayInfo.dayOfWeek} ${dayNum} schedule.`, false);
+          this.refreshAllUI();
         });
       }
-    }
-  }
 
- // Month View Subview Controls
+      const addBtn = asset.getElementById(`week-day-add-${i}`);
+      if (addBtn) {
+        this.addPress(addBtn, () => {
+          this.selectedDayNumber = dayNum;
+          this.calendarDays.forEach((d) => { d.isSelected = d.dayNumber === this.selectedDayNumber; });
+          this.openEditSheet(null, dayNum);
+        });
+      }
+
+      for (let s = 0; s < 5; s++) {
+        const slotBtn = asset.getElementById(`week-task-btn-${i}-${s}`);
+        if (slotBtn) {
+          this.addPress(slotBtn, () => {
+            const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? this.selectedDayNumber) === dayNum).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+            const clickedTask = dayTasks[s];
+            if (clickedTask) {
+              this.openEditSheet(clickedTask.id, dayNum);
+            } else {
+              this.openEditSheet(null, dayNum);
+            }
+          });
+        }
+      }
+    }
+
+    // Month View Subview Controls
  const monthTabDay = asset.getElementById('month-tab-day');
  if (monthTabDay) this.addPress(monthTabDay, () => this.setScheduleView('day'));
  const monthTabWeek = asset.getElementById('month-tab-week');
@@ -2234,7 +2363,7 @@ export class PanelSystem extends createSystem({
  const moverCloser = asset.getElementById('btn-mover-closer');
  if (moverCloser) {
  this.addPress(moverCloser, () => {
- this.workspaceOffset.z = Math.min(0.40, Number((this.workspaceOffset.z + 0.15).toFixed(2)));
+ this.workspaceOffset.z = Math.min(0.65, Number((this.workspaceOffset.z + 0.15).toFixed(2)));
  this.applyWorkspaceOffset();
  this.setPipSpeech(`Pulled DeskMate closer (Z: ${(this.workspaceOffset.z * 100).toFixed(0)}cm).`);
  });
@@ -2243,7 +2372,7 @@ export class PanelSystem extends createSystem({
  const moverFarther = asset.getElementById('btn-mover-farther');
  if (moverFarther) {
  this.addPress(moverFarther, () => {
- this.workspaceOffset.z = Math.max(-0.45, Number((this.workspaceOffset.z - 0.15).toFixed(2)));
+ this.workspaceOffset.z = Math.max(-0.75, Number((this.workspaceOffset.z - 0.15).toFixed(2)));
  this.applyWorkspaceOffset();
  this.setPipSpeech(`Pushed DeskMate back (Z: ${(this.workspaceOffset.z * 100).toFixed(0)}cm).`);
  });
@@ -2332,14 +2461,27 @@ export class PanelSystem extends createSystem({
  }
 
  private switchNavTab(tab: NavTab) {
- this.activeTab = tab;
- if (tab === 'schedule') {
- this.setScheduleView(this.scheduleView);
- } else {
- this.setHubView(tab as HubContentView);
- }
- this.setPipSpeech(`Switched to ${tab.toUpperCase()} tab.`);
- }
+    this.activeTab = tab;
+    if (tab === 'schedule') {
+      this.setScheduleView(this.scheduleView);
+    } else {
+      this.setHubView(tab as HubContentView);
+    }
+    const tabNames: Record<string, string> = {
+      schedule: 'Schedule',
+      tasks: 'Tasks',
+      focus: 'Focus Studio',
+      analytics: 'Analytics',
+      garden: 'Productivity Garden',
+      routines: 'Routines',
+      notes: 'Notes',
+      goals: 'Goals',
+    };
+    if (!this.isPipMuted) {
+      this.speakTextAloud(tabNames[tab] || tab);
+    }
+    this.setPipSpeech(`Opened ${tabNames[tab] || tab}.`, false);
+  }
 
  private toggleSettingsSheet() {
  this.soundEnabled = !this.soundEnabled;
@@ -3200,7 +3342,7 @@ User command: "${transcript}"`;
  }
  }
 
- public setPipSpeech(text: string, speakAloud: boolean = true, force = false) {
+ public setPipSpeech(text: string, speakAloud: boolean = false, force = false) {
     const pipAsset = this.getAsset('panel-right-pip');
     if (pipAsset) {
       const speechEl = pipAsset.getElementById('pip-speech-text') as any;
@@ -3858,24 +4000,40 @@ User command: "${transcript}"`;
         });
       }
 
-      for (let s = 0; s < 3; s++) {
+      for (let s = 0; s < 5; s++) {
         const task = tasksForDay[s];
         const btnEl = asset.getElementById(`week-task-btn-${i}-${s}`) as any;
         const txtEl = asset.getElementById(`week-task-txt-${i}-${s}`) as any;
         if (task) {
-          if (txtEl) setText(txtEl, shortenScheduleTitle(task.title));
+          if (txtEl) {
+            const start = task.scheduledStartMinute ?? 540;
+            const h = Math.floor(start / 60);
+            const m = start % 60;
+            const ampm = h >= 12 ? 'p' : 'a';
+            const dh = h % 12 === 0 ? 12 : h % 12;
+            const timeTag = `${dh}:${m < 10 ? '0' : ''}${m}${ampm} `;
+            setText(txtEl, `${timeTag}${shortenScheduleTitle(task.title)}`);
+          }
           if (btnEl && typeof btnEl.setProperties === 'function') {
             btnEl.setProperties({
               display: 'flex',
-              backgroundColor: task.priority === 'high' ? 'rgba(239, 68, 68, 0.25)' : task.priority === 'low' ? 'rgba(59, 130, 246, 0.20)' : 'rgba(234, 179, 8, 0.20)',
-              borderColor: task.priority === 'high' ? 'rgba(239, 68, 68, 0.60)' : task.priority === 'low' ? 'rgba(59, 130, 246, 0.50)' : 'rgba(234, 179, 8, 0.50)',
+              backgroundColor: task.priority === 'high' ? 'rgba(239, 68, 68, 0.28)' : task.priority === 'low' ? 'rgba(59, 130, 246, 0.24)' : 'rgba(234, 179, 8, 0.24)',
+              borderColor: task.priority === 'high' ? '#EF4444' : task.priority === 'low' ? '#3B82F6' : '#EAB308',
             });
           }
+        } else if (s === 0 && tasksForDay.length === 0) {
+          if (btnEl && typeof btnEl.setProperties === 'function') {
+            btnEl.setProperties({
+              display: 'flex',
+              backgroundColor: 'rgba(255, 255, 255, 0.04)',
+              borderColor: 'rgba(255, 255, 255, 0.12)',
+            });
+          }
+          if (txtEl) setText(txtEl, '+ Add Task');
         } else {
           if (btnEl && typeof btnEl.setProperties === 'function') {
-            btnEl.setProperties({ display: s === 0 ? 'flex' : 'none' });
+            btnEl.setProperties({ display: 'none' });
           }
-          if (txtEl && s === 0) setText(txtEl, '+ Add Task');
         }
       }
     }
@@ -3892,18 +4050,33 @@ User command: "${transcript}"`;
     }
 
  // Dynamic Month View updates
- for (let d = 16; d <= 22; d++) {
- const tile = asset.getElementById(`month-date-${d}`) as any;
- if (tile && typeof tile.setProperties === 'function') {
- const isSelected = d === this.selectedDayNumber;
- tile.setProperties({
- backgroundColor: isSelected ? 'rgba(217, 119, 54, 0.35)' : 'rgba(255, 255, 255, 0.05)',
- borderColor: isSelected ? '#D97736' : 'rgba(255, 255, 255, 0.12)',
- });
- }
- }
+    const currentMonthName = this.monthNames[this.calendarDate.getMonth()] || 'November';
+    const monthTitleEl = asset.getElementById('month-view-title') as any;
+    if (monthTitleEl) {
+      setText(monthTitleEl, `${currentMonthName} ${this.calendarDate.getFullYear()} - Monthly Calendar`);
+    }
 
- const monthSelectedDayLabel = asset.getElementById('month-selected-day-label') as any;
+    const todayDateNum = new Date().getDate();
+    for (let d = 1; d <= 31; d++) {
+      const tile = asset.getElementById(`month-date-${d}`) as any;
+      const countEl = asset.getElementById(`month-count-${d}`) as any;
+      const tasksOnDay = this.tasks.filter((t) => (t.dayNumber ?? this.selectedDayNumber) === d);
+
+      if (countEl) {
+        setText(countEl, tasksOnDay.length > 0 ? `${tasksOnDay.length} task${tasksOnDay.length === 1 ? '' : 's'}` : '');
+      }
+
+      if (tile && typeof tile.setProperties === 'function') {
+        const isSelected = d === this.selectedDayNumber;
+        const isToday = d === todayDateNum;
+        tile.setProperties({
+          backgroundColor: isSelected ? 'rgba(217, 119, 54, 0.38)' : (isToday ? 'rgba(217, 119, 54, 0.14)' : 'rgba(255, 255, 255, 0.05)'),
+          borderColor: isSelected ? '#D97736' : (isToday ? 'rgba(217, 119, 54, 0.60)' : 'rgba(255, 255, 255, 0.12)'),
+        });
+      }
+    }
+
+    const monthSelectedDayLabel = asset.getElementById('month-selected-day-label') as any;
  if (monthSelectedDayLabel) {
  const selTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
  setText(
@@ -3930,8 +4103,11 @@ User command: "${transcript}"`;
  const gardenTitle = asset.getElementById('garden-hub-title') as any;
  if (gardenTitle) setText(gardenTitle, `Productivity Garden - Level ${gardenProgress.level} `);
  const gardenXp = asset.getElementById('garden-hub-xp') as any;
- if (gardenXp) setText(gardenXp, `${this.gardenPoints} / 1,000 XP`);
- }
+    if (gardenXp) setText(gardenXp, `${this.gardenPoints} / 1,000 XP`);
+
+    this.refreshNotesUI();
+    this.refreshAllTasksListUI();
+  }
 
  private refreshPipPanelUI() {
  const asset = this.getAsset('panel-right-pip');

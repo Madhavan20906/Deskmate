@@ -1532,7 +1532,7 @@
  <ButtonLabel class="sched-action-text">+ Block</ButtonLabel>
  </Button>
  <Button id="btn-zoom-schedule" class="sched-action-btn">
- <ButtonLabel class="sched-action-text">Zoom Week</ButtonLabel>
+ <ButtonLabel class="sched-action-text">Week View</ButtonLabel>
  </Button>
  </div>
  </div>
@@ -1800,120 +1800,198 @@
  </div>
 
  <div class="week-columns-row">
- <div class="week-day-col" id="week-col-0">
- <Button id="week-day-btn-0" class="week-day-header-btn">
- <ButtonLabel id="week-day-name-0" class="week-day-name">Sun 16</ButtonLabel>
- <ButtonLabel id="week-day-count-0" class="week-day-date">1 task</ButtonLabel>
- </Button>
- <div class="week-day-tasks">
- <Button id="week-task-btn-0-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-0" class="week-task-text">Weekly Plan</ButtonLabel></Button>
- <Button id="week-task-btn-0-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-0-1" class="week-task-text"></ButtonLabel></Button>
- <Button id="week-task-btn-0-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-0-2" class="week-task-text"></ButtonLabel></Button>
- </div>
- <Button id="week-day-add-0" class="week-add-btn">
- <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
- </Button>
- </div>
+  <div class="week-day-col" id="week-col-0">
+    <Button id="week-day-btn-0" class="week-day-header-btn">
+      <ButtonLabel id="week-day-name-0" class="week-day-name">Sun</ButtonLabel>
+      <ButtonLabel id="week-day-count-0" class="week-day-date">0 tasks</ButtonLabel>
+    </Button>
+    <div class="week-day-tasks" id="week-tasks-container-0">
+      <Button id="week-task-btn-0-0" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-0-0" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-0-1" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-0-1" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-0-2" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-0-2" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-0-3" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-0-3" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-0-4" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-0-4" class="week-task-text"></ButtonLabel>
+      </Button>
+    </div>
+    <Button id="week-day-add-0" class="week-add-btn">
+      <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+    </Button>
+  </div>
+  <div class="week-day-col" id="week-col-1">
+    <Button id="week-day-btn-1" class="week-day-header-btn">
+      <ButtonLabel id="week-day-name-1" class="week-day-name">Mon</ButtonLabel>
+      <ButtonLabel id="week-day-count-1" class="week-day-date">0 tasks</ButtonLabel>
+    </Button>
+    <div class="week-day-tasks" id="week-tasks-container-1">
+      <Button id="week-task-btn-1-0" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-1-0" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-1-1" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-1-1" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-1-2" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-1-2" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-1-3" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-1-3" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-1-4" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-1-4" class="week-task-text"></ButtonLabel>
+      </Button>
+    </div>
+    <Button id="week-day-add-1" class="week-add-btn">
+      <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+    </Button>
+  </div>
+  <div class="week-day-col" id="week-col-2">
+    <Button id="week-day-btn-2" class="week-day-header-btn">
+      <ButtonLabel id="week-day-name-2" class="week-day-name">Tue</ButtonLabel>
+      <ButtonLabel id="week-day-count-2" class="week-day-date">0 tasks</ButtonLabel>
+    </Button>
+    <div class="week-day-tasks" id="week-tasks-container-2">
+      <Button id="week-task-btn-2-0" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-2-0" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-2-1" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-2-1" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-2-2" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-2-2" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-2-3" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-2-3" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-2-4" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-2-4" class="week-task-text"></ButtonLabel>
+      </Button>
+    </div>
+    <Button id="week-day-add-2" class="week-add-btn">
+      <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+    </Button>
+  </div>
+  <div class="week-day-col" id="week-col-3">
+    <Button id="week-day-btn-3" class="week-day-header-btn">
+      <ButtonLabel id="week-day-name-3" class="week-day-name">Wed</ButtonLabel>
+      <ButtonLabel id="week-day-count-3" class="week-day-date">0 tasks</ButtonLabel>
+    </Button>
+    <div class="week-day-tasks" id="week-tasks-container-3">
+      <Button id="week-task-btn-3-0" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-3-0" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-3-1" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-3-1" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-3-2" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-3-2" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-3-3" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-3-3" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-3-4" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-3-4" class="week-task-text"></ButtonLabel>
+      </Button>
+    </div>
+    <Button id="week-day-add-3" class="week-add-btn">
+      <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+    </Button>
+  </div>
+  <div class="week-day-col" id="week-col-4">
+    <Button id="week-day-btn-4" class="week-day-header-btn">
+      <ButtonLabel id="week-day-name-4" class="week-day-name">Thu</ButtonLabel>
+      <ButtonLabel id="week-day-count-4" class="week-day-date">0 tasks</ButtonLabel>
+    </Button>
+    <div class="week-day-tasks" id="week-tasks-container-4">
+      <Button id="week-task-btn-4-0" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-4-0" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-4-1" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-4-1" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-4-2" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-4-2" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-4-3" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-4-3" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-4-4" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-4-4" class="week-task-text"></ButtonLabel>
+      </Button>
+    </div>
+    <Button id="week-day-add-4" class="week-add-btn">
+      <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+    </Button>
+  </div>
+  <div class="week-day-col" id="week-col-5">
+    <Button id="week-day-btn-5" class="week-day-header-btn">
+      <ButtonLabel id="week-day-name-5" class="week-day-name">Fri</ButtonLabel>
+      <ButtonLabel id="week-day-count-5" class="week-day-date">0 tasks</ButtonLabel>
+    </Button>
+    <div class="week-day-tasks" id="week-tasks-container-5">
+      <Button id="week-task-btn-5-0" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-5-0" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-5-1" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-5-1" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-5-2" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-5-2" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-5-3" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-5-3" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-5-4" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-5-4" class="week-task-text"></ButtonLabel>
+      </Button>
+    </div>
+    <Button id="week-day-add-5" class="week-add-btn">
+      <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+    </Button>
+  </div>
+  <div class="week-day-col" id="week-col-6">
+    <Button id="week-day-btn-6" class="week-day-header-btn">
+      <ButtonLabel id="week-day-name-6" class="week-day-name">Sat</ButtonLabel>
+      <ButtonLabel id="week-day-count-6" class="week-day-date">0 tasks</ButtonLabel>
+    </Button>
+    <div class="week-day-tasks" id="week-tasks-container-6">
+      <Button id="week-task-btn-6-0" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-6-0" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-6-1" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-6-1" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-6-2" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-6-2" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-6-3" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-6-3" class="week-task-text"></ButtonLabel>
+      </Button>
+      <Button id="week-task-btn-6-4" class="week-task-badge" style="display: none;">
+        <ButtonLabel id="week-task-txt-6-4" class="week-task-text"></ButtonLabel>
+      </Button>
+    </div>
+    <Button id="week-day-add-6" class="week-add-btn">
+      <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
+    </Button>
+  </div>
+</div>
+  </div>
 
- <div class="week-day-col" id="week-col-1">
- <Button id="week-day-btn-1" class="week-day-header-btn">
- <ButtonLabel id="week-day-name-1" class="week-day-name">Mon 17</ButtonLabel>
- <ButtonLabel id="week-day-count-1" class="week-day-date">1 task</ButtonLabel>
- </Button>
- <div class="week-day-tasks">
- <Button id="week-task-btn-1-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-1" class="week-task-text">Pipeline Bench</ButtonLabel></Button>
- <Button id="week-task-btn-1-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-1-1" class="week-task-text"></ButtonLabel></Button>
- <Button id="week-task-btn-1-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-1-2" class="week-task-text"></ButtonLabel></Button>
- </div>
- <Button id="week-day-add-1" class="week-add-btn">
- <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
- </Button>
- </div>
-
- <div class="week-day-col week-day-col-active" id="week-col-2">
- <Button id="week-day-btn-2" class="week-day-header-btn">
- <ButtonLabel id="week-day-name-2" class="week-day-name">Tue 18 - Today</ButtonLabel>
- <ButtonLabel id="week-day-count-2" class="week-day-date">4 tasks</ButtonLabel>
- </Button>
- <div class="week-day-tasks">
- <Button id="week-task-btn-2-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-2-a" class="week-task-text">Core Arch</ButtonLabel></Button>
- <Button id="week-task-btn-2-1" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-2-b" class="week-task-text">API Tests</ButtonLabel></Button>
- <Button id="week-task-btn-2-2" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-2-c" class="week-task-text">Team Sync</ButtonLabel></Button>
- </div>
- <Button id="week-day-add-2" class="week-add-btn">
- <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
- </Button>
- </div>
-
- <div class="week-day-col" id="week-col-3">
- <Button id="week-day-btn-3" class="week-day-header-btn">
- <ButtonLabel id="week-day-name-3" class="week-day-name">Wed 19</ButtonLabel>
- <ButtonLabel id="week-day-count-3" class="week-day-date">1 task</ButtonLabel>
- </Button>
- <div class="week-day-tasks">
- <Button id="week-task-btn-3-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-3" class="week-task-text">DB Migration</ButtonLabel></Button>
- <Button id="week-task-btn-3-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-3-1" class="week-task-text"></ButtonLabel></Button>
- <Button id="week-task-btn-3-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-3-2" class="week-task-text"></ButtonLabel></Button>
- </div>
- <Button id="week-day-add-3" class="week-add-btn">
- <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
- </Button>
- </div>
-
- <div class="week-day-col" id="week-col-4">
- <Button id="week-day-btn-4" class="week-day-header-btn">
- <ButtonLabel id="week-day-name-4" class="week-day-name">Thu 20</ButtonLabel>
- <ButtonLabel id="week-day-count-4" class="week-day-date">1 task</ButtonLabel>
- </Button>
- <div class="week-day-tasks">
- <Button id="week-task-btn-4-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-4" class="week-task-text">Performance</ButtonLabel></Button>
- <Button id="week-task-btn-4-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-4-1" class="week-task-text"></ButtonLabel></Button>
- <Button id="week-task-btn-4-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-4-2" class="week-task-text"></ButtonLabel></Button>
- </div>
- <Button id="week-day-add-4" class="week-add-btn">
- <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
- </Button>
- </div>
-
- <div class="week-day-col" id="week-col-5">
- <Button id="week-day-btn-5" class="week-day-header-btn">
- <ButtonLabel id="week-day-name-5" class="week-day-name">Fri 21</ButtonLabel>
- <ButtonLabel id="week-day-count-5" class="week-day-date">1 task</ButtonLabel>
- </Button>
- <div class="week-day-tasks">
- <Button id="week-task-btn-5-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-5" class="week-task-text">Production</ButtonLabel></Button>
- <Button id="week-task-btn-5-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-5-1" class="week-task-text"></ButtonLabel></Button>
- <Button id="week-task-btn-5-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-5-2" class="week-task-text"></ButtonLabel></Button>
- </div>
- <Button id="week-day-add-5" class="week-add-btn">
- <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
- </Button>
- </div>
-
- <div class="week-day-col" id="week-col-6">
- <Button id="week-day-btn-6" class="week-day-header-btn">
- <ButtonLabel id="week-day-name-6" class="week-day-name">Sat 22</ButtonLabel>
- <ButtonLabel id="week-day-count-6" class="week-day-date">0 tasks</ButtonLabel>
- </Button>
- <div class="week-day-tasks">
- <Button id="week-task-btn-6-0" class="week-task-badge" style="display: flex;"><ButtonLabel id="week-task-6" class="week-task-text">Weekend Rest</ButtonLabel></Button>
- <Button id="week-day-btn-6-1" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-6-1" class="week-task-text"></ButtonLabel></Button>
- <Button id="week-day-btn-6-2" class="week-task-badge" style="display: none;"><ButtonLabel id="week-task-6-2" class="week-task-text"></ButtonLabel></Button>
- </div>
- <Button id="week-day-add-6" class="week-add-btn">
- <ButtonLabel class="week-add-text">+ Add</ButtonLabel>
- </Button>
- </div>
- </div>
- </div>
-
- <!-- Subview: Month Calendar -->
+  <!-- Subview: Month Calendar -->
  <div id="view-month" class="hub-subview" style="display: none;">
  <div class="subview-top-bar">
  <Button id="btn-month-back" class="subview-back-btn">
  <ButtonLabel class="subview-back-text">Back to Day Schedule</ButtonLabel>
  </Button>
- <span class="subview-title">November 2026 - Monthly Calendar</span>
+ <span id="month-view-title" class="subview-title">Monthly Calendar</span>
  <div class="schedule-view-tabs">
  <Button id="month-tab-day" class="sched-view-btn">
  <ButtonLabel class="sched-view-text">Day</ButtonLabel>
@@ -1928,57 +2006,163 @@
  </div>
 
  <div class="month-grid-container">
- <div class="month-days-header-row">
- <span class="month-header-cell">Sun</span>
- <span class="month-header-cell">Mon</span>
- <span class="month-header-cell">Tue</span>
- <span class="month-header-cell">Wed</span>
- <span class="month-header-cell">Thu</span>
- <span class="month-header-cell">Fri</span>
- <span class="month-header-cell">Sat</span>
- </div>
+  <div class="month-days-header-row">
+    <span class="month-header-cell">Sun</span>
+    <span class="month-header-cell">Mon</span>
+    <span class="month-header-cell">Tue</span>
+    <span class="month-header-cell">Wed</span>
+    <span class="month-header-cell">Thu</span>
+    <span class="month-header-cell">Fri</span>
+    <span class="month-header-cell">Sat</span>
+  </div>
+  <div class="month-dates-row" style="margin-bottom: 4px;">
+    <Button id="month-date-1" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-1" class="month-date-num">1</ButtonLabel>
+      <ButtonLabel id="month-count-1" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-2" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-2" class="month-date-num">2</ButtonLabel>
+      <ButtonLabel id="month-count-2" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-3" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-3" class="month-date-num">3</ButtonLabel>
+      <ButtonLabel id="month-count-3" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-4" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-4" class="month-date-num">4</ButtonLabel>
+      <ButtonLabel id="month-count-4" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-5" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-5" class="month-date-num">5</ButtonLabel>
+      <ButtonLabel id="month-count-5" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-6" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-6" class="month-date-num">6</ButtonLabel>
+      <ButtonLabel id="month-count-6" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-7" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-7" class="month-date-num">7</ButtonLabel>
+      <ButtonLabel id="month-count-7" class="month-task-count-text"></ButtonLabel>
+    </Button>
+  </div>
+  <div class="month-dates-row" style="margin-bottom: 4px;">
+    <Button id="month-date-8" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-8" class="month-date-num">8</ButtonLabel>
+      <ButtonLabel id="month-count-8" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-9" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-9" class="month-date-num">9</ButtonLabel>
+      <ButtonLabel id="month-count-9" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-10" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-10" class="month-date-num">10</ButtonLabel>
+      <ButtonLabel id="month-count-10" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-11" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-11" class="month-date-num">11</ButtonLabel>
+      <ButtonLabel id="month-count-11" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-12" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-12" class="month-date-num">12</ButtonLabel>
+      <ButtonLabel id="month-count-12" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-13" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-13" class="month-date-num">13</ButtonLabel>
+      <ButtonLabel id="month-count-13" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-14" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-14" class="month-date-num">14</ButtonLabel>
+      <ButtonLabel id="month-count-14" class="month-task-count-text"></ButtonLabel>
+    </Button>
+  </div>
+  <div class="month-dates-row" style="margin-bottom: 4px;">
+    <Button id="month-date-15" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-15" class="month-date-num">15</ButtonLabel>
+      <ButtonLabel id="month-count-15" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-16" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-16" class="month-date-num">16</ButtonLabel>
+      <ButtonLabel id="month-count-16" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-17" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-17" class="month-date-num">17</ButtonLabel>
+      <ButtonLabel id="month-count-17" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-18" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-18" class="month-date-num">18</ButtonLabel>
+      <ButtonLabel id="month-count-18" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-19" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-19" class="month-date-num">19</ButtonLabel>
+      <ButtonLabel id="month-count-19" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-20" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-20" class="month-date-num">20</ButtonLabel>
+      <ButtonLabel id="month-count-20" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-21" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-21" class="month-date-num">21</ButtonLabel>
+      <ButtonLabel id="month-count-21" class="month-task-count-text"></ButtonLabel>
+    </Button>
+  </div>
+  <div class="month-dates-row" style="margin-bottom: 4px;">
+    <Button id="month-date-22" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-22" class="month-date-num">22</ButtonLabel>
+      <ButtonLabel id="month-count-22" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-23" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-23" class="month-date-num">23</ButtonLabel>
+      <ButtonLabel id="month-count-23" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-24" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-24" class="month-date-num">24</ButtonLabel>
+      <ButtonLabel id="month-count-24" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-25" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-25" class="month-date-num">25</ButtonLabel>
+      <ButtonLabel id="month-count-25" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-26" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-26" class="month-date-num">26</ButtonLabel>
+      <ButtonLabel id="month-count-26" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-27" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-27" class="month-date-num">27</ButtonLabel>
+      <ButtonLabel id="month-count-27" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-28" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-28" class="month-date-num">28</ButtonLabel>
+      <ButtonLabel id="month-count-28" class="month-task-count-text"></ButtonLabel>
+    </Button>
+  </div>
+  <div class="month-dates-row" style="margin-bottom: 4px;">
+    <Button id="month-date-29" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-29" class="month-date-num">29</ButtonLabel>
+      <ButtonLabel id="month-count-29" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-30" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-30" class="month-date-num">30</ButtonLabel>
+      <ButtonLabel id="month-count-30" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <Button id="month-date-31" class="month-date-tile" style="flex-grow: 1; min-height: 44px; padding-left: 6px; padding-right: 6px; padding-top: 4px; padding-bottom: 4px;">
+      <ButtonLabel id="month-num-31" class="month-date-num">31</ButtonLabel>
+      <ButtonLabel id="month-count-31" class="month-task-count-text"></ButtonLabel>
+    </Button>
+    <div style="flex-grow: 1; min-height: 44px;"></div>
+    <div style="flex-grow: 1; min-height: 44px;"></div>
+    <div style="flex-grow: 1; min-height: 44px;"></div>
+    <div style="flex-grow: 1; min-height: 44px;"></div>
+  </div>
+  <div class="month-selected-day-card" style="margin-top: 8px;">
+    <span id="month-selected-day-label" class="subview-title">Selected Day: Today</span>
+    <Button id="btn-month-add-task" class="subview-back-btn">
+      <ButtonLabel class="subview-back-text">+ Add Task for this Day</ButtonLabel>
+    </Button>
+  </div>
+</div>
+  </div>
 
- <div class="month-dates-row">
- <Button id="month-date-16" class="month-date-tile">
- <ButtonLabel class="month-date-num">16</ButtonLabel>
- <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
- </Button>
- <Button id="month-date-17" class="month-date-tile">
- <ButtonLabel class="month-date-num">17</ButtonLabel>
- <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
- </Button>
- <Button id="month-date-18" class="month-date-tile month-date-tile-active">
- <ButtonLabel class="month-date-num">18 - Today</ButtonLabel>
- <ButtonLabel class="month-task-count-text">4 tasks</ButtonLabel>
- </Button>
- <Button id="month-date-19" class="month-date-tile">
- <ButtonLabel class="month-date-num">19</ButtonLabel>
- <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
- </Button>
- <Button id="month-date-20" class="month-date-tile">
- <ButtonLabel class="month-date-num">20</ButtonLabel>
- <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
- </Button>
- <Button id="month-date-21" class="month-date-tile">
- <ButtonLabel class="month-date-num">21</ButtonLabel>
- <ButtonLabel class="month-task-count-text">1 task</ButtonLabel>
- </Button>
- <Button id="month-date-22" class="month-date-tile">
- <ButtonLabel class="month-date-num">22</ButtonLabel>
- <ButtonLabel class="month-task-count-text">0 tasks</ButtonLabel>
- </Button>
- </div>
-
- <div class="month-selected-day-card">
- <span id="month-selected-day-label" class="subview-title">Selected Day: Tue, Nov 18 - 4 tasks</span>
- <Button id="btn-month-add-task" class="subview-back-btn">
- <ButtonLabel class="subview-back-text">+ Add Task for this Day</ButtonLabel>
- </Button>
- </div>
- </div>
- </div>
-
- <!-- Subview: All Tasks & Backlog -->
+  <!-- Subview: All Tasks & Backlog -->
  <div id="view-tasks" class="hub-subview" style="display: none;">
  <div class="subview-top-bar">
  <Button id="btn-tasks-back" class="subview-back-btn">
@@ -1989,27 +2173,147 @@
  <ButtonLabel class="subview-back-text">+ Add New Task</ButtonLabel>
  </Button>
  </div>
- <div class="subview-body">
- <div class="interactive-card-item">
- <span class="interactive-card-text">* Finish ML assignment - High - 9:00 - 10:30 AM</span>
- <span class="hub-task-badge badge-high">High</span>
- </div>
- <div class="interactive-card-item">
- <span class="interactive-card-text">* Implement API - Medium - 11:00 AM - 1:00 PM</span>
- <span class="hub-task-badge badge-med">Medium</span>
- </div>
- <div class="interactive-card-item">
- <span class="interactive-card-text">* Team meeting - Low - 2:00 - 2:30 PM</span>
- <span class="hub-task-badge badge-low">Low</span>
- </div>
- <div class="interactive-card-item">
- <span class="interactive-card-text">* Read research paper - Medium - 3:30 - 5:00 PM</span>
- <span class="hub-task-badge badge-med">Medium</span>
- </div>
- </div>
- </div>
+ <div class="subview-body" id="all-tasks-list" style="gap: 6px;">
+    <div id="all-task-row-0" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 8px; padding-bottom: 8px;">
+      <div style="flex-direction: row; align-items: center; gap: 8px; flex-grow: 1;">
+        <Button id="all-task-chk-0" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
+          <ButtonLabel id="all-task-chk-txt-0" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
+        </Button>
+        <Button id="all-task-btn-0" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+          <ButtonLabel id="all-task-txt-0" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
+        </Button>
+      </div>
+      <div style="flex-direction: row; align-items: center; gap: 8px;">
+        <span id="all-task-time-0" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
+        <span id="all-task-badge-0" class="hub-task-badge badge-med">Med</span>
+        <Button id="all-task-del-0" class="subview-back-btn" style="padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+          <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 10px;">Del</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="all-task-row-1" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 8px; padding-bottom: 8px;">
+      <div style="flex-direction: row; align-items: center; gap: 8px; flex-grow: 1;">
+        <Button id="all-task-chk-1" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
+          <ButtonLabel id="all-task-chk-txt-1" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
+        </Button>
+        <Button id="all-task-btn-1" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+          <ButtonLabel id="all-task-txt-1" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
+        </Button>
+      </div>
+      <div style="flex-direction: row; align-items: center; gap: 8px;">
+        <span id="all-task-time-1" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
+        <span id="all-task-badge-1" class="hub-task-badge badge-med">Med</span>
+        <Button id="all-task-del-1" class="subview-back-btn" style="padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+          <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 10px;">Del</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="all-task-row-2" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 8px; padding-bottom: 8px;">
+      <div style="flex-direction: row; align-items: center; gap: 8px; flex-grow: 1;">
+        <Button id="all-task-chk-2" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
+          <ButtonLabel id="all-task-chk-txt-2" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
+        </Button>
+        <Button id="all-task-btn-2" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+          <ButtonLabel id="all-task-txt-2" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
+        </Button>
+      </div>
+      <div style="flex-direction: row; align-items: center; gap: 8px;">
+        <span id="all-task-time-2" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
+        <span id="all-task-badge-2" class="hub-task-badge badge-med">Med</span>
+        <Button id="all-task-del-2" class="subview-back-btn" style="padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+          <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 10px;">Del</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="all-task-row-3" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 8px; padding-bottom: 8px;">
+      <div style="flex-direction: row; align-items: center; gap: 8px; flex-grow: 1;">
+        <Button id="all-task-chk-3" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
+          <ButtonLabel id="all-task-chk-txt-3" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
+        </Button>
+        <Button id="all-task-btn-3" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+          <ButtonLabel id="all-task-txt-3" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
+        </Button>
+      </div>
+      <div style="flex-direction: row; align-items: center; gap: 8px;">
+        <span id="all-task-time-3" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
+        <span id="all-task-badge-3" class="hub-task-badge badge-med">Med</span>
+        <Button id="all-task-del-3" class="subview-back-btn" style="padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+          <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 10px;">Del</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="all-task-row-4" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 8px; padding-bottom: 8px;">
+      <div style="flex-direction: row; align-items: center; gap: 8px; flex-grow: 1;">
+        <Button id="all-task-chk-4" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
+          <ButtonLabel id="all-task-chk-txt-4" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
+        </Button>
+        <Button id="all-task-btn-4" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+          <ButtonLabel id="all-task-txt-4" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
+        </Button>
+      </div>
+      <div style="flex-direction: row; align-items: center; gap: 8px;">
+        <span id="all-task-time-4" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
+        <span id="all-task-badge-4" class="hub-task-badge badge-med">Med</span>
+        <Button id="all-task-del-4" class="subview-back-btn" style="padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+          <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 10px;">Del</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="all-task-row-5" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 8px; padding-bottom: 8px;">
+      <div style="flex-direction: row; align-items: center; gap: 8px; flex-grow: 1;">
+        <Button id="all-task-chk-5" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
+          <ButtonLabel id="all-task-chk-txt-5" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
+        </Button>
+        <Button id="all-task-btn-5" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+          <ButtonLabel id="all-task-txt-5" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
+        </Button>
+      </div>
+      <div style="flex-direction: row; align-items: center; gap: 8px;">
+        <span id="all-task-time-5" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
+        <span id="all-task-badge-5" class="hub-task-badge badge-med">Med</span>
+        <Button id="all-task-del-5" class="subview-back-btn" style="padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+          <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 10px;">Del</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="all-task-row-6" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 8px; padding-bottom: 8px;">
+      <div style="flex-direction: row; align-items: center; gap: 8px; flex-grow: 1;">
+        <Button id="all-task-chk-6" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
+          <ButtonLabel id="all-task-chk-txt-6" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
+        </Button>
+        <Button id="all-task-btn-6" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+          <ButtonLabel id="all-task-txt-6" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
+        </Button>
+      </div>
+      <div style="flex-direction: row; align-items: center; gap: 8px;">
+        <span id="all-task-time-6" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
+        <span id="all-task-badge-6" class="hub-task-badge badge-med">Med</span>
+        <Button id="all-task-del-6" class="subview-back-btn" style="padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+          <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 10px;">Del</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="all-task-row-7" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 12px; padding-right: 12px; padding-top: 8px; padding-bottom: 8px;">
+      <div style="flex-direction: row; align-items: center; gap: 8px; flex-grow: 1;">
+        <Button id="all-task-chk-7" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
+          <ButtonLabel id="all-task-chk-txt-7" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
+        </Button>
+        <Button id="all-task-btn-7" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+          <ButtonLabel id="all-task-txt-7" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
+        </Button>
+      </div>
+      <div style="flex-direction: row; align-items: center; gap: 8px;">
+        <span id="all-task-time-7" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
+        <span id="all-task-badge-7" class="hub-task-badge badge-med">Med</span>
+        <Button id="all-task-del-7" class="subview-back-btn" style="padding-left: 8px; padding-right: 8px; padding-top: 2px; padding-bottom: 2px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+          <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 10px;">Del</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+  </div>
+  </div>
 
- <!-- Subview: Task Creation & Edit Studio (In-Place, Zero Zoom) -->
+  <!-- Subview: Task Creation & Edit Studio (In-Place, Zero Zoom) -->
  <div id="view-task-editor" class="hub-subview" style="display: none;">
  <div class="subview-top-bar">
  <Button id="btn-editor-back" class="subview-back-btn">
@@ -2234,20 +2538,59 @@
  <ButtonLabel class="subview-back-text">+ Quick Note</ButtonLabel>
  </Button>
  </div>
- <div class="subview-body">
- <Button id="note-item-0" class="interactive-card-item">
- <ButtonLabel class="interactive-card-text">Notes ML Assignment: Finalize test loss graphs and submit report</ButtonLabel>
- </Button>
- <Button id="note-item-1" class="interactive-card-item">
- <ButtonLabel class="interactive-card-text">Tip: API Architecture: Check headers, rate limits, and token refresh flow</ButtonLabel>
- </Button>
- <Button id="note-item-2" class="interactive-card-item">
- <ButtonLabel class="interactive-card-text">Goals Sprint Goals: Deliver 60fps WebXR spatial command center</ButtonLabel>
- </Button>
- </div>
- </div>
+ <div class="subview-body" id="notes-list-container" style="gap: 8px;">
+    <div id="note-row-0" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
+      <Button id="note-item-0" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+        <ButtonLabel id="note-txt-0" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
+      </Button>
+      <Button id="note-del-0" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+        <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
+      </Button>
+    </div>
+    <div id="note-row-1" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
+      <Button id="note-item-1" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+        <ButtonLabel id="note-txt-1" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
+      </Button>
+      <Button id="note-del-1" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+        <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
+      </Button>
+    </div>
+    <div id="note-row-2" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
+      <Button id="note-item-2" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+        <ButtonLabel id="note-txt-2" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
+      </Button>
+      <Button id="note-del-2" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+        <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
+      </Button>
+    </div>
+    <div id="note-row-3" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
+      <Button id="note-item-3" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+        <ButtonLabel id="note-txt-3" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
+      </Button>
+      <Button id="note-del-3" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+        <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
+      </Button>
+    </div>
+    <div id="note-row-4" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
+      <Button id="note-item-4" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+        <ButtonLabel id="note-txt-4" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
+      </Button>
+      <Button id="note-del-4" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+        <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
+      </Button>
+    </div>
+    <div id="note-row-5" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
+      <Button id="note-item-5" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
+        <ButtonLabel id="note-txt-5" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
+      </Button>
+      <Button id="note-del-5" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
+        <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
+      </Button>
+    </div>
+  </div>
+  </div>
 
- <!-- Subview: Quarterly Goals -->
+  <!-- Subview: Quarterly Goals -->
  <div id="view-goals" class="hub-subview" style="display: none;">
  <div class="subview-top-bar">
  <Button id="btn-goals-back" class="subview-back-btn">
