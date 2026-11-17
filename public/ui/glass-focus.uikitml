@@ -17,15 +17,27 @@
  justify-content: center;
  align-items: center;
  width: 100%;
- height: 6px;
- margin-bottom: 1px;
+ height: 16px;
+ margin-bottom: 2px;
+ border-radius: 999px;
+ background-color: rgba(255, 255, 255, 0.04);
+ }
+
+ .panel-handle:hover {
+ background-color: rgba(255, 255, 255, 0.15);
  }
 
  .handle-bar {
- width: 44px;
+ width: 68px;
  height: 4px;
  border-radius: 999px;
- background-color: rgba(255, 255, 255, 0.28);
+ background-color: #FFFFFF;
+ }
+
+ .handle-bar:hover {
+ background-color: #FFFFFF;
+ height: 5px;
+ width: 78px;
  }
 
  .habits-card {

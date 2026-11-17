@@ -28,6 +28,7 @@ import {
   Raycaster,
   Vector3,
   Quaternion,
+  Euler,
   DoubleSide,
   Color,
 } from '@iwsdk/core';
@@ -223,6 +224,23 @@ export class PanelSystem extends createSystem({
   private pointerRayDir = new Vector3();
   private pointerTempQuat = new Quaternion();
   private lastTriggerPulseTime = { left: 0, right: 0 };
+
+  // Active Panel Dragging & Mobility (Controllers & Hands)
+  private activeDrag: {
+    panelId: string;
+    hand: 'left' | 'right';
+    mode: 'distance' | 'proximity';
+    initialDistance: number;
+    grabOffset: Vector3;
+    initialPanelPos: Vector3;
+    hasMoved: boolean;
+  } | null = null;
+  private customPanelPositions: Map<string, { pos: Vector3; rot: Euler }> = new Map();
+  private dragRayOrigin = new Vector3();
+  private dragRayDir = new Vector3();
+  private dragTempQuat = new Quaternion();
+  private dragTempPos = new Vector3();
+  private dragHeadPos = new Vector3();
 
  init() {
  this.audio = new GhostDeskmateAudio();
@@ -520,10 +538,179 @@ export class PanelSystem extends createSystem({
     if (this.pulledPanels[panelId]) {
       obj.position.set(0, 1.45, -0.50);
       obj.rotation.set(0, 0, 0);
+      this.customPanelPositions.set(panelId, {
+        pos: obj.position.clone(),
+        rot: obj.rotation.clone(),
+      });
       this.setPipSpeech(`Pulled ${panelId} directly in front of you. Squeeze or pinch to move anywhere in the room!`);
     } else {
+      this.customPanelPositions.delete(panelId);
       this.applyWorkspaceOffset();
       this.setPipSpeech(`Returned ${panelId} to workspace position.`);
+    }
+  }
+
+  public startDraggingPanel(
+    panelId: string,
+    hand: 'left' | 'right' = 'right',
+    hitPoint: Vector3 | null = null,
+    mode: 'distance' | 'proximity' = 'distance',
+  ) {
+    const obj = this.world.getSceneObject(panelId);
+    if (!obj) return;
+
+    const raySpaces = (this.player as any)?.raySpaces;
+    const space = raySpaces?.[hand];
+    if (!space) return;
+
+    space.getWorldPosition(this.dragRayOrigin);
+    space.getWorldQuaternion(this.dragTempQuat);
+    this.dragRayDir.set(0, 0, -1).applyQuaternion(this.dragTempQuat);
+
+    let initialDist = 1.0;
+    const grabOffset = new Vector3();
+
+    if (mode === 'distance') {
+      if (hitPoint) {
+        initialDist = Math.max(0.35, this.dragRayOrigin.distanceTo(hitPoint));
+        grabOffset.copy(obj.position).sub(hitPoint);
+      } else {
+        initialDist = Math.max(0.35, this.dragRayOrigin.distanceTo(obj.position));
+      }
+    } else {
+      const gripSpace = (this.player as any)?.gripSpaces?.[hand] || space;
+      gripSpace.getWorldPosition(this.dragTempPos);
+      grabOffset.copy(obj.position).sub(this.dragTempPos);
+      initialDist = 0.5;
+    }
+
+    this.activeDrag = {
+      panelId,
+      hand,
+      mode,
+      initialDistance: initialDist,
+      grabOffset,
+      initialPanelPos: obj.position.clone(),
+      hasMoved: false,
+    };
+
+    if (this.soundEnabled && this.audio) {
+      this.audio.playPinchTick();
+    }
+  }
+
+  public stopDraggingPanel() {
+    if (!this.activeDrag) return;
+    const obj = this.world.getSceneObject(this.activeDrag.panelId);
+    if (obj) {
+      this.customPanelPositions.set(this.activeDrag.panelId, {
+        pos: obj.position.clone(),
+        rot: obj.rotation.clone(),
+      });
+    }
+    this.activeDrag = null;
+  }
+
+  private updateDrag() {
+    if (!this.activeDrag) return;
+    const obj = this.world.getSceneObject(this.activeDrag.panelId);
+    if (!obj) {
+      this.activeDrag = null;
+      return;
+    }
+
+    const raySpaces = (this.player as any)?.raySpaces;
+    const space = raySpaces?.[this.activeDrag.hand];
+    if (!space) return;
+
+    if (this.activeDrag.mode === 'proximity') {
+      const gripSpace = (this.player as any)?.gripSpaces?.[this.activeDrag.hand] || space;
+      gripSpace.getWorldPosition(this.dragTempPos);
+      this.dragTempPos.add(this.activeDrag.grabOffset);
+    } else {
+      space.getWorldPosition(this.dragRayOrigin);
+      space.getWorldQuaternion(this.dragTempQuat);
+      this.dragRayDir.set(0, 0, -1).applyQuaternion(this.dragTempQuat);
+
+      this.dragTempPos
+        .copy(this.dragRayOrigin)
+        .addScaledVector(this.dragRayDir, this.activeDrag.initialDistance)
+        .add(this.activeDrag.grabOffset);
+    }
+
+    if (!this.activeDrag.hasMoved && this.dragTempPos.distanceTo(this.activeDrag.initialPanelPos) > 0.02) {
+      this.activeDrag.hasMoved = true;
+    }
+
+    obj.position.copy(this.dragTempPos);
+
+    // Gently face the player (billboard yaw) so the panel is always comfortably angled
+    this.world.camera.getWorldPosition(this.dragHeadPos);
+    const dx = this.dragHeadPos.x - obj.position.x;
+    const dz = this.dragHeadPos.z - obj.position.z;
+    const angle = Math.atan2(dx, dz);
+    obj.rotation.set(0, angle, 0);
+
+    // If panel-right-pip moves, keep Pip 3D robot companion positioned right beside it
+    if (this.activeDrag.panelId === 'panel-right-pip' && this.pipRobotObject) {
+      const pipOffset = new Vector3(0.04, 0.18, 0.20).applyAxisAngle(new Vector3(0, 1, 0), angle);
+      this.pipRobotObject.position.copy(obj.position).add(pipOffset);
+      this.pipRobotObject.rotation.set(0, angle, 0);
+    }
+  }
+
+  private bindPanelDragHandle(element: any, panelId: string) {
+    if (!element) return;
+
+    const onPointerDown = (e: any) => {
+      let hand: 'left' | 'right' = 'right';
+      if (e?.pointerId === 1 || e?.pointerId === 'left') {
+        hand = 'left';
+      }
+      this.startDraggingPanel(panelId, hand, e?.point, 'distance');
+    };
+
+    const onPointerUp = () => {
+      if (this.activeDrag && this.activeDrag.panelId === panelId) {
+        if (!this.activeDrag.hasMoved) {
+          this.togglePanelPull(panelId);
+        } else {
+          if (this.soundEnabled && this.audio) {
+            this.audio.playPinchTick();
+          }
+          this.setPipSpeech(`Repositioned panel in your space.`, false);
+        }
+        this.stopDraggingPanel();
+      }
+    };
+
+    element.addEventListener('pointerdown', onPointerDown);
+    element.addEventListener('pointerup', onPointerUp);
+    element.addEventListener('pointercancel', onPointerUp);
+
+    this.cleanupFuncs.push(() => {
+      try {
+        element.removeEventListener('pointerdown', onPointerDown);
+        element.removeEventListener('pointerup', onPointerUp);
+        element.removeEventListener('pointercancel', onPointerUp);
+      } catch {}
+    });
+
+    if (Array.isArray(element.children)) {
+      for (const child of element.children) {
+        if (child && typeof child.addEventListener === 'function') {
+          child.addEventListener('pointerdown', onPointerDown);
+          child.addEventListener('pointerup', onPointerUp);
+          child.addEventListener('pointercancel', onPointerUp);
+          this.cleanupFuncs.push(() => {
+            try {
+              child.removeEventListener('pointerdown', onPointerDown);
+              child.removeEventListener('pointerup', onPointerUp);
+              child.removeEventListener('pointercancel', onPointerUp);
+            } catch {}
+          });
+        }
+      }
     }
   }
 
@@ -569,21 +756,27 @@ export class PanelSystem extends createSystem({
   const targetDef = presets[this.activeArrangePreset] || presets.Arc;
   for (const [id, def] of Object.entries(targetDef)) {
    const obj = this.world.getSceneObject(id);
- if (obj) {
- obj.position.set(
- def.pos[0] + this.workspaceOffset.x,
- def.pos[1] + this.workspaceOffset.y,
- def.pos[2] + this.workspaceOffset.z,
- );
- obj.rotation.set(
- (def.rotDeg[0] * Math.PI) / 180,
- (def.rotDeg[1] * Math.PI) / 180,
- (def.rotDeg[2] * Math.PI) / 180,
- );
- obj.scale.set(def.scale, def.scale, def.scale);
- obj.visible = true;
- }
- }
+   if (obj) {
+    const custom = this.customPanelPositions.get(id);
+    if (custom) {
+      obj.position.copy(custom.pos);
+      obj.rotation.copy(custom.rot);
+    } else {
+      obj.position.set(
+        def.pos[0] + this.workspaceOffset.x,
+        def.pos[1] + this.workspaceOffset.y,
+        def.pos[2] + this.workspaceOffset.z,
+      );
+      obj.rotation.set(
+        (def.rotDeg[0] * Math.PI) / 180,
+        (def.rotDeg[1] * Math.PI) / 180,
+        (def.rotDeg[2] * Math.PI) / 180,
+      );
+    }
+    obj.scale.set(def.scale, def.scale, def.scale);
+    obj.visible = true;
+   }
+  }
 
  try {
  window.localStorage.setItem('deskmate.workspace-offset.v1', JSON.stringify(this.workspaceOffset));
@@ -767,7 +960,7 @@ export class PanelSystem extends createSystem({
  // Interactive panel handle
     const handleTasks = asset.getElementById('handle-bar-tasks');
     if (handleTasks) {
-      this.addPress(handleTasks, () => this.togglePanelPull('panel-left-tasks'));
+      this.bindPanelDragHandle(handleTasks, 'panel-left-tasks');
     }
 
     // 3-Date Calendar Navigation (1 day step per click)
@@ -945,7 +1138,7 @@ export class PanelSystem extends createSystem({
  const asset = this.getAsset('panel-hub');
  if (!asset) return;
  const handleHub = asset.getElementById('handle-bar-hub');
- if (handleHub) this.addPress(handleHub, () => this.togglePanelPull('panel-hub'));
+ if (handleHub) this.bindPanelDragHandle(handleHub, 'panel-hub');
 
  // Zoom Back Button on Hub Zoom Bar
  const zoomBackBtn = asset.getElementById('btn-zoom-back');
@@ -1919,7 +2112,7 @@ export class PanelSystem extends createSystem({
  }
 
   const handlePip = asset.getElementById('handle-bar-pip');
-    if (handlePip) this.addPress(handlePip, () => this.togglePanelPull('panel-right-pip'));
+  if (handlePip) this.bindPanelDragHandle(handlePip, 'panel-right-pip');
 
     const muteBtn = asset.getElementById('btn-pip-mute');
     if (muteBtn) {
@@ -2355,7 +2548,7 @@ export class PanelSystem extends createSystem({
  const asset = this.getAsset('panel-right-focus');
  if (!asset) return;
  const handleFocus = asset.getElementById('handle-bar-focus');
- if (handleFocus) this.addPress(handleFocus, () => this.togglePanelPull('panel-right-focus'));
+ if (handleFocus) this.bindPanelDragHandle(handleFocus, 'panel-right-focus');
 
  // Zoom & Back
  const cardHabits = asset.getElementById('card-habits');
@@ -3010,10 +3203,10 @@ export class PanelSystem extends createSystem({
       const beam = new Mesh(beamGeo, beamMat);
       beam.renderOrder = 999;
 
-      // Cursor reticle ring at end of pointer
-      const reticleGeo = new RingGeometry(0.008, 0.016, 32);
+      // Cursor reticle ring at end of pointer - pure clean white
+      const reticleGeo = new RingGeometry(0.007, 0.015, 32);
       const reticleMat = new MeshBasicMaterial({
-        color: 0xF3B27A,
+        color: 0xFFFFFF,
         side: DoubleSide,
         transparent: true,
         opacity: 0.95,
@@ -3086,20 +3279,75 @@ export class PanelSystem extends createSystem({
 
       const isPulsed = (time - this.lastTriggerPulseTime[hand]) < 0.25;
       if (isPulsed) {
-        beamMat.color.setHex(0xF97316);
-        reticleMat.color.setHex(0x22C55E);
+        beamMat.color.setHex(0xFFFFFF);
+        reticleMat.color.setHex(0xFFFFFF);
         reticle.scale.setScalar(0.75);
       } else {
         beamMat.color.setHex(hand === 'left' ? 0x818CF8 : 0xA78BFA);
-        reticleMat.color.setHex(hasHit ? 0xF3B27A : 0xCBD5E1);
+        reticleMat.color.setHex(0xFFFFFF);
         reticle.scale.setScalar(hasHit ? 1.0 : 0.85);
       }
       beamMat.opacity = hasHit ? 0.90 : 0.65;
-      reticleMat.opacity = hasHit ? 0.95 : 0.50;
+      reticleMat.opacity = hasHit ? 0.98 : 0.60;
+    }
+
+    // Process drag gestures from XR controllers and hands
+    const inputXr = this.world.input?.xr;
+    for (const hand of hands) {
+      const space = raySpaces[hand];
+      const gamepad = inputXr?.gamepads?.[hand];
+      const selectState = inputXr?.getSelectState(hand);
+
+      const triggerHeld = gamepad ? (gamepad.getButtonValueByIdx(0) > 0.5 || Boolean(gamepad.gamepad?.buttons?.[0]?.pressed)) : false;
+      const gripHeld = gamepad ? (gamepad.getButtonValueByIdx(1) > 0.5 || Boolean(gamepad.gamepad?.buttons?.[1]?.pressed)) : false;
+      const pinchHeld = Boolean(selectState?.active);
+      const isInputActive = gripHeld || pinchHeld || (this.activeDrag?.hand === hand && triggerHeld);
+
+      if (this.activeDrag && this.activeDrag.hand === hand) {
+        if (!isInputActive) {
+          this.stopDraggingPanel();
+        }
+      } else if (!this.activeDrag) {
+        if (gripHeld || selectState?.start) {
+          const gripSpace = (this.player as any)?.gripSpaces?.[hand] || space;
+          gripSpace.getWorldPosition(this.dragTempPos);
+
+          for (const name of panelNames) {
+            const pObj = this.world.getSceneObject(name);
+            if (!pObj || !pObj.visible) continue;
+            const dist = this.dragTempPos.distanceTo(pObj.position);
+            if (dist < 0.55) {
+              this.startDraggingPanel(name, hand, null, 'proximity');
+              break;
+            }
+          }
+
+          if (!this.activeDrag && panelObjects.length > 0) {
+            space.getWorldPosition(this.pointerRayOrigin);
+            space.getWorldQuaternion(this.pointerTempQuat);
+            this.pointerRayDir.set(0, 0, -1).applyQuaternion(this.pointerTempQuat);
+            this.pointerRaycaster.set(this.pointerRayOrigin, this.pointerRayDir);
+
+            const hits = this.pointerRaycaster.intersectObjects(panelObjects, true);
+            if (hits.length > 0 && hits[0].distance > 0.05) {
+              let hitRoot: Object3D | null = hits[0].object;
+              while (hitRoot && !panelNames.includes(hitRoot.name) && hitRoot.parent) {
+                hitRoot = hitRoot.parent;
+              }
+              const hitPanelId = hitRoot?.name && panelNames.includes(hitRoot.name) ? hitRoot.name : 'panel-right-pip';
+              this.startDraggingPanel(hitPanelId, hand, hits[0].point, 'distance');
+            }
+          }
+        }
+      }
+    }
+
+    if (this.activeDrag) {
+      this.updateDrag();
     }
   }
 
- update(time: number, delta: number) {
+  update(time: number, delta: number) {
     if (!this.pointersInitialized) {
       this.setupPointers();
     }
