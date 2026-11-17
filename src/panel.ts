@@ -1285,7 +1285,7 @@ export class PanelSystem extends createSystem({
  if (this.soundEnabled && this.audio) {
  this.audio.playPinchTick();
  }
- this.setPipSpeech(`Opened ${sectionTitle}. Click "< Back" anytime to return.`);
+ this.setPipSpeech(`Opened ${sectionTitle}. Click "< Back" anytime to return.`, false);
  }
 
  public resetZoom() {
@@ -1296,7 +1296,7 @@ export class PanelSystem extends createSystem({
  if (this.soundEnabled && this.audio) {
  this.audio.playPinchTick();
  }
- this.setPipSpeech('Returned to full workspace overview. All changes are preserved.');
+ this.setPipSpeech('Returned to full workspace overview. All changes are preserved.', false);
  }
 
  public setHubView(view: HubContentView) {
@@ -1387,13 +1387,13 @@ export class PanelSystem extends createSystem({
 
  // Zoom & Back
  const cardCalendar = asset.getElementById('card-calendar');
- if (cardCalendar) this.addPress(cardCalendar, () => this.zoomSection('panel-left-tasks', 'Mini Calendar'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardCalendar) this.addPress(cardCalendar, () => this.zoomSection('panel-left-tasks', 'Mini Calendar'));
  const cardAgendaHdr = asset.getElementById('card-agenda-header');
- if (cardAgendaHdr) this.addPress(cardAgendaHdr, () => this.zoomSection('panel-left-tasks', "Today's Agenda"));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardAgendaHdr) this.addPress(cardAgendaHdr, () => this.zoomSection('panel-left-tasks', "Today's Agenda"));
  const cardQuickAdd = asset.getElementById('card-quickadd');
- if (cardQuickAdd) this.addPress(cardQuickAdd, () => this.zoomSection('panel-left-tasks', 'Quick Add'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardQuickAdd) this.addPress(cardQuickAdd, () => this.zoomSection('panel-left-tasks', 'Quick Add'));
  const cardRoutines = asset.getElementById('card-routines');
- if (cardRoutines) this.addPress(cardRoutines, () => this.zoomSection('panel-left-tasks', 'Routines'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardRoutines) this.addPress(cardRoutines, () => this.zoomSection('panel-left-tasks', 'Routines'));
 
  const zoomCal = asset.getElementById('btn-zoom-calendar');
  if (zoomCal) {
@@ -1886,13 +1886,13 @@ export class PanelSystem extends createSystem({
 
  // Card Containers (Surrounding click expands that section to Center Hub view)
  const cardSchedule = asset.getElementById('card-schedule');
- if (cardSchedule) this.addPress(cardSchedule, () => this.zoomSection('panel-hub', "Today's Schedule"));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardSchedule) this.addPress(cardSchedule, () => this.zoomSection('panel-hub', "Today's Schedule"));
  const cardTasks = asset.getElementById('card-tasks');
- if (cardTasks) this.addPress(cardTasks, () => this.zoomSection('panel-hub', 'Tasks List'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardTasks) this.addPress(cardTasks, () => this.zoomSection('panel-hub', 'Tasks List'));
  const cardFocus = asset.getElementById('card-focus');
- if (cardFocus) this.addPress(cardFocus, () => this.zoomSection('panel-hub', 'Focus Session'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardFocus) this.addPress(cardFocus, () => this.zoomSection('panel-hub', 'Focus Session'));
  const cardWorkload = asset.getElementById('card-workload');
- if (cardWorkload) this.addPress(cardWorkload, () => this.zoomSection('panel-hub', 'Workload Analysis'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardWorkload) this.addPress(cardWorkload, () => this.zoomSection('panel-hub', 'Workload Analysis'));
 
  const focusPlayBtn = asset.getElementById('hub-focus-play-btn');
  if (focusPlayBtn) {
@@ -2730,9 +2730,9 @@ export class PanelSystem extends createSystem({
 
  // Zoom & Back
  const cardPip = asset.getElementById('card-pip');
- if (cardPip) this.addPress(cardPip, () => this.zoomSection('panel-right-pip', 'Pip Companion'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardPip) this.addPress(cardPip, () => this.zoomSection('panel-right-pip', 'Pip Companion'));
  const cardGarden = asset.getElementById('card-garden');
- if (cardGarden) this.addPress(cardGarden, () => this.zoomSection('panel-right-pip', 'Productivity Garden'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardGarden) this.addPress(cardGarden, () => this.zoomSection('panel-right-pip', 'Productivity Garden'));
 
  const zoomPip = asset.getElementById('btn-zoom-pip');
  if (zoomPip) {
@@ -2839,6 +2839,9 @@ export class PanelSystem extends createSystem({
   }
 
   private handleVoiceInputTrigger() {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch {}
+    }
     if (this.voiceListening) {
       if (this.currentSpeechRec) {
         try { this.currentSpeechRec.stop(); } catch {}
@@ -3712,7 +3715,7 @@ User command: "${transcript}"`;
       const hubPipText = hubAsset.getElementById('hub-pip-text') as any;
       if (hubPipText) setText(hubPipText, `Pip: ${text}`);
     }
-    if (speakAloud) {
+    if (speakAloud && !this.voiceListening) {
       this.speakTextAloud(text, force);
     }
   }
@@ -3738,9 +3741,9 @@ User command: "${transcript}"`;
 
  // Zoom & Back
  const cardHabits = asset.getElementById('card-habits');
- if (cardHabits) this.addPress(cardHabits, () => this.zoomSection('panel-right-focus', 'Habits & Streaks'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardHabits) this.addPress(cardHabits, () => this.zoomSection('panel-right-focus', 'Habits & Streaks'));
  const cardDeadlines = asset.getElementById('card-deadlines');
- if (cardDeadlines) this.addPress(cardDeadlines, () => this.zoomSection('panel-right-focus', 'Upcoming Deadlines'));
+ // Container click bypassed to prevent bubbling into mic/controls: if (cardDeadlines) this.addPress(cardDeadlines, () => this.zoomSection('panel-right-focus', 'Upcoming Deadlines'));
 
  const zoomHabits = asset.getElementById('btn-zoom-habits');
  if (zoomHabits) {
