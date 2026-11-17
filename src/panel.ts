@@ -2870,8 +2870,13 @@ export class PanelSystem extends createSystem({
         rec.lang = 'en-US';
 
         let accumulatedTranscript = '';
+        let speechCommitted = false;
+        let isUserSpeaking = false;
 
         const commitSpeech = () => {
+          if (speechCommitted) return;
+          speechCommitted = true;
+
           if (this.voiceSilenceTimer) {
             window.clearTimeout(this.voiceSilenceTimer);
             this.voiceSilenceTimer = null;
@@ -2880,17 +2885,46 @@ export class PanelSystem extends createSystem({
           this.currentSpeechRec = null;
           this.voiceListening = false;
           this.refreshPipPanelUI();
-          if (accumulatedTranscript.trim()) {
-            this.executeVoiceCommand(accumulatedTranscript.trim());
+
+          const finalTranscript = accumulatedTranscript.trim();
+          accumulatedTranscript = '';
+
+          if (finalTranscript) {
+            // Buffer: ONLY start talking after user has completely stopped speaking
+            window.setTimeout(() => {
+              this.executeVoiceCommand(finalTranscript);
+            }, 300);
           }
         };
 
         rec.onstart = () => {
           this.voiceListening = true;
           accumulatedTranscript = '';
+          speechCommitted = false;
+          isUserSpeaking = false;
           this.setPipSpeech('Listening for voice... Speak your command.', false);
           this.triggerPipEmote('thinking');
           this.refreshPipPanelUI();
+        };
+
+        rec.onspeechstart = () => {
+          isUserSpeaking = true;
+          // While the user is speaking, cancel silence timer - NEVER interrupt the user!
+          if (this.voiceSilenceTimer) {
+            window.clearTimeout(this.voiceSilenceTimer);
+            this.voiceSilenceTimer = null;
+          }
+        };
+
+        rec.onspeechend = () => {
+          isUserSpeaking = false;
+          // User stopped speaking: wait 1200ms to confirm silence, then Pip responds
+          if (this.voiceSilenceTimer) {
+            window.clearTimeout(this.voiceSilenceTimer);
+          }
+          this.voiceSilenceTimer = window.setTimeout(() => {
+            commitSpeech();
+          }, 1200);
         };
 
         rec.onresult = (evt: any) => {
@@ -2910,13 +2944,15 @@ export class PanelSystem extends createSystem({
             this.setPipSpeech(`Listening: "${liveText}"...`, false);
           }
 
-          // Reset silence timer: automatically commits after 1400ms of silence
+          // Allow natural conversational pauses while user is speaking
           if (this.voiceSilenceTimer) {
             window.clearTimeout(this.voiceSilenceTimer);
           }
           this.voiceSilenceTimer = window.setTimeout(() => {
-            commitSpeech();
-          }, 1400);
+            if (!isUserSpeaking) {
+              commitSpeech();
+            }
+          }, 2000);
         };
 
         rec.onerror = (err: any) => {
@@ -2928,8 +2964,11 @@ export class PanelSystem extends createSystem({
           this.voiceListening = false;
           this.refreshPipPanelUI();
 
-          if (accumulatedTranscript.trim()) {
-            this.executeVoiceCommand(accumulatedTranscript.trim());
+          const finalTranscript = accumulatedTranscript.trim();
+          accumulatedTranscript = '';
+          if (!speechCommitted && finalTranscript) {
+            speechCommitted = true;
+            this.executeVoiceCommand(finalTranscript);
             return;
           }
 
@@ -2944,8 +2983,13 @@ export class PanelSystem extends createSystem({
         rec.onend = () => {
           this.voiceListening = false;
           this.refreshPipPanelUI();
-          if (accumulatedTranscript.trim()) {
-            this.executeVoiceCommand(accumulatedTranscript.trim());
+          const finalTranscript = accumulatedTranscript.trim();
+          accumulatedTranscript = '';
+          if (!speechCommitted && finalTranscript) {
+            speechCommitted = true;
+            window.setTimeout(() => {
+              this.executeVoiceCommand(finalTranscript);
+            }, 300);
           }
         };
 
@@ -2968,6 +3012,7 @@ export class PanelSystem extends createSystem({
 
   public speakTextAloud(text: string, force = false) {
     if (this.isPipMuted && !force) return;
+    if (this.voiceListening && !force) return; // Only speak when user is NOT speaking!
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
     try {
