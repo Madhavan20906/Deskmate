@@ -1534,7 +1534,7 @@
  <ButtonLabel class="sched-action-text">+ Block</ButtonLabel>
  </Button>
  <Button id="btn-zoom-schedule" class="sched-action-btn">
- <ButtonLabel class="sched-action-text">Week View</ButtonLabel>
+ <ButtonLabel class="sched-action-text">Expand</ButtonLabel>
  </Button>
  </div>
  </div>
@@ -2155,11 +2155,55 @@
     <div style="flex-grow: 1; min-height: 44px;"></div>
     <div style="flex-grow: 1; min-height: 44px;"></div>
   </div>
-  <div class="month-selected-day-card" style="margin-top: 8px;">
-    <span id="month-selected-day-label" class="subview-title">Selected Day: Today</span>
-    <Button id="btn-month-add-task" class="subview-back-btn">
-      <ButtonLabel class="subview-back-text">+ Add Task for this Day</ButtonLabel>
-    </Button>
+  <div class="month-selected-day-card" style="margin-top: 8px; flex-direction: column; gap: 8px; align-items: stretch; padding: 10px;">
+    <div style="flex-direction: row; justify-content: space-between; align-items: center; width: 100%;">
+      <span id="month-selected-day-label" class="subview-title">Selected Day: Today</span>
+      <div style="flex-direction: row; gap: 8px; align-items: center;">
+        <Button id="btn-month-view-day" class="subview-back-btn" style="background-color: #2563EB; border-color: #60A5FA;">
+          <ButtonLabel class="subview-back-text">View Day on Main Dashboard</ButtonLabel>
+        </Button>
+        <Button id="btn-month-add-task" class="subview-back-btn">
+          <ButtonLabel class="subview-back-text">+ Add Task</ButtonLabel>
+        </Button>
+      </div>
+    </div>
+    <div id="month-day-tasks-container" style="flex-direction: column; gap: 4px; width: 100%;">
+      <Button id="month-day-task-row-0" class="month-task-item" style="flex-direction: row; justify-content: space-between; align-items: center; width: 100%; padding-left: 8px; padding-right: 8px; padding-top: 4px; padding-bottom: 4px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.10);">
+        <div style="flex-direction: row; align-items: center; gap: 6px;">
+          <ButtonLabel id="month-day-task-pri-0" style="font-size: 9px; font-weight: 700; color: #EF4444;">HIGH</ButtonLabel>
+          <ButtonLabel id="month-day-task-title-0" style="font-size: 11px; font-weight: 600; color: #FFFFFF;">Task Title</ButtonLabel>
+        </div>
+        <ButtonLabel id="month-day-task-time-0" style="font-size: 11px; font-weight: 600; color: #93C5FD;">09:00 AM - 10:30 AM</ButtonLabel>
+      </Button>
+      <Button id="month-day-task-row-1" class="month-task-item" style="display: none; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; padding-left: 8px; padding-right: 8px; padding-top: 4px; padding-bottom: 4px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.10);">
+        <div style="flex-direction: row; align-items: center; gap: 6px;">
+          <ButtonLabel id="month-day-task-pri-1" style="font-size: 9px; font-weight: 700; color: #EAB308;">MED</ButtonLabel>
+          <ButtonLabel id="month-day-task-title-1" style="font-size: 11px; font-weight: 600; color: #FFFFFF;">Task Title</ButtonLabel>
+        </div>
+        <ButtonLabel id="month-day-task-time-1" style="font-size: 11px; font-weight: 600; color: #93C5FD;">11:00 AM - 12:30 PM</ButtonLabel>
+      </Button>
+      <Button id="month-day-task-row-2" class="month-task-item" style="display: none; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; padding-left: 8px; padding-right: 8px; padding-top: 4px; padding-bottom: 4px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.10);">
+        <div style="flex-direction: row; align-items: center; gap: 6px;">
+          <ButtonLabel id="month-day-task-pri-2" style="font-size: 9px; font-weight: 700; color: #3B82F6;">LOW</ButtonLabel>
+          <ButtonLabel id="month-day-task-title-2" style="font-size: 11px; font-weight: 600; color: #FFFFFF;">Task Title</ButtonLabel>
+        </div>
+        <ButtonLabel id="month-day-task-time-2" style="font-size: 11px; font-weight: 600; color: #93C5FD;">02:00 PM - 02:30 PM</ButtonLabel>
+      </Button>
+      <Button id="month-day-task-row-3" class="month-task-item" style="display: none; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; padding-left: 8px; padding-right: 8px; padding-top: 4px; padding-bottom: 4px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.10);">
+        <div style="flex-direction: row; align-items: center; gap: 6px;">
+          <ButtonLabel id="month-day-task-pri-3" style="font-size: 9px; font-weight: 700; color: #EAB308;">MED</ButtonLabel>
+          <ButtonLabel id="month-day-task-title-3" style="font-size: 11px; font-weight: 600; color: #FFFFFF;">Task Title</ButtonLabel>
+        </div>
+        <ButtonLabel id="month-day-task-time-3" style="font-size: 11px; font-weight: 600; color: #93C5FD;">03:30 PM - 04:30 PM</ButtonLabel>
+      </Button>
+      <Button id="month-day-task-row-4" class="month-task-item" style="display: none; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; padding-left: 8px; padding-right: 8px; padding-top: 4px; padding-bottom: 4px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); border-width: 1px; border-color: rgba(255, 255, 255, 0.10);">
+        <div style="flex-direction: row; align-items: center; gap: 6px;">
+          <ButtonLabel id="month-day-task-pri-4" style="font-size: 9px; font-weight: 700; color: #16A34A;">LOW</ButtonLabel>
+          <ButtonLabel id="month-day-task-title-4" style="font-size: 11px; font-weight: 600; color: #FFFFFF;">Task Title</ButtonLabel>
+        </div>
+        <ButtonLabel id="month-day-task-time-4" style="font-size: 11px; font-weight: 600; color: #93C5FD;">05:00 PM - 05:45 PM</ButtonLabel>
+      </Button>
+    </div>
   </div>
 </div>
   </div>

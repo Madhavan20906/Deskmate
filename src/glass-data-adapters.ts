@@ -636,23 +636,27 @@ export function shortenScheduleTitle(title: string): string {
 
 export function tasksToScheduleBlocks(tasks: GlassTask[]): ScheduleBlockViewModel[] {
  const scheduled = tasks.filter(
- (t) =>
- t.scheduledStartMinute !== null &&
- t.scheduledStartMinute >= WORKDAY_START_MINUTE &&
- t.scheduledStartMinute < WORKDAY_END_MINUTE,
+ (t) => t.scheduledStartMinute !== null && typeof t.scheduledStartMinute === 'number',
  );
 
  scheduled.sort((a, b) => (a.scheduledStartMinute as number) - (b.scheduledStartMinute as number));
 
  return scheduled.map((task, index) => {
  const startMinute = task.scheduledStartMinute as number;
- const endMinute = Math.min(WORKDAY_END_MINUTE, startMinute + task.estimatedMinutes);
- const duration = endMinute - startMinute;
+ const endMinute = startMinute + task.estimatedMinutes;
+ const duration = task.estimatedMinutes;
 
- const relativeLeftPercent = ((startMinute - WORKDAY_START_MINUTE) / WORKDAY_TOTAL_MINUTES) * 100;
+ let relativeLeftPercent: number;
+ if (startMinute < WORKDAY_START_MINUTE) {
+ relativeLeftPercent = 0;
+ } else if (startMinute >= WORKDAY_END_MINUTE) {
+ relativeLeftPercent = Math.min(94, 88 + (index % 3) * 2);
+ } else {
+ relativeLeftPercent = ((startMinute - WORKDAY_START_MINUTE) / WORKDAY_TOTAL_MINUTES) * 100;
+ }
+
  const rawWidthPercent = (duration / WORKDAY_TOTAL_MINUTES) * 100;
- // Minimum 4.5% width so short tasks are always visible and pokeable
- const widthPercent = Math.max(4.5, rawWidthPercent);
+ const widthPercent = Math.max(4.5, Math.min(100 - relativeLeftPercent, rawWidthPercent));
 
  const timeRangeFormatted = `${formatTimeOfDay(startMinute)} to ${formatTimeOfDay(endMinute)}`;
  const color = BLOCK_COLORS[index % BLOCK_COLORS.length];

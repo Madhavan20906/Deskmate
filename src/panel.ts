@@ -57,6 +57,7 @@ import {
  getClockViewModel,
  calculateFocusRing,
  formatMinutesDuration,
+ formatTimeOfDay,
  UndoStack,
   WORKDAY_START_MINUTE,
   WORKDAY_END_MINUTE,
@@ -2067,6 +2068,32 @@ export class PanelSystem extends createSystem({
  this.addPress(monthAddBtn, () => this.openEditSheet(null, this.selectedDayNumber));
  }
 
+ const monthViewDayBtn = asset.getElementById('btn-month-view-day');
+ if (monthViewDayBtn) {
+ this.addPress(monthViewDayBtn, () => {
+ this.scheduleView = 'day';
+ this.setHubView('overview');
+ const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
+ this.setPipSpeech(`Viewing ${monthName} ${this.selectedDayNumber} schedule on main dashboard.`);
+ this.refreshAllUI();
+ });
+ }
+
+ for (let r = 0; r < 5; r++) {
+ const rowBtn = asset.getElementById(`month-day-task-row-${r}`);
+ if (rowBtn) {
+ this.addPress(rowBtn, () => {
+ const selTasks = this.getTasksForDay(this.selectedDayNumber).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+ const t = selTasks[r];
+ if (t) {
+ this.openEditSheet(t.id, this.selectedDayNumber);
+ } else {
+ this.openEditSheet(null, this.selectedDayNumber);
+ }
+ });
+ }
+ }
+
  // Tasks Subview Controls
  const tasksAddBtn = asset.getElementById('btn-tasks-add-task');
  if (tasksAddBtn) {
@@ -2946,7 +2973,7 @@ Instructions:
 
 User command: "${transcript}"`;
 
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
+      let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2954,6 +2981,17 @@ User command: "${transcript}"`;
           generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
         }),
       });
+
+      if (!res.ok) {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: systemPrompt }] }],
+            generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
+          }),
+        });
+      }
 
       if (!res.ok) {
         console.warn('[Gemini] API returned status:', res.status);
@@ -3024,15 +3062,35 @@ User command: "${transcript}"`;
           }
           const t = act.target;
           if (t === 'calendar') this.zoomSection('panel-left-tasks', 'Mini Calendar');
-          else if (t === 'agenda' || t === 'tasks') this.zoomSection('panel-left-tasks', 'Agenda');
-          else if (t === 'focus') this.zoomSection('panel-hub', 'Focus Session');
-          else if (t === 'habits') this.zoomSection('panel-right-focus', 'Habits & Streaks');
+          else if (t === 'agenda' || t === 'tasks') {
+            this.switchNavTab('tasks');
+            this.zoomSection('panel-left-tasks', "Today's Agenda");
+          } else if (t === 'pip') {
+            this.zoomSection('panel-right-pip', 'Pip Spatial Companion');
+          } else if (t === 'focus') {
+            this.switchNavTab('focus');
+            this.zoomSection('panel-right-focus', 'Focus Studio');
+          } else if (t === 'month') {
+            this.switchNavTab('schedule');
+            this.setScheduleView('month');
+          } else if (t === 'week') {
+            this.switchNavTab('schedule');
+            this.setScheduleView('week');
+          } else if (t === 'habits') this.zoomSection('panel-right-focus', 'Habits & Streaks');
           else if (t === 'deadlines') this.zoomSection('panel-right-focus', 'Upcoming Deadlines');
           else if (t === 'garden') this.zoomSection('panel-right-pip', 'Productivity Garden');
           else if (t === 'schedule') { this.switchNavTab('schedule'); this.resetZoom(); }
           else if (t === 'overview') this.resetZoom();
         } else if (act.type === 'pull_panel') {
-          if (act.panelId) this.togglePanelPull(act.panelId);
+          if (act.panelId === 'panel-right-pip') {
+            this.zoomSection('panel-right-pip', 'Pip Spatial Companion');
+          } else if (act.panelId === 'panel-left-tasks') {
+            this.zoomSection('panel-left-tasks', "Today's Agenda");
+          } else if (act.panelId === 'panel-right-focus') {
+            this.zoomSection('panel-right-focus', 'Focus Studio');
+          } else if (act.panelId) {
+            this.togglePanelPull(act.panelId);
+          }
         } else if (act.type === 'start_focus_timer') {
           const mins = typeof act.minutes === 'number' && act.minutes > 0 ? act.minutes : 25;
           this.focusRemainingSeconds = mins * 60;
@@ -3117,6 +3175,37 @@ User command: "${transcript}"`;
       return;
     }
 
+    // 0. Specific Voice Actions: Bring to Center (Agenda, Pip, Focus, Month, Week)
+    if (lower.includes('agenda') || lower.includes("today's agenda") || lower.includes('todays agenda')) {
+      this.switchNavTab('tasks');
+      this.zoomSection('panel-left-tasks', "Today's Agenda");
+      this.setPipSpeech("Opening Today's Agenda in center.");
+      return;
+    }
+    if (lower.includes('pip') || lower.includes('open pip') || lower.includes('show pip') || lower.includes('talk to pip') || lower === 'pip') {
+      this.zoomSection('panel-right-pip', 'Pip Spatial Companion');
+      this.triggerPipEmote('celebrate');
+      this.setPipSpeech("Pip is right here in center! What would you like to plan today?");
+      return;
+    }
+    if (lower.includes('focus') || lower.includes('focus session') || lower.includes('focus studio') || lower.includes('deep work')) {
+      this.switchNavTab('focus');
+      this.zoomSection('panel-right-focus', 'Focus Studio');
+      if (lower.includes('start') || lower.includes('timer') || lower.includes('minute') || lower.includes('min')) {
+        const matchMin = lower.match(/(\d+)\s*(?:minute|min|m)?/);
+        const minutes = matchMin && matchMin[1] ? parseInt(matchMin[1], 10) : 25;
+        this.focusRemainingSeconds = minutes * 60;
+        this.focusTotalSeconds = minutes * 60;
+        this.focusRunning = true;
+        this.refreshHubPanelUI();
+        this.triggerPipEmote('celebrate');
+        this.setPipSpeech(`Opened Focus Studio and started ${minutes}-minute sprint!`);
+      } else {
+        this.setPipSpeech('Opened Focus Studio in center.');
+      }
+      return;
+    }
+
     // Timer Controls
     if (lower.includes('pause timer') || lower.includes('stop timer')) {
       this.focusRunning = false;
@@ -3162,7 +3251,8 @@ User command: "${transcript}"`;
     ) {
       if (lower.includes('focus') || lower.includes('timer') || lower.includes('studio')) {
         this.switchNavTab('focus');
-        this.setPipSpeech('Opened Focus Studio. You can customize duration, sprint mode, or start your timer.');
+        this.zoomSection('panel-right-focus', 'Focus Studio');
+        this.setPipSpeech('Opened Focus Studio in center.');
         return;
       }
       if (lower.includes('week')) {
@@ -3185,7 +3275,8 @@ User command: "${transcript}"`;
       }
       if (lower.includes('task') || lower.includes('agenda')) {
         this.switchNavTab('tasks');
-        this.setPipSpeech("Opened Today's Tasks and Agenda.");
+        this.zoomSection('panel-left-tasks', "Today's Agenda");
+        this.setPipSpeech("Opened Today's Tasks and Agenda in center.");
         return;
       }
       if (lower.includes('habit') || lower.includes('routine')) {
@@ -4113,7 +4204,7 @@ User command: "${transcript}"`;
         setText(dayNameEl, `${dayInfo.dayOfWeek} ${dayNum}${dayInfo.isToday ? ' - Today' : ''}`);
       }
 
-      const tasksForDay = this.tasks.filter((t) => (t.dayNumber ?? this.selectedDayNumber) === dayNum).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+      const tasksForDay = this.getTasksForDay(dayNum).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
       const countEl = asset.getElementById(`week-day-count-${i}`) as any;
       if (countEl) setText(countEl, `${tasksForDay.length} task${tasksForDay.length === 1 ? '' : 's'}`);
 
@@ -4209,6 +4300,46 @@ User command: "${transcript}"`;
  monthSelectedDayLabel,
  `Selected Day: ${this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov'} ${this.selectedDayNumber} - ${selTasks.length} task${selTasks.length === 1 ? '' : 's'}`,
  );
+ }
+
+ const selTasks = this.getTasksForDay(this.selectedDayNumber).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+ for (let r = 0; r < 5; r++) {
+ const task = selTasks[r];
+ const rowBtn = asset.getElementById(`month-day-task-row-${r}`) as any;
+ const titleLbl = asset.getElementById(`month-day-task-title-${r}`) as any;
+ const timeLbl = asset.getElementById(`month-day-task-time-${r}`) as any;
+ const priLbl = asset.getElementById(`month-day-task-pri-${r}`) as any;
+ if (task) {
+ if (rowBtn && typeof rowBtn.setProperties === 'function') {
+ rowBtn.setProperties({ display: 'flex' });
+ }
+ if (titleLbl) setText(titleLbl, task.title);
+ if (timeLbl) {
+ const start = task.scheduledStartMinute ?? 540;
+ const end = start + task.estimatedMinutes;
+ setText(timeLbl, `${formatTimeOfDay(start)} - ${formatTimeOfDay(end)}`);
+ }
+ if (priLbl) {
+ const pri = task.priority ? task.priority.toUpperCase() : 'MED';
+ setText(priLbl, pri);
+ if (typeof priLbl.setProperties === 'function') {
+ priLbl.setProperties({
+ color: task.priority === 'high' ? '#EF4444' : task.priority === 'low' ? '#3B82F6' : '#EAB308',
+ });
+ }
+ }
+ } else if (r === 0 && selTasks.length === 0) {
+ if (rowBtn && typeof rowBtn.setProperties === 'function') {
+ rowBtn.setProperties({ display: 'flex' });
+ }
+ if (titleLbl) setText(titleLbl, 'No tasks scheduled yet for this day. Click "+ Add Task" to schedule one!');
+ if (timeLbl) setText(timeLbl, '');
+ if (priLbl) setText(priLbl, '');
+ } else {
+ if (rowBtn && typeof rowBtn.setProperties === 'function') {
+ rowBtn.setProperties({ display: 'none' });
+ }
+ }
  }
 
  // Dynamic Focus Studio updates

@@ -35,6 +35,36 @@ const DEFAULT_POSE = {
 let currentZ = DEFAULT_POSE.z;
 let activeHand: 'left' | 'right' = 'right';
 
+export function enforceHandsFirstMode() {
+  if (typeof window === 'undefined') return;
+  window.postMessage(
+    {
+      channel: 'iwer-prefs',
+      scope: 'origin',
+      patch: { inputMode: 'hand', gazeMode: 'off' },
+    },
+    '*',
+  );
+
+  const win = window as any;
+  if (win.IWER_DEVICE) {
+    try {
+      win.IWER_DEVICE.primaryInputMode = 'hand';
+      if (win.IWER_DEVICE.devui) {
+        win.IWER_DEVICE.devui.setGazeMode?.('off');
+      }
+    } catch {}
+  }
+}
+
+// Ensure hands mode takes priority on initialization
+enforceHandsFirstMode();
+if (typeof window !== 'undefined') {
+  for (const ms of [100, 300, 600, 1200, 2000]) {
+    window.setTimeout(enforceHandsFirstMode, ms);
+  }
+}
+
 const forwardVec = new Vector3(0, 0, -1);
 const leftDirVec = new Vector3();
 const rightDirVec = new Vector3();
@@ -121,11 +151,11 @@ function updateHandHUD() {
  const isLeft = activeHand === 'left';
  btn.innerHTML = `
  <span style="display:inline-flex;align-items:center;gap:6px;">
- <span style="font-size:14px;"> </span>
- <span style="color:rgba(255,255,255,0.7);">Active Pointer:</span>
- <span style="color:${isLeft ? '#A78BFA' : 'rgba(255,255,255,0.4)'};font-weight:${isLeft ? '800' : '500'};padding:2px 6px;border-radius:6px;background:${isLeft ? 'rgba(124,92,255,0.25)' : 'transparent'};">Left</span>
+ <span style="font-size:14px;">🖐️</span>
+ <span style="color:#F3B27A;font-weight:700;">Hands First:</span>
+ <span style="color:${isLeft ? '#A78BFA' : 'rgba(255,255,255,0.4)'};font-weight:${isLeft ? '800' : '500'};padding:2px 6px;border-radius:6px;background:${isLeft ? 'rgba(124,92,255,0.25)' : 'transparent'};">Left Hand</span>
  <span style="color:rgba(255,255,255,0.3);">|</span>
- <span style="color:${!isLeft ? '#A78BFA' : 'rgba(255,255,255,0.4)'};font-weight:${!isLeft ? '800' : '500'};padding:2px 6px;border-radius:6px;background:${!isLeft ? 'rgba(124,92,255,0.25)' : 'transparent'};">Right</span>
+ <span style="color:${!isLeft ? '#A78BFA' : 'rgba(255,255,255,0.4)'};font-weight:${!isLeft ? '800' : '500'};padding:2px 6px;border-radius:6px;background:${!isLeft ? 'rgba(124,92,255,0.25)' : 'transparent'};">Right Hand</span>
  <span style="font-size:11px;color:rgba(255,255,255,0.5);margin-left:4px;">[Tab]</span>
  </span>
  `;
@@ -222,7 +252,7 @@ export function initDesktopHandHUD() {
  aimControllerAtScreenPoint(e.clientX, e.clientY, targetHand);
  });
 
- // Pointer click triggers button 0 on the active controller
+ // Pointer click triggers natural pinch on the active hand as primary, with controller fallback
  window.addEventListener('pointerdown', (e) => {
  if (!(e.target instanceof HTMLCanvasElement)) return;
  const isLeft = activeHand === 'left' || e.clientX < window.innerWidth * 0.48 || e.button === 2;
@@ -232,12 +262,31 @@ export function initDesktopHandHUD() {
 
  const win = window as any;
  const device = win.IWER_DEVICE;
+
+ // 1. Hands First: dispatch pinch and button events to hand
+ const xrHand = isLeft ? device?.hands?.left : device?.hands?.right;
+ if (xrHand) {
+ if (typeof xrHand.updatePinchValue === 'function') {
+ xrHand.updatePinchValue(1.0);
+ window.setTimeout(() => {
+ try { xrHand.updatePinchValue(0.0); } catch {}
+ }, 120);
+ }
+ if (typeof xrHand.updateButtonValue === 'function') {
+ xrHand.updateButtonValue(0, 1.0);
+ window.setTimeout(() => {
+ try { xrHand.updateButtonValue(0, 0.0); } catch {}
+ }, 120);
+ }
+ }
+
+ // 2. Controller mode fallback
  const ctrl = isLeft ? device?.controllers?.left : device?.controllers?.right;
  if (ctrl && typeof ctrl.updateButtonValue === 'function') {
  ctrl.updateButtonValue(0, 1.0);
  window.setTimeout(() => {
- ctrl.updateButtonValue(0, 0.0);
- }, 100);
+ try { ctrl.updateButtonValue(0, 0.0); } catch {}
+ }, 120);
  }
  });
 
@@ -265,10 +314,12 @@ export function enforceSeatedXRPose() {
  if (device) {
  applyCameraPose(device, currentZ);
  positionHandsOnDesk(device);
+ enforceHandsFirstMode();
  }
 }
 
 export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
+ enforceHandsFirstMode();
  initDesktopHandHUD();
  enforceSeatedXRPose();
  return true;

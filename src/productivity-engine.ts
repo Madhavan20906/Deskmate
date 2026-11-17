@@ -240,8 +240,11 @@ export function parseVoiceTaskCommand(transcript: string, baseDay?: number, refe
   const base = baseDay ?? ref.getDate();
   const lower = transcript.toLowerCase().trim();
 
-  // Conversational questions are queries, not task additions
+  // Conversational questions or navigational view commands are not task additions
   if (/^(?:how|what|where|when|who|why|is|are|can you tell me)\b/i.test(lower) && !lower.includes('add') && !lower.includes('schedule') && !lower.includes('create')) {
+    return null;
+  }
+  if (/^(?:open|show|bring|view|go to|navigate to|switch to|start timer|pause timer|resume timer|reset timer|reset panel|close deskmate)\b/i.test(lower) && !lower.includes('add') && !lower.includes('schedule') && !lower.includes('create')) {
     return null;
   }
 
@@ -348,7 +351,7 @@ export function parseVoiceTaskCommand(transcript: string, baseDay?: number, refe
 
   // 5. Clean Title
   let title = transcript
-    .replace(/^(?:please\s+)?(?:pip\s+)?(?:can\s+you\s+)?(?:add\s+a?\s*task|schedule\s+a?\s*task|create\s+a?\s*task|add|schedule|create|remind\s+me\s+to|set\s+a?\s*reminder\s+for|put\s+on\s+my\s+schedule)\s*(?:called|named|to)?/i, '')
+    .replace(/^(?:please\s+)?(?:pip\s+)?(?:can\s+you\s+)?(?:add\s+a?\s*task|schedule\s+a?\s*task|create\s+a?\s*task|add|schedule|create|remind\s+me\s+to|set\s+a?\s*reminder\s+for|put\s+on\s+my\s+schedule)\s*(?:called|named|\bto\b)?/i, '')
     .replace(/(?:\bat\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)\b|\bat\s+\d{1,2}(?::\d{2})?\b/gi, '')
     .replace(/(?:for\s+)?\d+\s*(?:hours?|hrs?|h\b|minutes?|mins?|m\b)/gi, '')
     .replace(/\b(?:for|on\s+)?(?:tomorrow|today|sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/gi, '')
