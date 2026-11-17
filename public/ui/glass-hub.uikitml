@@ -196,15 +196,14 @@
  .header-actions-group {
  flex-direction: row;
  align-items: center;
- gap: 6px;
- min-width: 220px;
+ gap: 4px;
  justify-content: flex-end;
  }
 
  .header-action-pill {
  height: 28px;
- padding-left: 10px;
- padding-right: 10px;
+ padding-left: 7px;
+ padding-right: 7px;
  border-radius: 999px;
  background-color: rgba(255, 255, 255, 0.08);
  border-width: 1px;
@@ -1438,6 +1437,9 @@
  </div>
 
  <div class="header-actions-group">
+ <Button id="btn-hub-mic" class="header-action-pill" style="border-color: rgba(217, 119, 54, 0.70); background-color: rgba(217, 119, 54, 0.28);">
+ <ButtonLabel id="btn-hub-mic-label" class="header-action-text" style="color: #F3B27A; font-weight: 700;">Mic </ButtonLabel>
+ </Button>
  <Button id="btn-search" class="header-action-pill">
  <ButtonLabel class="header-action-text">Search</ButtonLabel>
  </Button>

@@ -414,7 +414,16 @@ export class PanelSystem extends createSystem({
             return true;
           });
           if (cleaned.length > 0) {
-            this.tasks = cleaned;
+            const seen = new Set<string>();
+            const deduplicated: GlassTask[] = [];
+            for (const t of cleaned) {
+              const key = `${(t.title || '').trim().toLowerCase()}_${t.dayNumber ?? 18}_${t.scheduledStartMinute ?? -1}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                deduplicated.push(t);
+              }
+            }
+            this.tasks = deduplicated;
             this.ensureWeekTasksPopulated();
             return;
           }
@@ -428,17 +437,32 @@ export class PanelSystem extends createSystem({
     this.saveTasks(false);
   }
 
- private ensureWeekTasksPopulated() {
+  public getTaskDayNumber(t: GlassTask): number {
+    if (typeof t.dayNumber === 'number' && !isNaN(t.dayNumber) && t.dayNumber >= 1 && t.dayNumber <= 31) {
+      return t.dayNumber;
+    }
+    return this.selectedDayNumber || new Date().getDate();
+  }
+
+  public getTasksForDay(dayNumber: number): GlassTask[] {
+    return this.tasks
+      .filter((t) => this.getTaskDayNumber(t) === dayNumber)
+      .sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+  }
+
+  private ensureWeekTasksPopulated() {
     const curDay = this.selectedDayNumber || new Date().getDate();
     for (const t of this.tasks) {
       if (t.dayNumber === undefined) {
         t.dayNumber = curDay;
       }
     }
-    const defaultMultiDayTasks = generateSeedTasksForCurrentWeek(new Date());
-    for (const defTask of defaultMultiDayTasks) {
-      if (!this.tasks.some((t) => t.id === defTask.id || (t.dayNumber === defTask.dayNumber && t.title === defTask.title))) {
-        this.tasks.push(defTask);
+    if (this.tasks.length < 5) {
+      const defaultMultiDayTasks = generateSeedTasksForCurrentWeek(new Date());
+      for (const defTask of defaultMultiDayTasks) {
+        if (!this.tasks.some((t) => t.id === defTask.id || (t.dayNumber === defTask.dayNumber && t.title === defTask.title))) {
+          this.tasks.push(defTask);
+        }
       }
     }
   }
@@ -532,8 +556,9 @@ export class PanelSystem extends createSystem({
  if (this.soundEnabled && this.audio) {
  this.audio.playPinchTick();
  }
- const selTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
- this.setPipSpeech(`Pip here! Nov ${this.selectedDayNumber} has ${selTasks.length} task${selTasks.length === 1 ? '' : 's'}. Speak or click microphone to add more!`);
+ const selTasks = this.getTasksForDay(this.selectedDayNumber);
+ const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
+ this.setPipSpeech(`Pip here! ${monthName} ${this.selectedDayNumber} has ${selTasks.length} task${selTasks.length === 1 ? '' : 's'}. Speak or click microphone to add more!`);
  });
  }
 
@@ -788,44 +813,102 @@ export class PanelSystem extends createSystem({
 
   private async detectUserLocationAndWeather() {
     try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-      const city = getCityFromTimezone(tz);
-      this.weather.city = city;
+      let foundCity = '';
+      let lat: number | null = null;
+      let lon: number | null = null;
+
+      // 1. Try IP Geolocation via ipwho.is (CORS enabled, accurate city for all visitors)
+      try {
+        const ipRes = await fetch('https://ipwho.is/');
+        if (ipRes.ok) {
+          const ipData = await ipRes.json();
+          if (ipData && ipData.success && ipData.city) {
+            foundCity = ipData.city;
+            lat = ipData.latitude;
+            lon = ipData.longitude;
+          }
+        }
+      } catch {}
+
+      // 2. Secondary fallback via ipapi.co
+      if (!foundCity) {
+        try {
+          const ipRes = await fetch('https://ipapi.co/json/');
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            if (ipData && ipData.city) {
+              foundCity = ipData.city;
+              lat = ipData.latitude;
+              lon = ipData.longitude;
+            }
+          }
+        } catch {}
+      }
+
+      // 3. Tertiary fallback via freeipapi.com
+      if (!foundCity) {
+        try {
+          const ipRes = await fetch('https://freeipapi.com/api/json');
+          if (ipRes.ok) {
+            const ipData = await ipRes.json();
+            if (ipData && (ipData.cityName || ipData.city)) {
+              foundCity = ipData.cityName || ipData.city;
+              lat = ipData.latitude;
+              lon = ipData.longitude;
+            }
+          }
+        } catch {}
+      }
+
+      // 4. Fallback to browser timezone
+      if (!foundCity) {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+        foundCity = getCityFromTimezone(tz);
+      }
+
+      this.weather.city = foundCity;
 
       const hubAsset = this.getAsset('panel-hub');
       if (hubAsset) {
         const cityEl = hubAsset.getElementById('weather-city') as any;
-        if (cityEl) setText(cityEl, city);
+        if (cityEl) setText(cityEl, foundCity);
       }
 
-      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
-      const geoRes = await fetch(geoUrl);
-      if (geoRes.ok) {
-        const geoData = await geoRes.json();
-        if (geoData.results && geoData.results.length > 0) {
-          const lat = geoData.results[0].latitude;
-          const lon = geoData.results[0].longitude;
-          const foundCity = geoData.results[0].name || city;
-          this.weather.city = foundCity;
-
-          const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`;
-          const wRes = await fetch(weatherUrl);
-          if (wRes.ok) {
-            const wData = await wRes.json();
-            if (wData.current) {
-              const tempC = Math.round(wData.current.temperature_2m);
-              const tempF = Math.round((tempC * 9) / 5 + 32);
-              const code = wData.current.weather_code;
-              this.weather.tempC = tempC;
-              this.weather.tempF = tempF;
-              this.weather.condition = mapWeatherCodeToCondition(code);
-              this.refreshHubPanelUI();
+      // If lat/lon not provided directly by IP service, query geocoding
+      if (lat == null || lon == null) {
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(foundCity)}&count=1&language=en&format=json`;
+        const geoRes = await fetch(geoUrl);
+        if (geoRes.ok) {
+          const geoData = await geoRes.json();
+          if (geoData.results && geoData.results.length > 0) {
+            lat = geoData.results[0].latitude;
+            lon = geoData.results[0].longitude;
+            if (geoData.results[0].name) {
+              this.weather.city = geoData.results[0].name;
             }
           }
         }
       }
+
+      // Fetch live weather from Open-Meteo
+      if (lat != null && lon != null) {
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto`;
+        const wRes = await fetch(weatherUrl);
+        if (wRes.ok) {
+          const wData = await wRes.json();
+          if (wData.current) {
+            const tempC = Math.round(wData.current.temperature_2m);
+            const tempF = Math.round((tempC * 9) / 5 + 32);
+            const code = wData.current.weather_code;
+            this.weather.tempC = tempC;
+            this.weather.tempF = tempF;
+            this.weather.condition = mapWeatherCodeToCondition(code);
+            this.refreshHubPanelUI();
+          }
+        }
+      }
     } catch (e) {
-      console.warn('[DeskMate] Dynamic weather fetch fallback:', e);
+      console.warn('[DeskMate] Dynamic location & weather fetch fallback:', e);
     }
   }
 
@@ -1075,9 +1158,7 @@ export class PanelSystem extends createSystem({
   }
 
   public findNextAvailableSlot(dayNumber: number, durationMinutes = 45): number {
-    const dayTasks = this.tasks.filter(
-      (t) => (t.dayNumber ?? 18) === dayNumber && t.scheduledStartMinute != null
-    );
+    const dayTasks = this.getTasksForDay(dayNumber).filter((t) => t.scheduledStartMinute != null);
     if (dayTasks.length === 0) return 9 * 60;
     let latestEnd = 9 * 60;
     for (const t of dayTasks) {
@@ -1296,7 +1377,7 @@ export class PanelSystem extends createSystem({
           this.calendarDays.forEach((d) => {
             d.isSelected = d.dayNumber === this.selectedDayNumber;
           });
-          const count = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber).length;
+          const count = this.getTasksForDay(this.selectedDayNumber).length;
           const d = new Date(this.calendarDate.getTime() + i * 24 * 60 * 60 * 1000);
           const mName = this.monthNames[d.getMonth()] || 'Nov';
           this.setPipSpeech(`Viewing schedule for ${selected.dayOfWeek}, ${mName} ${selected.dayNumber} (${count} tasks).`);
@@ -1315,7 +1396,17 @@ export class PanelSystem extends createSystem({
     const rowName = asset.getElementById(`agenda-name-${i}`);
     if (rowName) {
       this.addPress(rowName, () => {
-        const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+        const schedTitleEl = asset.getElementById('hub-schedule-title') as any;
+    if (schedTitleEl) {
+      const isToday = this.selectedDayNumber === new Date().getDate();
+      const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
+      const titleStr = isToday
+        ? `Today's Schedule (8:00 AM - 6:00 PM)`
+        : `${monthName} ${this.selectedDayNumber} Schedule (8:00 AM - 6:00 PM)`;
+      setText(schedTitleEl, titleStr);
+    }
+
+    const dayTasks = this.getTasksForDay(this.selectedDayNumber);
         const task = dayTasks[i];
         if (task) {
           this.openEditSheet(task.id);
@@ -1358,7 +1449,7 @@ export class PanelSystem extends createSystem({
         priority: 'medium',
         scheduledStartMinute: nextSlot,
         status: 'todo',
-        dayNumber: this.selectedDayNumber,
+        dayNumber: this.editDraftDayNumber,
       };
       this.tasks.push(newEvent);
       this.saveTasks(true, `Added "${newEvent.title}"`);
@@ -1378,7 +1469,7 @@ export class PanelSystem extends createSystem({
         priority: 'high',
         scheduledStartMinute: nextSlot,
         status: 'todo',
-        dayNumber: this.selectedDayNumber,
+        dayNumber: this.editDraftDayNumber,
       };
       this.tasks.push(newFocusTask);
       this.saveTasks(true, `Added "${newFocusTask.title}"`);
@@ -1470,7 +1561,7 @@ export class PanelSystem extends createSystem({
   }
 
  private toggleAgendaItem(index: number) {
- const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+ const dayTasks = this.getTasksForDay(this.selectedDayNumber);
  const task = dayTasks[index];
  if (task) {
  task.status = task.status === 'completed' ? 'todo' : 'completed';
@@ -1529,7 +1620,14 @@ export class PanelSystem extends createSystem({
  });
  }
 
- // Header Action Buttons
+ // Header Action Buttons: Voice Mic Button
+ const hubMicBtn = asset.getElementById('btn-hub-mic');
+ if (hubMicBtn) {
+ this.addPress(hubMicBtn, () => {
+ this.handleVoiceInputTrigger();
+ });
+ }
+
  const searchBtn = asset.getElementById('btn-search');
  if (searchBtn) {
  this.addPress(searchBtn, () => {
@@ -1611,7 +1709,17 @@ export class PanelSystem extends createSystem({
     const blockEl = asset.getElementById(`block-${i}`);
     if (blockEl) {
       this.addPress(blockEl, () => {
-        const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+        const schedTitleEl = asset.getElementById('hub-schedule-title') as any;
+    if (schedTitleEl) {
+      const isToday = this.selectedDayNumber === new Date().getDate();
+      const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
+      const titleStr = isToday
+        ? `Today's Schedule (8:00 AM - 6:00 PM)`
+        : `${monthName} ${this.selectedDayNumber} Schedule (8:00 AM - 6:00 PM)`;
+      setText(schedTitleEl, titleStr);
+    }
+
+    const dayTasks = this.getTasksForDay(this.selectedDayNumber);
         const schedBlocks = tasksToScheduleBlocks(dayTasks);
         if (schedBlocks[i]) {
           this.openEditSheet(schedBlocks[i].id);
@@ -1939,20 +2047,24 @@ export class PanelSystem extends createSystem({
  const monthTabMonth = asset.getElementById('month-tab-month');
  if (monthTabMonth) this.addPress(monthTabMonth, () => this.setScheduleView('month'));
 
- for (let d = 16; d <= 22; d++) {
+ for (let d = 1; d <= 31; d++) {
  const tile = asset.getElementById(`month-date-${d}`);
  if (tile) {
  this.addPress(tile, () => {
  this.selectedDayNumber = d;
- this.setPipSpeech(`Selected Nov ${d}. Click "+ Add Task for this Day" to schedule.`);
- this.refreshHubPanelUI();
+ this.calendarDate = new Date(this.calendarDate.getFullYear(), this.calendarDate.getMonth(), d);
+ this.updateCalendarDays();
+ const dayTasks = this.getTasksForDay(d);
+ const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
+ this.setPipSpeech(`Selected ${monthName} ${d} (${dayTasks.length} tasks). Click "+ Add Task for this Day" or "Back to Day Schedule".`);
+ this.refreshAllUI();
  });
  }
  }
 
  const monthAddBtn = asset.getElementById('btn-month-add-task');
  if (monthAddBtn) {
- this.addPress(monthAddBtn, () => this.openEditSheet(null));
+ this.addPress(monthAddBtn, () => this.openEditSheet(null, this.selectedDayNumber));
  }
 
  // Tasks Subview Controls
@@ -2434,12 +2546,9 @@ export class PanelSystem extends createSystem({
  }
 
  private getFilteredTasks(): GlassTask[] {
- return this.tasks.filter((t) => {
- const taskDay = t.dayNumber ?? 18;
- if (taskDay !== this.selectedDayNumber) return false;
- if (this.taskFilter === 'all') return true;
- return t.priority === this.taskFilter;
- });
+ const dayTasks = this.getTasksForDay(this.selectedDayNumber);
+ if (this.taskFilter === 'all') return dayTasks;
+ return dayTasks.filter((t) => t.priority === this.taskFilter);
  }
 
  private setScheduleView(view: 'day' | 'week' | 'month') {
@@ -2863,16 +2972,20 @@ User command: "${transcript}"`;
         if (!act || !act.type) continue;
 
         if (act.type === 'add_task') {
+          const targetDay = typeof act.dayNumber === 'number' ? act.dayNumber : this.selectedDayNumber;
           const newTask: GlassTask = {
             id: `task-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
             title: act.title || 'New Task',
             estimatedMinutes: typeof act.estimatedMinutes === 'number' ? act.estimatedMinutes : 30,
             priority: act.priority === 'high' || act.priority === 'low' ? act.priority : 'medium',
-            scheduledStartMinute: typeof act.scheduledStartMinute === 'number' ? act.scheduledStartMinute : (this.selectedDayNumber === 17 ? 600 : 540),
+            scheduledStartMinute: typeof act.scheduledStartMinute === 'number' ? act.scheduledStartMinute : (targetDay === 17 ? 600 : 540),
             status: 'todo',
-            dayNumber: typeof act.dayNumber === 'number' ? act.dayNumber : this.selectedDayNumber,
+            dayNumber: targetDay,
           };
           this.tasks.push(newTask);
+          this.selectedDayNumber = targetDay;
+          this.calendarDate = new Date(this.calendarDate.getFullYear(), this.calendarDate.getMonth(), targetDay);
+          this.updateCalendarDays();
           stateChanged = true;
         } else if (act.type === 'delete_task') {
           const q = (act.titleQuery || '').toLowerCase().trim();
@@ -3300,10 +3413,11 @@ User command: "${transcript}"`;
  this.tasks.push(newTask);
  this.saveTasks(true, `Added "${parsed.title}" via Pip`);
  this.selectedDayNumber = parsed.dayNumber;
+ this.calendarDate = new Date(this.calendarDate.getFullYear(), this.calendarDate.getMonth(), parsed.dayNumber);
+ this.updateCalendarDays();
  this.refreshAllUI();
 
- const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
- const dayName = daysOfWeek[parsed.dayNumber % 7] || 'Nov';
+ const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
  const h = Math.floor((parsed.scheduledStartMinute ?? 600) / 60);
  const m = (parsed.scheduledStartMinute ?? 600) % 60;
  const ampm = h >= 12 ? 'PM' : 'AM';
@@ -3311,7 +3425,9 @@ User command: "${transcript}"`;
  const timeFormatted = `${displayH}:${m < 10 ? '0' : ''}${m} ${ampm}`;
 
  this.setPipSpeech(
- `Added ${parsed.title} for ${dayName}, Nov ${parsed.dayNumber} at ${timeFormatted}!`,
+ `Added ${parsed.title} for ${monthName} ${parsed.dayNumber} at ${timeFormatted}! Switched to ${monthName} ${parsed.dayNumber}.`,
+ true,
+ true,
  );
  this.triggerPipEmote('celebrate');
  if (this.soundEnabled && this.audio) this.audio.playPinchTick();
@@ -3548,7 +3664,7 @@ User command: "${transcript}"`;
  priority: this.editDraftPriority,
  scheduledStartMinute: this.editDraftStartTime,
  status: 'todo',
- dayNumber: this.selectedDayNumber,
+ dayNumber: this.editDraftDayNumber,
  };
  this.tasks.push(newTask);
  this.saveTasks(true, `Added "${this.editDraftTitle}"`);
@@ -3722,7 +3838,7 @@ User command: "${transcript}"`;
  if (timeEl) setText(timeEl, clock.timeFormatted);
  if (dateEl) setText(dateEl, clock.dateFormatted);
 
- const greeting = generateGreeting(now, '', this.tasks);
+ const greeting = generateGreeting(now, '', this.tasks, this.selectedDayNumber);
  const greetEl = hubAsset.getElementById('hub-greeting-text') as any;
  if (greetEl) setText(greetEl, greeting.greeting);
 
@@ -3779,7 +3895,7 @@ User command: "${transcript}"`;
         setText(dayTxt, day.dayNumber);
       }
       if (day && dayBtn && typeof dayBtn.setProperties === 'function') {
-        const hasTasks = this.tasks.some((t) => (t.dayNumber ?? 18) === day.dayNumber);
+        const hasTasks = this.tasks.some((t) => this.getTaskDayNumber(t) === day.dayNumber);
         if (day.isSelected) {
           dayBtn.setProperties({
             backgroundColor: '#D97736',
@@ -3799,7 +3915,17 @@ User command: "${transcript}"`;
       }
     }
 
-    const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+    const schedTitleEl = asset.getElementById('hub-schedule-title') as any;
+    if (schedTitleEl) {
+      const isToday = this.selectedDayNumber === new Date().getDate();
+      const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
+      const titleStr = isToday
+        ? `Today's Schedule (8:00 AM - 6:00 PM)`
+        : `${monthName} ${this.selectedDayNumber} Schedule (8:00 AM - 6:00 PM)`;
+      setText(schedTitleEl, titleStr);
+    }
+
+    const dayTasks = this.getTasksForDay(this.selectedDayNumber);
     const completedCount = dayTasks.filter((t) => t.status === 'completed').length;
     const badgeEl = asset.getElementById('agenda-count-badge') as any;
     if (badgeEl) setText(badgeEl, `${completedCount}/${dayTasks.length} done`);
@@ -3885,7 +4011,7 @@ User command: "${transcript}"`;
  );
  }
 
- const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+ const dayTasks = this.getTasksForDay(this.selectedDayNumber);
     const schedBlocks = tasksToScheduleBlocks(dayTasks);
     const trackWidthPx = 718;
     let prevRightPx = 0;
@@ -4060,7 +4186,7 @@ User command: "${transcript}"`;
     for (let d = 1; d <= 31; d++) {
       const tile = asset.getElementById(`month-date-${d}`) as any;
       const countEl = asset.getElementById(`month-count-${d}`) as any;
-      const tasksOnDay = this.tasks.filter((t) => (t.dayNumber ?? this.selectedDayNumber) === d);
+      const tasksOnDay = this.getTasksForDay(d);
 
       if (countEl) {
         setText(countEl, tasksOnDay.length > 0 ? `${tasksOnDay.length} task${tasksOnDay.length === 1 ? '' : 's'}` : '');
@@ -4078,7 +4204,7 @@ User command: "${transcript}"`;
 
     const monthSelectedDayLabel = asset.getElementById('month-selected-day-label') as any;
  if (monthSelectedDayLabel) {
- const selTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
+ const selTasks = this.getTasksForDay(this.selectedDayNumber);
  setText(
  monthSelectedDayLabel,
  `Selected Day: ${this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov'} ${this.selectedDayNumber} - ${selTasks.length} task${selTasks.length === 1 ? '' : 's'}`,

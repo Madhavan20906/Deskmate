@@ -198,11 +198,11 @@ export function mapWeatherCodeToCondition(code: number): string {
 }
 
 export const SEED_WEATHER: WeatherData = {
- tempC: 28,
- tempF: 82,
- city: getCityFromTimezone(getUserLocalTimezone()),
- condition: 'Partly Cloudy',
- isCelsius: true,
+  tempC: 28,
+  tempF: 82,
+  city: 'Chennai',
+  condition: 'Partly Cloudy',
+  isCelsius: true,
 };
 
 export const SEED_CALENDAR_DAYS: CalendarDayViewModel[] = [
@@ -465,7 +465,80 @@ export function generateSeedTasksForCurrentWeek(referenceDate: Date = new Date()
   ];
 }
 
-export const SEED_TASKS: GlassTask[] = generateSeedTasksForCurrentWeek();
+export const SEED_TASKS: GlassTask[] = [
+  {
+    id: 'seed-task-ml',
+    title: 'Finish ML assignment',
+    priority: 'high',
+    estimatedMinutes: 90,
+    scheduledStartMinute: 9 * 60, // 09:00 to 10:30
+    status: 'todo',
+    dayNumber: 18,
+  },
+  {
+    id: 'seed-task-api',
+    title: 'Implement API',
+    priority: 'medium',
+    estimatedMinutes: 90,
+    scheduledStartMinute: 11 * 60, // 11:00 to 12:30
+    status: 'todo',
+    dayNumber: 18,
+  },
+  {
+    id: 'seed-task-meeting',
+    title: 'Team meeting',
+    priority: 'low',
+    estimatedMinutes: 30,
+    scheduledStartMinute: 14 * 60, // 14:00 to 14:30
+    status: 'todo',
+    dayNumber: 18,
+  },
+  {
+    id: 'seed-task-review',
+    title: 'Code review',
+    priority: 'medium',
+    estimatedMinutes: 45,
+    scheduledStartMinute: 14 * 60 + 45, // 14:45 to 15:30
+    status: 'todo',
+    dayNumber: 18,
+  },
+  {
+    id: 'seed-task-paper',
+    title: 'Read research paper',
+    priority: 'medium',
+    estimatedMinutes: 60,
+    scheduledStartMinute: 15 * 60 + 45, // 15:45 to 16:45
+    status: 'todo',
+    dayNumber: 18,
+  },
+  {
+    id: 'seed-task-gym',
+    title: 'Gym / Health sprint',
+    priority: 'low',
+    estimatedMinutes: 45,
+    scheduledStartMinute: 17 * 60, // 17:00 to 17:45
+    status: 'todo',
+    dayNumber: 18,
+  },
+  {
+    id: 'seed-task-docs',
+    title: 'Update documentation',
+    priority: 'low',
+    estimatedMinutes: 45,
+    scheduledStartMinute: null, // unscheduled
+    status: 'todo',
+    dayNumber: 18,
+  },
+  {
+    id: 'seed-task-weekly',
+    title: 'Weekly planning prep',
+    priority: 'medium',
+    estimatedMinutes: 30,
+    scheduledStartMinute: null, // unscheduled
+    status: 'todo',
+    dayNumber: 18,
+  },
+];
 
 export const PRIORITY_COLORS: Record<PriorityLevel, string> = {
  high: '#EF4444',
@@ -675,45 +748,49 @@ export function calculateGardenProgress(points: number, streakDays = 1): GardenP
  };
 }
 
-export function generateGreetingSubtitle(tasks: GlassTask[] = SEED_TASKS): string {
- const count = tasks.length;
- const highPriorityCount = tasks.filter((t) => t.priority === 'high').length;
- const totalMinutes = tasks.reduce((sum, t) => sum + (t.status !== 'completed' ? t.estimatedMinutes : 0), 0);
- const plannedHours = formatMinutesDuration(totalMinutes);
- return `You have ${count} tasks today - ${highPriorityCount} high priority - ${plannedHours} planned`;
+export function generateGreetingSubtitle(tasks: GlassTask[] = SEED_TASKS, targetDay?: number): string {
+  const dayTasks = targetDay !== undefined
+    ? tasks.filter((t) => (t.dayNumber ?? targetDay) === targetDay)
+    : tasks;
+  const count = dayTasks.length;
+  const highPriorityCount = dayTasks.filter((t) => t.priority === 'high').length;
+  const totalMinutes = dayTasks.reduce((sum, t) => sum + (t.status !== 'completed' ? t.estimatedMinutes : 0), 0);
+  const plannedHours = formatMinutesDuration(totalMinutes);
+  return `You have ${count} tasks today - ${highPriorityCount} high priority - ${plannedHours} planned`;
 }
 
 export function generateGreeting(
- date: Date,
- userName = '',
- tasks: GlassTask[] = SEED_TASKS,
+  date: Date,
+  userName = '',
+  tasks: GlassTask[] = SEED_TASKS,
+  targetDay?: number,
 ): GreetingViewModel {
- const hour = date.getHours();
- let greeting: string;
- let period: 'morning' | 'afternoon' | 'evening' | 'night';
+  const hour = date.getHours();
+  let greeting: string;
+  let period: 'morning' | 'afternoon' | 'evening' | 'night';
 
- if (hour >= 5 && hour < 12) {
- greeting = userName ? `Good Morning, ${userName}` : 'Good Morning';
- period = 'morning';
- } else if (hour >= 12 && hour < 17) {
- greeting = userName ? `Good Afternoon, ${userName}` : 'Good Afternoon';
- period = 'afternoon';
- } else if (hour >= 17 && hour < 22) {
- greeting = userName ? `Good Evening, ${userName}` : 'Good Evening';
- period = 'evening';
- } else {
- greeting = userName ? `Good Night, ${userName}` : 'Good Night';
- period = 'night';
- }
+  if (hour >= 5 && hour < 12) {
+    greeting = userName ? `Good Morning, ${userName}` : 'Good Morning';
+    period = 'morning';
+  } else if (hour >= 12 && hour < 17) {
+    greeting = userName ? `Good Afternoon, ${userName}` : 'Good Afternoon';
+    period = 'afternoon';
+  } else if (hour >= 17 && hour < 22) {
+    greeting = userName ? `Good Evening, ${userName}` : 'Good Evening';
+    period = 'evening';
+  } else {
+    greeting = userName ? `Good Night, ${userName}` : 'Good Night';
+    period = 'night';
+  }
 
- const subtitle = generateGreetingSubtitle(tasks);
+  const subtitle = generateGreetingSubtitle(tasks, targetDay);
 
- return {
- greeting,
- subtitle,
- period,
- userName,
- };
+  return {
+    greeting,
+    subtitle,
+    period,
+    userName,
+  };
 }
 
 export function getClockViewModel(date: Date): ClockViewModel {
