@@ -590,6 +590,7 @@
  border-color: rgba(255, 255, 255, 0.12);
  gap: 6px;
  justify-content: space-between;
+ overflow: hidden;
  }
 
  .card-header-row {
@@ -691,6 +692,7 @@
  background-color: rgba(255, 255, 255, 0.04);
  width: 100%;
  gap: 4px;
+ overflow: hidden;
  }
 
  .hub-task-item:hover {
@@ -702,7 +704,8 @@
  align-items: center;
  gap: 4px;
  flex-grow: 1;
- max-width: 95px;
+ max-width: 82px;
+ flex-shrink: 1;
  overflow: hidden;
  }
 
@@ -745,7 +748,7 @@
  .hub-task-right {
  flex-direction: row;
  align-items: center;
- gap: 3px;
+ gap: 2px;
  flex-shrink: 0;
  }
 
@@ -757,7 +760,7 @@
  border-radius: 3px;
  font-size: 8px;
  font-weight: 700;
- max-width: 32px;
+ max-width: 28px;
  text-align: center;
  }
 
@@ -777,8 +780,9 @@
  }
 
  .task-edit-btn {
- width: 18px;
- height: 18px;
+ width: 17px;
+ height: 17px;
+ padding: 0px;
  border-radius: 4px;
  background-color: rgba(255, 255, 255, 0.08);
  align-items: center;
@@ -791,8 +795,9 @@
  }
 
  .task-del-btn {
- width: 18px;
- height: 18px;
+ width: 17px;
+ height: 17px;
+ padding: 0px;
  border-radius: 4px;
  background-color: rgba(239, 68, 68, 0.20);
  border-width: 1px;
@@ -809,13 +814,13 @@
  }
 
  .task-del-icon {
- font-size: 9px;
+ font-size: 8px;
  font-weight: 800;
  color: #FCA5A5;
  }
 
  .task-edit-icon {
- font-size: 9px;
+ font-size: 8px;
  }
 
  .add-task-footer-btn {
@@ -1478,7 +1483,7 @@
  <div id="view-overview" class="hub-main-view">
  <div id="card-schedule" class="schedule-card">
  <div class="schedule-card-header">
- <span id="hub-schedule-title" class="schedule-title">Today's Schedule (8:00 AM - 10:00 PM)</span>
+ <span id="hub-schedule-title" class="schedule-title">Today's Schedule (8:00 AM - 6:00 PM)</span>
  <div class="schedule-controls">
  <div class="schedule-view-tabs">
  <Button id="tab-day" class="sched-view-btn sched-view-btn-active">
@@ -1518,36 +1523,33 @@
  <span class="axis-label">3 PM</span>
  <span class="axis-label">4 PM</span>
  <span class="axis-label">5 PM</span>
- <span class="axis-label">7 PM</span>
- <span class="axis-label">8 PM</span>
- <span class="axis-label">9 PM</span>
- <span class="axis-label">10 PM</span>
+ <span class="axis-label">6 PM</span>
  </div>
 
  <div id="timeline-track" class="timeline-track">
- <Button id="block-0" class="schedule-block" style="background-color: #2563EB; width: 110px; margin-left: 45px;">
+ <Button id="block-0" class="schedule-block" style="background-color: #2563EB; width: 108px; margin-left: 72px;">
  <ButtonLabel id="block-title-0" class="block-title">ML Assignment</ButtonLabel>
  <ButtonLabel id="block-time-0" class="block-time">9:00 - 10:30</ButtonLabel>
  </Button>
 
- <Button id="block-1" class="schedule-block" style="background-color: #D97706; width: 120px; margin-left: 20px;">
+ <Button id="block-1" class="schedule-block" style="background-color: #D97706; width: 108px; margin-left: 36px;">
  <ButtonLabel id="block-title-1" class="block-title">Implement API</ButtonLabel>
- <ButtonLabel id="block-time-1" class="block-time">11:00 - 1:00</ButtonLabel>
+ <ButtonLabel id="block-time-1" class="block-time">11:00 - 12:30</ButtonLabel>
  </Button>
 
- <Button id="block-2" class="schedule-block" style="background-color: #7C3AED; width: 68px; margin-left: 40px;">
+ <Button id="block-2" class="schedule-block" style="background-color: #7C3AED; width: 36px; margin-left: 108px;">
  <ButtonLabel id="block-title-2" class="block-title">Team Meet</ButtonLabel>
  <ButtonLabel id="block-time-2" class="block-time">2:00 - 2:30</ButtonLabel>
  </Button>
 
- <Button id="block-3" class="schedule-block" style="background-color: #0284C7; width: 85px; margin-left: 35px;">
+ <Button id="block-3" class="schedule-block" style="background-color: #0284C7; width: 72px; margin-left: 72px;">
  <ButtonLabel id="block-title-3" class="block-title">Research</ButtonLabel>
- <ButtonLabel id="block-time-3" class="block-time">3:30 - 5:00</ButtonLabel>
+ <ButtonLabel id="block-time-3" class="block-time">3:30 - 4:30</ButtonLabel>
  </Button>
 
- <Button id="block-4" class="schedule-block" style="background-color: #16A34A; width: 75px; margin-left: 45px;">
+ <Button id="block-4" class="schedule-block" style="background-color: #16A34A; width: 54px; margin-left: 36px;">
  <ButtonLabel id="block-title-4" class="block-title">Gym</ButtonLabel>
- <ButtonLabel id="block-time-4" class="block-time">6:00 - 7:00</ButtonLabel>
+ <ButtonLabel id="block-time-4" class="block-time">5:00 - 5:45</ButtonLabel>
  </Button>
  </div>
  </div>

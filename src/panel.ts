@@ -57,8 +57,7 @@ import {
  getClockViewModel,
  calculateFocusRing,
  formatMinutesDuration,
- UndoStack,
-} from './glass-data-adapters.js';
+ UndoStack,  WORKDAY_START_MINUTE,  WORKDAY_END_MINUTE,  WORKDAY_TOTAL_MINUTES,} from './glass-data-adapters.js';
 
 import { GhostDeskmateAudio } from './audio.js';
 import { recommendWhatNext, planDaySchedule, TaskItem, parseVoiceTaskCommand } from './productivity-engine.js';
@@ -277,6 +276,33 @@ export class PanelSystem extends createSystem({
  }, 1000);
  this.cleanupFuncs.push(() => window.clearInterval(interval));
 
+    // Clean tab-switching recovery so background/foreground transitions never freeze Vercel deployment
+    if (typeof document !== 'undefined') {
+      const onVisibilityChange = () => {
+        if (document.visibilityState === 'hidden') {
+          if (this.currentSpeechRec) {
+            try { this.currentSpeechRec.stop(); } catch {}
+            this.currentSpeechRec = null;
+          }
+          this.voiceListening = false;
+          if (this.activeDrag) {
+            this.stopDraggingPanel();
+          }
+        } else if (document.visibilityState === 'visible') {
+          if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+            try { window.speechSynthesis.cancel(); } catch {}
+          }
+          if (this.audio) {
+            this.audio.ensureRunning();
+          }
+          this.tickSecond();
+          this.refreshAllUI();
+        }
+      };
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      this.cleanupFuncs.push(() => document.removeEventListener('visibilitychange', onVisibilityChange));
+    }
+
  this.bindPanels();
  }
 
@@ -346,23 +372,32 @@ export class PanelSystem extends createSystem({
  }
 
  private loadTasks() {
- try {
- const stored = window.localStorage.getItem(STORAGE_KEY_TASKS);
- if (stored) {
- const parsed = JSON.parse(stored);
- if (Array.isArray(parsed) && parsed.length > 0) {
- this.tasks = parsed;
- this.ensureWeekTasksPopulated();
- return;
- }
- }
- } catch (err) {
- console.warn('[DeskMate] Could not load stored tasks, using seed data:', err);
- }
- this.tasks = JSON.parse(JSON.stringify(SEED_TASKS));
- this.ensureWeekTasksPopulated();
- this.saveTasks(false);
- }
+    try {
+      const stored = window.localStorage.getItem(STORAGE_KEY_TASKS);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Clean up any stale voice-artifact tasks (e.g. titled "Listening" or "Thinking...")
+          const cleaned = parsed.filter((t: any) => {
+            const titleLower = (t?.title || '').toLowerCase().trim();
+            if (!titleLower) return false;
+            if (titleLower === 'listening' || titleLower.startsWith('listening:') || titleLower === 'thinking...') return false;
+            return true;
+          });
+          if (cleaned.length > 0) {
+            this.tasks = cleaned;
+            this.ensureWeekTasksPopulated();
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[DeskMate] Could not load stored tasks, using seed data:', err);
+    }
+    this.tasks = JSON.parse(JSON.stringify(SEED_TASKS));
+    this.ensureWeekTasksPopulated();
+    this.saveTasks(false);
+  }
 
  private ensureWeekTasksPopulated() {
  for (const t of this.tasks) {
@@ -2319,13 +2354,10 @@ export class PanelSystem extends createSystem({
   }
 
   private promptTextVoiceFallback() {
-    let entered: string | null = null;
-    if (typeof window !== 'undefined' && typeof window.prompt === 'function') {
-      entered = window.prompt('Speak or type your command for Pip (Gemini AI will execute it):', 'Add task Code Review for 45 minutes');
-    }
-    if (entered && entered.trim()) {
-      this.executeVoiceCommand(entered.trim());
-    }
+    this.voiceListening = false;
+    this.refreshPipPanelUI();
+    this.setPipSpeech('Ready for voice command. Tap the mic button and speak anytime.', false);
+    this.triggerPipEmote('thinking');
   }
 
   public speakTextAloud(text: string, force = false) {
@@ -3379,24 +3411,57 @@ User command: "${transcript}"`;
  }
 
  const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 18) === this.selectedDayNumber);
- const schedBlocks = tasksToScheduleBlocks(dayTasks);
- for (let i = 0; i < 5; i++) {
- const block = schedBlocks[i];
- const blockEl = asset.getElementById(`block-${i}`) as any;
- const blockTitleEl = asset.getElementById(`block-title-${i}`) as any;
- const blockTimeEl = asset.getElementById(`block-time-${i}`) as any;
- if (block) {
- if (blockEl && typeof blockEl.setProperties === 'function') {
- blockEl.setProperties({ display: 'flex' });
- }
- if (blockTitleEl) setText(blockTitleEl, shortenScheduleTitle(block.title));
- if (blockTimeEl) setText(blockTimeEl, block.timeRangeFormatted);
- } else {
- if (blockEl && typeof blockEl.setProperties === 'function') {
- blockEl.setProperties({ display: 'none' });
- }
- }
- }
+    const schedBlocks = tasksToScheduleBlocks(dayTasks);
+    const trackWidthPx = 718;
+    let prevRightPx = 0;
+
+    for (let i = 0; i < 5; i++) {
+      const block = schedBlocks[i];
+      const blockEl = asset.getElementById(`block-${i}`) as any;
+      const blockTitleEl = asset.getElementById(`block-title-${i}`) as any;
+      const blockTimeEl = asset.getElementById(`block-time-${i}`) as any;
+      if (block) {
+        const leftPx = Math.round((block.relativeLeftPercent / 100) * trackWidthPx);
+        const widthPx = Math.max(54, Math.round((block.widthPercent / 100) * trackWidthPx));
+        const marginPx = Math.max(4, leftPx - prevRightPx);
+        prevRightPx = leftPx + widthPx;
+
+        if (blockEl && typeof blockEl.setProperties === 'function') {
+          blockEl.setProperties({
+            display: 'flex',
+            width: `${widthPx}px`,
+            marginLeft: `${marginPx}px`,
+            backgroundColor: block.color || '#2563EB',
+          });
+        }
+        if (blockTitleEl) setText(blockTitleEl, shortenScheduleTitle(block.title));
+        if (blockTimeEl) setText(blockTimeEl, block.timeRangeFormatted);
+      } else {
+        if (blockEl && typeof blockEl.setProperties === 'function') {
+          blockEl.setProperties({ display: 'none' });
+        }
+      }
+    }
+
+    // Dynamic now-marker on schedule timeline
+    const now = new Date();
+    const currentMin = now.getHours() * 60 + now.getMinutes();
+    const clampedMin = Math.max(WORKDAY_START_MINUTE, Math.min(WORKDAY_END_MINUTE, currentMin));
+    const nowPosPx = Math.round(((clampedMin - WORKDAY_START_MINUTE) / WORKDAY_TOTAL_MINUTES) * trackWidthPx);
+    const nowMarkerEl = asset.getElementById('now-marker') as any;
+    if (nowMarkerEl && typeof nowMarkerEl.setProperties === 'function') {
+      nowMarkerEl.setProperties({
+        marginLeft: `${Math.max(0, nowPosPx - 26)}px`,
+      });
+    }
+    const nowMarkerText = asset.getElementById('now-marker-text') as any;
+    if (nowMarkerText) {
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const dispH = h % 12 === 0 ? 12 : h % 12;
+      setText(nowMarkerText, `${dispH}:${m < 10 ? '0' : ''}${m} ${ampm}`);
+    }
 
  const filtered = this.getFilteredTasks();
  const tasksCount = asset.getElementById('hub-tasks-count') as any;

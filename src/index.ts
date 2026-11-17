@@ -126,6 +126,20 @@ async function bootstrap() {
   });
   updateSessionUI();
 
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        const pr = Math.min(window.devicePixelRatio || 1, 2);
+        world.renderer.setPixelRatio(pr);
+        updateSessionUI();
+        configurePointers();
+        if (!isQuestOrNativeXR()) {
+          enforceSeatedXRPose();
+        }
+      }
+    });
+  }
+
   world.registerSystem(PanelSystem);
   world.registerSystem(WorkspaceSystem);
 }
