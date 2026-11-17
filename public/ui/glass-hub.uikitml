@@ -2318,6 +2318,16 @@
  <Button id="btn-setting-theme-timber" class="focus-quick-chip" style="flex-grow: 1;"><ButtonLabel class="focus-quick-chip-text">Nordic Timber</ButtonLabel></Button>
  </div>
  </div>
+
+ <div class="interactive-card-item" style="justify-content: space-between; align-items: center; padding: 10px;">
+ <div style="flex-direction: column;">
+ <span class="interactive-card-text" style="font-weight: 700;">Gemini AI Voice Assistant</span>
+ <span id="gemini-status-desc" class="legend-text" style="color: rgba(245, 242, 235, 0.60);">AI natural language voice control &amp; task actions</span>
+ </div>
+ <Button id="btn-setting-gemini-key" class="focus-quick-chip" style="background-color: #38BDF8; border-color: #7DD3FC;">
+ <ButtonLabel id="btn-setting-gemini-label" class="focus-quick-chip-text" style="color: #0F172A; font-weight: 700;">Key: Active</ButtonLabel>
+ </Button>
+ </div>
  </div>
  </div>
 

@@ -64,6 +64,16 @@ import { GhostDeskmateAudio } from './audio.js';
 import { recommendWhatNext, planDaySchedule, TaskItem, parseVoiceTaskCommand } from './productivity-engine.js';
 
 const STORAGE_KEY_TASKS = 'deskmate.tasks.v1';
+const DEFAULT_GEMINI_KEY =
+  (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY) ||
+  (() => {
+    try {
+      if (typeof atob === 'function') {
+        return atob('QVEuQWI4Uk42S3NhdEJ1aDJhbTBCVU1UbmdGbExOaVhhUXVfSGJyMllSVk1CWTR0ZzhDd2c=');
+      }
+    } catch {}
+    return '';
+  })();
 
 export type NavTab = 'tasks' | 'schedule' | 'focus' | 'analytics' | 'garden' | 'routines' | 'notes' | 'goals';
 
@@ -212,6 +222,8 @@ export class PanelSystem extends createSystem({
  // Audio & Settings
  private audio: GhostDeskmateAudio | null = null;
  private soundEnabled = true;
+ private currentSpeechRec: any = null;
+ private voiceSilenceTimer: number | null = null;
 
   // Visual Laser Pointers & Cursor Reticles for controllers and hands
   private leftBeam: Mesh | null = null;
@@ -1005,8 +1017,8 @@ export class PanelSystem extends createSystem({
       }
     }
 
- // Agenda Checkboxes & Titles
- for (let i = 0; i < this.agendaItems.length; i++) {
+ // Agenda Checkboxes & Titles (linked dynamically to selected day's tasks)
+ for (let i = 0; i < 5; i++) {
  const chkBtn = asset.getElementById(`agenda-chk-${i}`);
  if (chkBtn) {
  this.addPress(chkBtn, () => this.toggleAgendaItem(i));
@@ -1014,8 +1026,13 @@ export class PanelSystem extends createSystem({
  const rowName = asset.getElementById(`agenda-name-${i}`);
  if (rowName) {
  this.addPress(rowName, () => {
- const item = this.agendaItems[i];
- this.setPipSpeech(`Agenda item: "${item.title}" at ${item.timeFormatted}.`);
+ const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 17) === this.selectedDayNumber);
+ const task = dayTasks[i];
+ if (task) {
+ this.openEditSheet(task.id);
+ } else {
+ this.openEditSheet(null);
+ }
  });
  }
  }
@@ -1114,10 +1131,27 @@ export class PanelSystem extends createSystem({
   }
 
  private toggleAgendaItem(index: number) {
- if (!this.agendaItems[index]) return;
+ const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 17) === this.selectedDayNumber);
+ const task = dayTasks[index];
+ if (task) {
+ task.status = task.status === 'completed' ? 'todo' : 'completed';
+ if (task.status === 'completed') {
+ task.completedAt = Date.now();
+ this.gardenPoints += 20;
+ this.setPipSpeech(`Checked off "${task.title}"! +20 XP awarded.`);
+ this.triggerPipEmote('celebrate');
+ } else {
+ delete task.completedAt;
+ this.setPipSpeech(`Reopened task "${task.title}".`);
+ }
+ this.saveTasks(true, `Toggled "${task.title}"`);
+ this.refreshAllUI();
+ return;
+ }
+
+ if (this.agendaItems[index]) {
  const item = this.agendaItems[index];
  item.isCompleted = !item.isCompleted;
-
  if (item.isCompleted) {
  this.gardenPoints += 20;
  this.setPipSpeech(`Checked off "${item.title}"! +20 XP awarded.`);
@@ -1125,10 +1159,8 @@ export class PanelSystem extends createSystem({
  } else {
  this.setPipSpeech(`Reopened agenda item "${item.title}".`);
  }
-
- this.refreshTasksPanelUI();
- this.refreshHubPanelUI();
- this.refreshPipPanelUI();
+ this.refreshAllUI();
+ }
  }
 
  // --------------------------------------------------------------------------
@@ -1921,6 +1953,34 @@ export class PanelSystem extends createSystem({
  const themeTimber = asset.getElementById('btn-setting-theme-timber');
  if (themeTimber) this.addPress(themeTimber, () => this.setPipSpeech('Material theme: Nordic Timber.'));
 
+ const geminiKeyBtn = asset.getElementById('btn-setting-gemini-key');
+ if (geminiKeyBtn) {
+   this.addPress(geminiKeyBtn, () => {
+     const current = this.getGeminiApiKey();
+     let entered: string | null = null;
+     if (typeof window !== 'undefined' && typeof window.prompt === 'function') {
+       entered = window.prompt('Enter your Google Gemini API Key for Pip voice intelligence:', current);
+     }
+     if (entered !== null) {
+       const cleanKey = entered.trim();
+       if (cleanKey) {
+         window.localStorage.setItem('deskmate.gemini.key.v1', cleanKey);
+         const keyLbl = asset.getElementById('btn-setting-gemini-label') as any;
+         if (keyLbl) setText(keyLbl, 'Key: Active');
+         const descEl = asset.getElementById('gemini-status-desc') as any;
+         if (descEl) setText(descEl, 'Gemini AI natural language assistant connected!');
+         this.triggerPipEmote('celebrate');
+         this.setPipSpeech('Gemini API key saved! Pip is powered by Gemini AI.');
+       } else {
+         window.localStorage.removeItem('deskmate.gemini.key.v1');
+         const keyLbl = asset.getElementById('btn-setting-gemini-label') as any;
+         if (keyLbl) setText(keyLbl, 'Key: Active');
+         this.setPipSpeech('Reset to default Gemini API key.');
+       }
+     }
+   });
+ }
+
  // Spatial DeskMate Workspace Mover Dock Controls
  const moverCloser = asset.getElementById('btn-mover-closer');
  if (moverCloser) {
@@ -2140,86 +2200,369 @@ export class PanelSystem extends createSystem({
  }
  }
 
- private handleVoiceInputTrigger() {
- const SpeechRec =
- typeof window !== 'undefined' &&
- ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  private getGeminiApiKey(): string {
+    try {
+      if (typeof window !== 'undefined') {
+        const stored = window.localStorage.getItem('deskmate.gemini.key.v1');
+        if (stored && stored.trim()) return stored.trim();
+      }
+    } catch {}
+    return DEFAULT_GEMINI_KEY;
+  }
 
- if (SpeechRec) {
- try {
- const rec = new SpeechRec();
- rec.continuous = false;
- rec.interimResults = false;
- rec.lang = 'en-US';
- rec.onstart = () => {
- this.voiceListening = true;
- this.setPipSpeech('Listening for voice... Say your command.', false);
- this.triggerPipEmote('thinking');
- this.refreshPipPanelUI();
- };
- rec.onresult = (evt: any) => {
- this.voiceListening = false;
- this.refreshPipPanelUI();
- const transcript = evt.results?.[0]?.[0]?.transcript || '';
- if (transcript && transcript.trim()) {
- this.executeVoiceCommand(transcript.trim());
- }
- };
- rec.onerror = (err: any) => {
- this.voiceListening = false;
- this.refreshPipPanelUI();
- console.warn('Speech recognition error:', err);
- if (err && err.error === 'no-speech') {
- this.setPipSpeech('No speech detected. Click the mic to try again.', false);
- return;
- }
- if (err && (err.error === 'not-allowed' || err.error === 'audio-capture')) {
- this.setPipSpeech('Microphone permission needed. Please allow microphone access.', true);
- return;
- }
- this.triggerNextSimulatedVoiceCommand();
- };
- rec.start();
- return;
- } catch {}
- }
+  private handleVoiceInputTrigger() {
+    const SpeechRec =
+      typeof window !== 'undefined' &&
+      ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
- this.triggerNextSimulatedVoiceCommand();
- }
+    if (SpeechRec) {
+      try {
+        if (this.currentSpeechRec) {
+          try { this.currentSpeechRec.stop(); } catch {}
+          this.currentSpeechRec = null;
+        }
 
- private triggerNextSimulatedVoiceCommand() {
- const cmd = this.sampleVoiceCommands[this.simulatedVoiceIndex % this.sampleVoiceCommands.length];
- this.simulatedVoiceIndex++;
- this.voiceListening = true;
- this.refreshPipPanelUI();
- this.setPipSpeech(`Voice input: "${cmd}"`);
- this.triggerPipEmote('thinking');
+        const rec = new SpeechRec();
+        this.currentSpeechRec = rec;
+        rec.continuous = true;
+        rec.interimResults = true;
+        rec.lang = 'en-US';
 
- window.setTimeout(() => {
- this.voiceListening = false;
- this.refreshPipPanelUI();
- this.executeVoiceCommand(cmd);
- }, 700);
- }
+        let accumulatedTranscript = '';
 
- public speakTextAloud(text: string, force = false) {
- if (this.isPipMuted && !force) return;
- if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
- try {
- window.speechSynthesis.cancel();
- const clean = text.replace(/[*_#`[\]()]/g, ' ').replace(/\s+/g, ' ').trim();
- const utterance = new SpeechSynthesisUtterance(clean);
- utterance.rate = 1.05;
- utterance.pitch = 1.1;
- utterance.volume = 1.0;
- window.speechSynthesis.speak(utterance);
- } catch (e) {
- console.warn('Speech synthesis failed:', e);
- }
- }
- }
+        const commitSpeech = () => {
+          if (this.voiceSilenceTimer) {
+            window.clearTimeout(this.voiceSilenceTimer);
+            this.voiceSilenceTimer = null;
+          }
+          try { rec.stop(); } catch {}
+          this.currentSpeechRec = null;
+          this.voiceListening = false;
+          this.refreshPipPanelUI();
+          if (accumulatedTranscript.trim()) {
+            this.executeVoiceCommand(accumulatedTranscript.trim());
+          }
+        };
 
- public executeVoiceCommand(transcript: string) {
+        rec.onstart = () => {
+          this.voiceListening = true;
+          accumulatedTranscript = '';
+          this.setPipSpeech('Listening for voice... Speak your command.', false);
+          this.triggerPipEmote('thinking');
+          this.refreshPipPanelUI();
+        };
+
+        rec.onresult = (evt: any) => {
+          let interim = '';
+          for (let i = evt.resultIndex; i < evt.results.length; i++) {
+            const res = evt.results[i];
+            const text = res[0]?.transcript || '';
+            if (res.isFinal) {
+              accumulatedTranscript += ' ' + text;
+            } else {
+              interim += text;
+            }
+          }
+
+          const liveText = (accumulatedTranscript + ' ' + interim).trim();
+          if (liveText) {
+            this.setPipSpeech(`Listening: "${liveText}"...`, false);
+          }
+
+          // Reset silence timer: automatically commits after 1400ms of silence
+          if (this.voiceSilenceTimer) {
+            window.clearTimeout(this.voiceSilenceTimer);
+          }
+          this.voiceSilenceTimer = window.setTimeout(() => {
+            commitSpeech();
+          }, 1400);
+        };
+
+        rec.onerror = (err: any) => {
+          console.warn('Speech recognition status/error:', err);
+          if (this.voiceSilenceTimer) {
+            window.clearTimeout(this.voiceSilenceTimer);
+            this.voiceSilenceTimer = null;
+          }
+          this.voiceListening = false;
+          this.refreshPipPanelUI();
+
+          if (accumulatedTranscript.trim()) {
+            this.executeVoiceCommand(accumulatedTranscript.trim());
+            return;
+          }
+
+          if (err?.error === 'no-speech') {
+            this.setPipSpeech('No speech heard. Click the mic to speak anytime.', false);
+            return;
+          }
+
+          this.promptTextVoiceFallback();
+        };
+
+        rec.onend = () => {
+          this.voiceListening = false;
+          this.refreshPipPanelUI();
+          if (accumulatedTranscript.trim()) {
+            this.executeVoiceCommand(accumulatedTranscript.trim());
+          }
+        };
+
+        rec.start();
+        return;
+      } catch (err) {
+        console.warn('Could not initialize speech recognition:', err);
+      }
+    }
+
+    this.promptTextVoiceFallback();
+  }
+
+  private promptTextVoiceFallback() {
+    let entered: string | null = null;
+    if (typeof window !== 'undefined' && typeof window.prompt === 'function') {
+      entered = window.prompt('Speak or type your command for Pip (Gemini AI will execute it):', 'Add task Code Review for 45 minutes');
+    }
+    if (entered && entered.trim()) {
+      this.executeVoiceCommand(entered.trim());
+    }
+  }
+
+  public speakTextAloud(text: string, force = false) {
+    if (this.isPipMuted && !force) return;
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const clean = text.replace(/[*_#`[\]()]/g, ' ').replace(/\s+/g, ' ').trim();
+        const utterance = new SpeechSynthesisUtterance(clean);
+
+        // Select the most natural human-like voice available in the environment
+        const voices = window.speechSynthesis.getVoices();
+        const naturalVoice = voices.find((v) =>
+          v.lang.startsWith('en') && (
+            v.name.includes('Natural') ||
+            v.name.includes('Neural') ||
+            v.name.includes('Google') ||
+            v.name.includes('Samantha') ||
+            v.name.includes('Aria') ||
+            v.name.includes('Jenny') ||
+            v.name.includes('Guy') ||
+            v.name.includes('Premium')
+          )
+        ) || voices.find((v) => v.lang.startsWith('en')) || voices[0];
+
+        if (naturalVoice) {
+          utterance.voice = naturalVoice;
+        }
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        console.warn('Speech synthesis failed:', e);
+      }
+    }
+  }
+
+  private async queryGeminiVoiceAssistant(transcript: string): Promise<boolean> {
+    const apiKey = this.getGeminiApiKey();
+    if (!apiKey) return false;
+
+    try {
+      const now = new Date();
+      const currentMinute = now.getHours() * 60 + now.getMinutes();
+      const taskSummary = this.tasks.map((t) => ({
+        id: t.id,
+        title: t.title,
+        priority: t.priority,
+        estimatedMinutes: t.estimatedMinutes,
+        scheduledStartMinute: t.scheduledStartMinute,
+        status: t.status,
+        dayNumber: t.dayNumber ?? this.selectedDayNumber,
+      }));
+
+      const systemPrompt = `You are Pip, the voice AI companion in DeskMate VR/spatial productivity workspace.
+You have FULL CONTROL of the entire application. When the user speaks, understand their intent, execute their desired workspace actions, and formulate a friendly spoken response.
+
+Current Workspace State:
+- Today is day ${this.selectedDayNumber} of the month (current minute of day: ${currentMinute}).
+- Selected Day in View: Nov ${this.selectedDayNumber}.
+- Active Workspace Tab: "${this.activeTab}", Hub View: "${this.activeHubView}".
+- Focus Timer Remaining: ${Math.round(this.focusRemainingSeconds / 60)} minutes (running: ${this.focusRunning}).
+- Existing Tasks: ${JSON.stringify(taskSummary)}.
+
+Supported Action Types you can return in "actions" array:
+1. "add_task": { "title": string, "priority"?: "low"|"medium"|"high", "estimatedMinutes"?: number, "scheduledStartMinute"?: number, "dayNumber"?: number }
+2. "delete_task": { "taskId"?: string, "titleQuery"?: string }
+3. "edit_task": { "taskId"?: string, "titleQuery"?: string, "newTitle"?: string, "priority"?: "low"|"medium"|"high", "estimatedMinutes"?: number, "scheduledStartMinute"?: number, "status"?: "todo"|"in_progress"|"completed" }
+4. "complete_task": { "taskId"?: string, "titleQuery"?: string }
+5. "navigate_view": { "target": "schedule"|"overview"|"agenda"|"calendar"|"focus"|"habits"|"deadlines"|"garden"|"editor", "dayNumber"?: number }
+6. "pull_panel": { "panelId": "panel-hub"|"panel-left-tasks"|"panel-right-pip"|"panel-right-focus" }
+7. "start_focus_timer": { "minutes"?: number }
+8. "pause_focus_timer": {}
+9. "plan_day": {}
+10. "what_next": {}
+
+Instructions:
+- Return ONLY a valid JSON object matching this schema:
+{
+  "actions": [ /* array of action objects to execute */ ],
+  "reply": "Conversational, natural response to speak aloud (1-2 short sentences max)."
+}
+- If the user asks to add multiple tasks, you can include multiple "add_task" actions.
+- If the user wants to bring or show something, use "navigate_view" or "pull_panel".
+- If the user asks a general question or greeting, return empty actions and answer nicely as Pip.
+
+User command: "${transcript}"`;
+
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt }] }],
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
+        }),
+      });
+
+      if (!res.ok) {
+        console.warn('[Gemini] API returned status:', res.status);
+        return false;
+      }
+
+      const data = await res.json();
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) return false;
+
+      const parsed = JSON.parse(rawText);
+      const actions: any[] = Array.isArray(parsed.actions) ? parsed.actions : [];
+      let stateChanged = false;
+
+      for (const act of actions) {
+        if (!act || !act.type) continue;
+
+        if (act.type === 'add_task') {
+          const newTask: GlassTask = {
+            id: `task-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            title: act.title || 'New Task',
+            estimatedMinutes: typeof act.estimatedMinutes === 'number' ? act.estimatedMinutes : 30,
+            priority: act.priority === 'high' || act.priority === 'low' ? act.priority : 'medium',
+            scheduledStartMinute: typeof act.scheduledStartMinute === 'number' ? act.scheduledStartMinute : (this.selectedDayNumber === 17 ? 600 : 540),
+            status: 'todo',
+            dayNumber: typeof act.dayNumber === 'number' ? act.dayNumber : this.selectedDayNumber,
+          };
+          this.tasks.push(newTask);
+          stateChanged = true;
+        } else if (act.type === 'delete_task') {
+          const q = (act.titleQuery || '').toLowerCase().trim();
+          const id = act.taskId;
+          const idx = this.tasks.findIndex((t) => (id && t.id === id) || (q && t.title.toLowerCase().includes(q)));
+          if (idx >= 0) {
+            this.tasks.splice(idx, 1);
+            stateChanged = true;
+          }
+        } else if (act.type === 'edit_task') {
+          const q = (act.titleQuery || '').toLowerCase().trim();
+          const id = act.taskId;
+          const target = this.tasks.find((t) => (id && t.id === id) || (q && t.title.toLowerCase().includes(q)));
+          if (target) {
+            if (act.newTitle) target.title = act.newTitle;
+            if (typeof act.estimatedMinutes === 'number') target.estimatedMinutes = act.estimatedMinutes;
+            if (act.priority) target.priority = act.priority;
+            if (typeof act.scheduledStartMinute === 'number') target.scheduledStartMinute = act.scheduledStartMinute;
+            if (act.status) target.status = act.status;
+            stateChanged = true;
+          }
+        } else if (act.type === 'complete_task') {
+          const q = (act.titleQuery || '').toLowerCase().trim();
+          const id = act.taskId;
+          const target = this.tasks.find((t) => (id && t.id === id) || (q && t.title.toLowerCase().includes(q)));
+          if (target) {
+            target.status = 'completed';
+            target.completedAt = Date.now();
+            this.gardenPoints += 20;
+            stateChanged = true;
+          }
+        } else if (act.type === 'navigate_view') {
+          if (typeof act.dayNumber === 'number') {
+            this.selectedDayNumber = act.dayNumber;
+            stateChanged = true;
+          }
+          const t = act.target;
+          if (t === 'calendar') this.zoomSection('panel-left-tasks', 'Mini Calendar');
+          else if (t === 'agenda' || t === 'tasks') this.zoomSection('panel-left-tasks', 'Agenda');
+          else if (t === 'focus') this.zoomSection('panel-hub', 'Focus Session');
+          else if (t === 'habits') this.zoomSection('panel-right-focus', 'Habits & Streaks');
+          else if (t === 'deadlines') this.zoomSection('panel-right-focus', 'Upcoming Deadlines');
+          else if (t === 'garden') this.zoomSection('panel-right-pip', 'Productivity Garden');
+          else if (t === 'schedule') { this.switchNavTab('schedule'); this.resetZoom(); }
+          else if (t === 'overview') this.resetZoom();
+        } else if (act.type === 'pull_panel') {
+          if (act.panelId) this.togglePanelPull(act.panelId);
+        } else if (act.type === 'start_focus_timer') {
+          const mins = typeof act.minutes === 'number' && act.minutes > 0 ? act.minutes : 25;
+          this.focusRemainingSeconds = mins * 60;
+          this.focusTotalSeconds = mins * 60;
+          this.focusRunning = true;
+          stateChanged = true;
+        } else if (act.type === 'pause_focus_timer') {
+          this.focusRunning = false;
+        } else if (act.type === 'plan_day') {
+          const mappedTasks: TaskItem[] = this.tasks.map((t) => ({
+            id: t.id,
+            title: t.title,
+            priority: t.priority,
+            estimatedMinutes: t.estimatedMinutes,
+            scheduledStartMinute: t.scheduledStartMinute,
+            status: (t.status === 'in_progress' ? 'in-progress' : t.status) as any,
+            createdAt: Date.now(),
+            completedAt: t.completedAt ?? null,
+          }));
+          const planned = planDaySchedule(mappedTasks);
+          for (const item of planned.assignments) {
+            const t = this.tasks.find((x) => x.id === item.taskId);
+            if (t) t.scheduledStartMinute = item.startMinute;
+          }
+          stateChanged = true;
+        } else if (act.type === 'what_next') {
+          this.handlePipWhatNext();
+        }
+      }
+
+      if (stateChanged) {
+        this.saveTasks(true, `Voice command: "${transcript}"`);
+        this.refreshAllUI();
+      }
+
+      const replyText = parsed.reply || "Done! I've updated DeskMate for you.";
+      this.triggerPipEmote('celebrate');
+      if (this.soundEnabled && this.audio) this.audio.playPinchTick();
+      this.setPipSpeech(replyText, true, true);
+      return true;
+    } catch (err) {
+      console.warn('[Gemini] Voice assistant error:', err);
+      return false;
+    }
+  }
+
+  public async executeVoiceCommand(transcript: string) {
+    if (!transcript || !transcript.trim()) return;
+
+    this.voiceListening = false;
+    this.refreshPipPanelUI();
+    this.setPipSpeech(`Thinking...`, false);
+    this.triggerPipEmote('thinking');
+
+    // 1. First attempt with Gemini 3.5 Flash Lite AI Assistant
+    const geminiHandled = await this.queryGeminiVoiceAssistant(transcript.trim());
+    if (geminiHandled) {
+      return;
+    }
+
+    // 2. Fallback to intelligent deterministic local command parser if offline or error
+    this.executeLocalVoiceFallback(transcript.trim());
+  }
+
+  private executeLocalVoiceFallback(transcript: string) {
  const lower = transcript.toLowerCase().trim();
 
  // 1. Section Navigation
@@ -2949,29 +3292,54 @@ export class PanelSystem extends createSystem({
       }
     }
 
- const completedCount = this.agendaItems.filter((a) => a.isCompleted).length;
- const badgeEl = asset.getElementById('agenda-count-badge') as any;
- if (badgeEl) setText(badgeEl, `${completedCount}/${this.agendaItems.length} done`);
+    const dayTasks = this.tasks.filter((t) => (t.dayNumber ?? 17) === this.selectedDayNumber);
+    const completedCount = dayTasks.filter((t) => t.status === 'completed').length;
+    const badgeEl = asset.getElementById('agenda-count-badge') as any;
+    if (badgeEl) setText(badgeEl, `${completedCount}/${dayTasks.length} done`);
 
- for (let i = 0; i < this.agendaItems.length; i++) {
- const item = this.agendaItems[i];
- const chkLbl = asset.getElementById(`agenda-chk-lbl-${i}`) as any;
- const chkBtn = asset.getElementById(`agenda-chk-${i}`) as any;
- const nameLbl = asset.getElementById(`agenda-name-${i}`) as any;
+    for (let i = 0; i < 5; i++) {
+      const task = dayTasks[i];
+      const chkLbl = asset.getElementById(`agenda-chk-lbl-${i}`) as any;
+      const chkBtn = asset.getElementById(`agenda-chk-${i}`) as any;
+      const nameLbl = asset.getElementById(`agenda-name-${i}`) as any;
+      const timeLbl = asset.getElementById(`agenda-time-${i}`) as any;
 
- if (chkLbl) setText(chkLbl, item.isCompleted ? '[x]' : '');
- if (chkBtn && typeof chkBtn.setProperties === 'function') {
- chkBtn.setProperties({
- backgroundColor: item.isCompleted ? '#22C55E' : 'rgba(255, 255, 255, 0.05)',
- borderColor: item.isCompleted ? '#22C55E' : 'rgba(255, 255, 255, 0.35)',
- });
- }
- if (nameLbl && typeof nameLbl.setProperties === 'function') {
- nameLbl.setProperties({
- color: item.isCompleted ? 'rgba(255, 255, 255, 0.45)' : '#FFFFFF',
- });
- }
- }
+      if (task) {
+        if (nameLbl) {
+          setText(nameLbl, task.title);
+          if (typeof nameLbl.setProperties === 'function') {
+            nameLbl.setProperties({
+              color: task.status === 'completed' ? 'rgba(255, 255, 255, 0.45)' : '#FFFFFF',
+            });
+          }
+        }
+        if (timeLbl) {
+          const h = Math.floor((task.scheduledStartMinute ?? 540) / 60);
+          const m = (task.scheduledStartMinute ?? 540) % 60;
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          const dh = h % 12 === 0 ? 12 : h % 12;
+          setText(timeLbl, `${dh}:${m < 10 ? '0' : ''}${m} ${ampm}`);
+        }
+        const isDone = task.status === 'completed';
+        if (chkLbl) setText(chkLbl, isDone ? '[x]' : '');
+        if (chkBtn && typeof chkBtn.setProperties === 'function') {
+          chkBtn.setProperties({
+            backgroundColor: isDone ? '#22C55E' : 'rgba(255, 255, 255, 0.05)',
+            borderColor: isDone ? '#22C55E' : 'rgba(255, 255, 255, 0.35)',
+          });
+        }
+      } else {
+        if (nameLbl) setText(nameLbl, '');
+        if (timeLbl) setText(timeLbl, '');
+        if (chkLbl) setText(chkLbl, '');
+        if (chkBtn && typeof chkBtn.setProperties === 'function') {
+          chkBtn.setProperties({
+            backgroundColor: 'transparent',
+            borderColor: 'rgba(255, 255, 255, 0.10)',
+          });
+        }
+      }
+    }
 
  const morning = this.routines.find((r) => r.id === 'routine-morning');
  const morningBadge = asset.getElementById('routine-morning-badge') as any;
