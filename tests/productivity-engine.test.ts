@@ -6,6 +6,7 @@ import {
   detectOverlaps,
   fixScheduleOverlaps,
   formatMinuteTime,
+  parseVoiceTaskCommand,
 } from '../src/productivity-engine.ts';
 
 test('formatMinuteTime: formats 09:00, 14:30, 00:00 properly', () => {
@@ -87,4 +88,42 @@ test('fixScheduleOverlaps: shifts conflicting tasks forward cleanly', () => {
   assert.strictEqual(adjustments.length, 1);
   assert.strictEqual(adjustments[0].taskId, 'b');
   assert.strictEqual(adjustments[0].startMinute, 605); // 600 + 5m buffer = 605
+});
+
+test('parseVoiceTaskCommand: accurately resolves times like at 4, at 4pm, 4 oclock, 4 in the evening', () => {
+  // "at 4" defaults to 4:00 PM (16:00, 960m) in workday scheduling
+  const t1 = parseVoiceTaskCommand('Add task Gym at 4', 18);
+  assert.ok(t1);
+  assert.strictEqual(t1.title, 'Gym');
+  assert.strictEqual(t1.scheduledStartMinute, 960); // 16:00
+
+  // "at 4 pm"
+  const t2 = parseVoiceTaskCommand('Add task Team Sync at 4 pm', 18);
+  assert.ok(t2);
+  assert.strictEqual(t2.title, 'Team Sync');
+  assert.strictEqual(t2.scheduledStartMinute, 960);
+
+  // "at 4 o'clock"
+  const t3 = parseVoiceTaskCommand('Add task Client Meeting at 4 o\'clock', 18);
+  assert.ok(t3);
+  assert.strictEqual(t3.title, 'Client Meeting');
+  assert.strictEqual(t3.scheduledStartMinute, 960);
+
+  // "at 4 in the evening"
+  const t4 = parseVoiceTaskCommand('Add task Workout at 4 in the evening', 18);
+  assert.ok(t4);
+  assert.strictEqual(t4.title, 'Workout');
+  assert.strictEqual(t4.scheduledStartMinute, 960);
+
+  // "at 9" defaults to 9:00 AM (540m)
+  const t5 = parseVoiceTaskCommand('Add task Morning Standup at 9', 18);
+  assert.ok(t5);
+  assert.strictEqual(t5.title, 'Morning Standup');
+  assert.strictEqual(t5.scheduledStartMinute, 540);
+
+  // "at 2:30" defaults to 2:30 PM (14:30, 870m)
+  const t6 = parseVoiceTaskCommand('Add task Code Review at 2:30', 18);
+  assert.ok(t6);
+  assert.strictEqual(t6.title, 'Code Review');
+  assert.strictEqual(t6.scheduledStartMinute, 870);
 });

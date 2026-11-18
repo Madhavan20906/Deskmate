@@ -176,7 +176,7 @@ export class PanelSystem extends createSystem({
  private deadlines: UpcomingDeadline[] = JSON.parse(JSON.stringify(SEED_DEADLINES));
 
  // Workspace Position & Depth Offset (Movable/Draggable in 3D space)
- private workspaceOffset = { x: 0, y: 0, z: 0.18 };
+ private workspaceOffset = { x: 0, y: 0, z: 0 };
  private heightStepIndex = 0;
 
  // Pip 3D Robot Rig State
@@ -277,19 +277,10 @@ export class PanelSystem extends createSystem({
  this.loadTasks();
 
  try {
- const storedOffset = window.localStorage.getItem('deskmate.workspace-offset.v1');
- if (storedOffset) {
- const parsed = JSON.parse(storedOffset);
- if (parsed && typeof parsed.x === 'number' && parsed.z !== 0) {
- this.workspaceOffset = parsed;
- } else {
- this.workspaceOffset = { x: 0, y: 0, z: 0.18 };
- }
- } else {
- this.workspaceOffset = { x: 0, y: 0, z: 0.18 };
- }
+ this.workspaceOffset = { x: 0, y: 0, z: 0 };
+ window.localStorage.removeItem('deskmate.workspace-offset.v1');
  } catch {
- this.workspaceOffset = { x: 0, y: 0, z: 0.18 };
+ this.workspaceOffset = { x: 0, y: 0, z: 0 };
  }
  this.applyWorkspaceOffset();
     this.detectUserLocationAndWeather();
@@ -3202,12 +3193,24 @@ User command: "${transcript}"`;
 
         if (act.type === 'add_task') {
           const targetDay = typeof act.dayNumber === 'number' ? act.dayNumber : this.selectedDayNumber;
+          const spokenParsed = parseVoiceTaskCommand(transcript, targetDay);
+          let scheduledMin: number;
+          if (spokenParsed && spokenParsed.scheduledStartMinute !== null && spokenParsed.scheduledStartMinute !== 600) {
+            // Spoken time explicitly extracted from user speech
+            scheduledMin = spokenParsed.scheduledStartMinute;
+          } else if (typeof act.scheduledStartMinute === 'number') {
+            scheduledMin = act.scheduledStartMinute <= 24 && act.scheduledStartMinute > 0
+              ? act.scheduledStartMinute * 60
+              : act.scheduledStartMinute;
+          } else {
+            scheduledMin = spokenParsed?.scheduledStartMinute ?? (targetDay === 17 ? 600 : 540);
+          }
           const newTask: GlassTask = {
             id: `task-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            title: act.title || 'New Task',
-            estimatedMinutes: typeof act.estimatedMinutes === 'number' ? act.estimatedMinutes : 30,
-            priority: act.priority === 'high' || act.priority === 'low' ? act.priority : 'medium',
-            scheduledStartMinute: typeof act.scheduledStartMinute === 'number' ? act.scheduledStartMinute : (targetDay === 17 ? 600 : 540),
+            title: act.title || spokenParsed?.title || 'New Task',
+            estimatedMinutes: typeof act.estimatedMinutes === 'number' ? act.estimatedMinutes : (spokenParsed?.estimatedMinutes ?? 30),
+            priority: act.priority === 'high' || act.priority === 'low' ? act.priority : (spokenParsed?.priority ?? 'medium'),
+            scheduledStartMinute: scheduledMin,
             status: 'todo',
             dayNumber: targetDay,
           };

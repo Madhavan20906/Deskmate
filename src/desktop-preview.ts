@@ -22,13 +22,12 @@ export type EnvironmentId =
  | 'home_office';
 
 // Default comfortable readable seated viewing pose:
-// Desk is at [0, 0, -0.75], tabletop at y = 0.74, cards at y = 1.00, dashboard at y = 1.48.
-// Camera at z = 0.85, y = 1.45 frames the Dashboard and Task Cards comfortably at chest-to-eye height.
+// Matches the exact Reset position (z = 0.85, y = 1.45) for natural, comfortable viewing.
 const DEFAULT_POSE = {
   x: 0,
   y: 1.45,
-  z: 0.25,
-  pitchRad: -0.04,
+  z: 0.85,
+  pitchRad: -0.06,
   fovyRad: (64 * Math.PI) / 180,
 };
 
@@ -41,18 +40,68 @@ export function enforceHandsFirstMode() {
   if (typeof window === 'undefined') return;
   const win = window as any;
 
+  const killGizmos = () => {
+    const device = win.IWER_DEVICE;
+    // 1. Hide DevUI's overlay canvas that renders the 3D RGB transform handles
+    if (device?.devui?.devUICanvas) {
+      device.devui.devUICanvas.style.display = 'none';
+      device.devui.devUICanvas.style.visibility = 'hidden';
+      device.devui.devUICanvas.style.pointerEvents = 'none';
+    }
+    // 2. Suppress transform handles on window/inputLayer
+    const handles = win.transformHandles || device?.devui?.inputLayer?.transformHandles;
+    if (handles) {
+      handles.forEach((handle: any) => {
+        if (handle) {
+          handle.visible = false;
+          try {
+            Object.defineProperty(handle, 'visible', {
+              get: () => false,
+              set: () => {},
+              configurable: true,
+            });
+          } catch {}
+        }
+      });
+    }
+    // 3. Mark inputLayer programmatic to prevent rendering handles
+    if (device?.devui?.inputLayer) {
+      device.devui.inputLayer.isInProgrammaticMode = true;
+    }
+  };
+
   const applyHandsMode = () => {
-    if (handsModeInitialized) return true;
     const device = win.IWER_DEVICE;
     if (!device) return false;
 
     try {
       device.primaryInputMode = 'hand';
-      if (device.devui) {
-        device.controlMode = 'programmatic';
-        device.controlMode = 'manual';
+      if (device.controllers) {
+        if (device.controllers.left) device.controllers.left.connected = false;
+        if (device.controllers.right) device.controllers.right.connected = false;
+      }
+      if (device.hands) {
+        if (device.hands.left) device.hands.left.connected = true;
+        if (device.hands.right) device.hands.right.connected = true;
       }
     } catch {}
+
+    killGizmos();
+
+    // 4. Ensure XRInput visual adapters hide controllers and show only hands
+    const xr = (win.world || (window as any).world)?.input?.xr;
+    if (xr?.visualAdapters?.controller) {
+      try {
+        xr.visualAdapters.controller.left?.toggleVisual(false);
+        xr.visualAdapters.controller.right?.toggleVisual(false);
+      } catch {}
+    }
+    if (xr?.visualAdapters?.hand) {
+      try {
+        xr.visualAdapters.hand.left?.toggleVisual(true);
+        xr.visualAdapters.hand.right?.toggleVisual(true);
+      } catch {}
+    }
 
     try {
       window.postMessage(
@@ -99,15 +148,16 @@ export function enforceHandsFirstMode() {
     return true;
   };
 
-  if (!applyHandsMode()) {
-    let attempts = 0;
-    const timer = window.setInterval(() => {
-      attempts++;
-      if (applyHandsMode() || attempts >= 30) {
-        window.clearInterval(timer);
-      }
-    }, 100);
-  }
+  applyHandsMode();
+  let attempts = 0;
+  const timer = window.setInterval(() => {
+    attempts++;
+    applyHandsMode();
+    killGizmos();
+    if (attempts >= 40) {
+      window.clearInterval(timer);
+    }
+  }, 100);
 }
 
 const forwardVec = new Vector3(0, 0, -1);

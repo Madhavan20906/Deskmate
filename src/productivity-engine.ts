@@ -256,18 +256,39 @@ export function parseVoiceTaskCommand(transcript: string, baseDay?: number, refe
     return null;
   }
 
-  // 1. Resolve Time First (handles 7pm, 7:30pm, at 2 PM, at 14:00)
+  // 1. Resolve Time First (handles 7pm, 7:30pm, at 2 PM, at 14:00, at 4, at 4 o'clock, 4 in the evening)
   let startMinute: number | null = 10 * 60; // 10:00 AM default
   let timeStrFound = '';
-  const timeMatch = lower.match(/(?:\bat\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b|\bat\s+(\d{1,2})(?::(\d{2}))?\b/i);
+  const timeMatch = lower.match(/(?:\bat\s+)(\d{1,2})(?::(\d{2}))?\s*(am|pm|o'?clock)?\s*(?:in\s+the\s+(morning|afternoon|evening|night))?\b|(\d{1,2})(?::(\d{2}))?\s*(am|pm|o'?clock)\b|(\d{1,2})(?::(\d{2}))?\s*(?:in\s+the\s+(morning|afternoon|evening|night))\b/i);
   if (timeMatch) {
-    timeStrFound = timeMatch[0];
-    let hour = parseInt(timeMatch[1] || timeMatch[4], 10);
-    const minute = parseInt(timeMatch[2] || timeMatch[5] || '0', 10);
-    const meridian = (timeMatch[3] || '').toLowerCase();
-    if (meridian === 'pm' && hour < 12) hour += 12;
-    if (meridian === 'am' && hour === 12) hour = 0;
-    startMinute = hour * 60 + minute;
+    const rawH = timeMatch[1] || timeMatch[5] || timeMatch[7];
+    const rawM = timeMatch[2] || timeMatch[6] || timeMatch[8];
+    const meridian = (timeMatch[3] || timeMatch[6] || '').toLowerCase();
+    const period = (timeMatch[4] || timeMatch[9] || '').toLowerCase();
+
+    if (rawH) {
+      timeStrFound = timeMatch[0];
+      let hour = parseInt(rawH, 10);
+      const minute = rawM ? parseInt(rawM, 10) : 0;
+
+      const isPM = meridian === 'pm' || period === 'afternoon' || period === 'evening' || period === 'night' || lower.includes('in the afternoon') || lower.includes('in the evening') || lower.includes('tonight');
+      const isAM = meridian === 'am' || period === 'morning' || lower.includes('in the morning');
+
+      if (isPM) {
+        if (hour < 12) hour += 12;
+      } else if (isAM) {
+        if (hour === 12) hour = 0;
+      } else {
+        // Workday scheduling heuristic:
+        // Hours 1..6 default to PM (13:00 - 18:00) because "at 4" in a day planner means 4:00 PM, not 4:00 AM
+        // Hours 7..11 default to AM (07:00 - 11:00)
+        // Hour 12 defaults to 12:00 PM (noon)
+        if (hour >= 1 && hour <= 6) {
+          hour += 12;
+        }
+      }
+      startMinute = hour * 60 + minute;
+    }
   }
 
   // Remove time string from remainder
@@ -352,8 +373,13 @@ export function parseVoiceTaskCommand(transcript: string, baseDay?: number, refe
   // 5. Clean Title
   let title = transcript
     .replace(/^(?:please\s+)?(?:pip\s+)?(?:can\s+you\s+)?(?:add\s+a?\s*task|schedule\s+a?\s*task|create\s+a?\s*task|add|schedule|create|remind\s+me\s+to|set\s+a?\s*reminder\s+for|put\s+on\s+my\s+schedule)\s*(?:called|named|\bto\b)?/i, '')
-    .replace(/(?:\bat\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm)\b|\bat\s+\d{1,2}(?::\d{2})?\b/gi, '')
     .replace(/(?:for\s+)?\d+\s*(?:hours?|hrs?|h\b|minutes?|mins?|m\b)/gi, '')
+    .replace(/\bat\s+\d{1,2}(?::\d{2})?\s*(?:am|pm|o'?clock)?\s*(?:in\s+the\s+(?:morning|afternoon|evening|night))?\b/gi, '')
+    .replace(/\d{1,2}(?::\d{2})?\s*(?:am|pm|o'?clock)\b/gi, '')
+    .replace(/\d{1,2}(?::\d{2})?\s*(?:in\s+the\s+(?:morning|afternoon|evening|night))\b/gi, '')
+    .replace(/\bo'?clock\b/gi, '')
+    .replace(/\bin\s+the\s+(?:morning|afternoon|evening|night)\b/gi, '')
+    .replace(/\b(?:at\s+night|tonight)\b/gi, '')
     .replace(/\b(?:for|on\s+)?(?:tomorrow|today|sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/gi, '')
     .replace(/\b(?:(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*|on\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s*|on\s+the\s+|on\s+)?\d{1,2}(?:st|nd|rd|th)?\b/gi, '')
     .replace(/\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b/gi, '')
