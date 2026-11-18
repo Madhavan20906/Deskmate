@@ -1498,45 +1498,17 @@ export class PanelSystem extends createSystem({
     }
   }
 
-  // Quick Add Pills — Genuinely create and add tasks to this selected day
+  // Quick Add Pills — Open Create New Task subview for the selected day
   const quickTask = asset.getElementById('quick-add-task');
   if (quickTask) {
     this.addPress(quickTask, () => {
-      const nextSlot = this.findNextAvailableSlot(this.selectedDayNumber, 45);
-      const newTask: GlassTask = {
-        id: `task-${Date.now()}`,
-        title: 'Deep Work Sprint',
-        estimatedMinutes: 45,
-        priority: 'medium',
-        scheduledStartMinute: nextSlot,
-        status: 'todo',
-            dayNumber: this.editDraftDayNumber,
-      };
-      this.tasks.push(newTask);
-      this.saveTasks(true, `Added "${newTask.title}"`);
-      this.refreshAllUI();
-      this.openEditSheet(newTask.id, this.selectedDayNumber);
-      this.setPipSpeech(`Added task to Nov ${this.selectedDayNumber}. Modify details or save.`);
+      this.openEditSheet(null, this.selectedDayNumber);
     });
   }
   const quickEvent = asset.getElementById('quick-add-event');
   if (quickEvent) {
     this.addPress(quickEvent, () => {
-      const nextSlot = this.findNextAvailableSlot(this.selectedDayNumber, 30);
-      const newEvent: GlassTask = {
-        id: `task-${Date.now()}`,
-        title: 'Team Sync & Review',
-        estimatedMinutes: 30,
-        priority: 'medium',
-        scheduledStartMinute: nextSlot,
-        status: 'todo',
-        dayNumber: this.editDraftDayNumber,
-      };
-      this.tasks.push(newEvent);
-      this.saveTasks(true, `Added "${newEvent.title}"`);
-      this.refreshAllUI();
-      this.openEditSheet(newEvent.id, this.selectedDayNumber);
-      this.setPipSpeech(`Added event for Nov ${this.selectedDayNumber}. Customize title or time.`);
+      this.openEditSheet(null, this.selectedDayNumber);
     });
   }
   const quickFocus = asset.getElementById('quick-add-focus');
@@ -1777,7 +1749,7 @@ export class PanelSystem extends createSystem({
 
  const addBlockBtn = asset.getElementById('btn-add-block');
  if (addBlockBtn) {
- this.addPress(addBlockBtn, () => this.openEditSheet(null));
+ this.addPress(addBlockBtn, () => this.openEditSheet(null, this.selectedDayNumber));
  }
 
  const zoomSchedBtn = asset.getElementById('btn-zoom-schedule');
@@ -1875,7 +1847,7 @@ export class PanelSystem extends createSystem({
 
  const hubAddTaskBtn = asset.getElementById('hub-btn-add-task');
  if (hubAddTaskBtn) {
- this.addPress(hubAddTaskBtn, () => this.openEditSheet(null));
+ this.addPress(hubAddTaskBtn, () => this.openEditSheet(null, this.selectedDayNumber));
  }
 
  // Card 2 (Focus Session): Zoom, Play, -5m, +5m, Reset, Break, Mode Settings
@@ -2177,7 +2149,7 @@ export class PanelSystem extends createSystem({
  // Tasks Subview Controls
  const tasksAddBtn = asset.getElementById('btn-tasks-add-task');
  if (tasksAddBtn) {
- this.addPress(tasksAddBtn, () => this.openEditSheet(null));
+ this.addPress(tasksAddBtn, () => this.openEditSheet(null, this.selectedDayNumber));
  }
 
  // Focus Studio Subview Controls

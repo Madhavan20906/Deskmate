@@ -41,16 +41,19 @@ export function enforceHandsFirstMode() {
   if (typeof window === 'undefined') return;
   const win = window as any;
 
-  // 1. Set IWER device primary input mode to 'hand' by default on startup
-  const device = win.IWER_DEVICE;
-  if (device && !handsModeInitialized) {
+  const applyHandsMode = () => {
+    if (handsModeInitialized) return true;
+    const device = win.IWER_DEVICE;
+    if (!device) return false;
+
     try {
       device.primaryInputMode = 'hand';
+      if (device.devui) {
+        device.controlMode = 'programmatic';
+        device.controlMode = 'manual';
+      }
     } catch {}
-  }
 
-  // 2. Post preference patch for hand mode on startup
-  if (!handsModeInitialized) {
     try {
       window.postMessage(
         {
@@ -61,50 +64,46 @@ export function enforceHandsFirstMode() {
         '*',
       );
     } catch {}
-  }
 
-  // 3. Switch DevUI to hands by default once on initial launch
-  const attemptDevUISwitch = () => {
-    if (handsModeInitialized) return true;
-    const devui = win.IWER_DEVICE?.devui;
+    const devui = device.devui;
     const shadow = devui?.devUIContainer?.shadowRoot || document.querySelector('div')?.shadowRoot;
-    if (!shadow) return false;
-
-    const selectModeBtn = shadow.querySelector('button[title="Select input mode"]') as HTMLButtonElement | null;
-    if (!selectModeBtn) return false;
-
-    // If hands mode icon is already showing, hands are already active
-    if (selectModeBtn.querySelector('svg.lucide-hand')) {
-      handsModeInitialized = true;
-      return true;
-    }
-
-    // Only switch if controllers are currently active by default
-    if (selectModeBtn.querySelector('svg.lucide-gamepad-2')) {
-      selectModeBtn.click();
-      window.requestAnimationFrame(() => {
-        const menu = shadow.querySelector('#iwer-input-mode-menu');
-        if (menu) {
-          const buttons = Array.from(menu.querySelectorAll('button') as any) as HTMLButtonElement[];
-          const handBtn = buttons.find((b) => b.textContent?.includes('Hands') || b.querySelector('svg.lucide-hand'));
-          if (handBtn) {
-            handBtn.click();
-            handsModeInitialized = true;
-          } else {
-            selectModeBtn.click();
-          }
+    if (shadow) {
+      const selectModeBtn = shadow.querySelector('button[title="Select input mode"]') as HTMLButtonElement | null;
+      if (selectModeBtn) {
+        if (selectModeBtn.querySelector('svg.lucide-hand')) {
+          handsModeInitialized = true;
+          return true;
         }
-      });
-      return true;
+        if (selectModeBtn.querySelector('svg.lucide-gamepad-2')) {
+          selectModeBtn.click();
+          window.requestAnimationFrame(() => {
+            const menu = shadow.querySelector('#iwer-input-mode-menu');
+            if (menu) {
+              const buttons = Array.from(menu.querySelectorAll('button') as any) as HTMLButtonElement[];
+              const handBtn = buttons.find((b) => b.textContent?.includes('Hands') || b.querySelector('svg.lucide-hand'));
+              if (handBtn) {
+                handBtn.click();
+                handsModeInitialized = true;
+              } else {
+                selectModeBtn.click();
+              }
+            }
+          });
+          handsModeInitialized = true;
+          return true;
+        }
+      }
     }
-    return false;
+
+    handsModeInitialized = true;
+    return true;
   };
 
-  if (!attemptDevUISwitch()) {
+  if (!applyHandsMode()) {
     let attempts = 0;
     const timer = window.setInterval(() => {
       attempts++;
-      if (attemptDevUISwitch() || attempts >= 30) {
+      if (applyHandsMode() || attempts >= 30) {
         window.clearInterval(timer);
       }
     }, 100);
