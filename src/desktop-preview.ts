@@ -35,8 +35,80 @@ const DEFAULT_POSE = {
 let currentZ = DEFAULT_POSE.z;
 let activeHand: 'left' | 'right' = 'right';
 
+let handsModeInitialized = false;
+
 export function enforceHandsFirstMode() {
-  // Modeled as a runtime state preference without breaking desktop mouse input
+  if (typeof window === 'undefined') return;
+  const win = window as any;
+
+  // 1. Set IWER device primary input mode to 'hand' by default on startup
+  const device = win.IWER_DEVICE;
+  if (device && !handsModeInitialized) {
+    try {
+      device.primaryInputMode = 'hand';
+    } catch {}
+  }
+
+  // 2. Post preference patch for hand mode on startup
+  if (!handsModeInitialized) {
+    try {
+      window.postMessage(
+        {
+          channel: 'iwer-prefs',
+          scope: 'origin',
+          patch: { inputMode: 'hand', gazeMode: 'off' },
+        },
+        '*',
+      );
+    } catch {}
+  }
+
+  // 3. Switch DevUI to hands by default once on initial launch
+  const attemptDevUISwitch = () => {
+    if (handsModeInitialized) return true;
+    const devui = win.IWER_DEVICE?.devui;
+    const shadow = devui?.devUIContainer?.shadowRoot || document.querySelector('div')?.shadowRoot;
+    if (!shadow) return false;
+
+    const selectModeBtn = shadow.querySelector('button[title="Select input mode"]') as HTMLButtonElement | null;
+    if (!selectModeBtn) return false;
+
+    // If hands mode icon is already showing, hands are already active
+    if (selectModeBtn.querySelector('svg.lucide-hand')) {
+      handsModeInitialized = true;
+      return true;
+    }
+
+    // Only switch if controllers are currently active by default
+    if (selectModeBtn.querySelector('svg.lucide-gamepad-2')) {
+      selectModeBtn.click();
+      window.requestAnimationFrame(() => {
+        const menu = shadow.querySelector('#iwer-input-mode-menu');
+        if (menu) {
+          const buttons = Array.from(menu.querySelectorAll('button') as any) as HTMLButtonElement[];
+          const handBtn = buttons.find((b) => b.textContent?.includes('Hands') || b.querySelector('svg.lucide-hand'));
+          if (handBtn) {
+            handBtn.click();
+            handsModeInitialized = true;
+          } else {
+            selectModeBtn.click();
+          }
+        }
+      });
+      return true;
+    }
+    return false;
+  };
+
+  if (!attemptDevUISwitch()) {
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts++;
+      if (attemptDevUISwitch() || attempts >= 30) {
+        window.clearInterval(timer);
+      }
+    }, 100);
+  }
 }
 
 const forwardVec = new Vector3(0, 0, -1);
@@ -250,9 +322,10 @@ export function enforceSeatedXRPose() {
 }
 
 export async function initDesktopPreviewIfNeeded(): Promise<boolean> {
- initDesktopHandHUD();
- enforceSeatedXRPose();
- return true;
+  enforceHandsFirstMode();
+  initDesktopHandHUD();
+  enforceSeatedXRPose();
+  return true;
 }
 
 export function switchEnvironment(_env: EnvironmentId) {}

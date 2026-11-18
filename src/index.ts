@@ -9,7 +9,7 @@ import { World } from '@iwsdk/core';
 import projectOptions from 'virtual:iwsdk-project';
 import { PanelSystem } from './panel.js';
 import { WorkspaceSystem } from './workspace.js';
-import { initDesktopPreviewIfNeeded, isQuestOrNativeXR, enforceSeatedXRPose } from './desktop-preview.js';
+import { initDesktopPreviewIfNeeded, isQuestOrNativeXR, enforceSeatedXRPose, enforceHandsFirstMode } from './desktop-preview.js';
 
 async function bootstrap() {
   const options = {
@@ -116,6 +116,7 @@ async function bootstrap() {
     window.setTimeout(() => {
       configurePointers();
       enforceSeatedXRPose();
+      enforceHandsFirstMode();
     }, 250);
   }
 
@@ -124,6 +125,7 @@ async function bootstrap() {
     configurePointers();
     if (!isQuestOrNativeXR()) {
       enforceSeatedXRPose();
+      enforceHandsFirstMode();
     }
   });
   world.renderer.xr.addEventListener('sessionend', () => {

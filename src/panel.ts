@@ -2553,10 +2553,9 @@ export class PanelSystem extends createSystem({
  const geminiKeyBtn = asset.getElementById('btn-setting-gemini-key');
  if (geminiKeyBtn) {
    this.addPress(geminiKeyBtn, () => {
-     const current = this.getGeminiApiKey();
      let entered: string | null = null;
      if (typeof window !== 'undefined' && typeof window.prompt === 'function') {
-       entered = window.prompt('Enter your Google Gemini API Key for Pip voice intelligence:', current);
+       entered = window.prompt('Enter your Google Gemini API Key for Pip voice intelligence (leave empty to reset):', '');
      }
      if (entered !== null) {
        const cleanKey = entered.trim();
