@@ -25,11 +25,11 @@ export type EnvironmentId =
 // Desk is at [0, 0, -0.75], tabletop at y = 0.74, cards at y = 1.00, dashboard at y = 1.48.
 // Camera at z = 0.85, y = 1.45 frames the Dashboard and Task Cards comfortably at chest-to-eye height.
 const DEFAULT_POSE = {
- x: 0,
- y: 1.45,
- z: 0.62,
- pitchRad: -0.04,
- fovyRad: (64 * Math.PI) / 180,
+  x: 0,
+  y: 1.45,
+  z: 0.25,
+  pitchRad: -0.04,
+  fovyRad: (64 * Math.PI) / 180,
 };
 
 let currentZ = DEFAULT_POSE.z;

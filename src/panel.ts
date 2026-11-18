@@ -176,7 +176,7 @@ export class PanelSystem extends createSystem({
  private deadlines: UpcomingDeadline[] = JSON.parse(JSON.stringify(SEED_DEADLINES));
 
  // Workspace Position & Depth Offset (Movable/Draggable in 3D space)
- private workspaceOffset = { x: 0, y: 0, z: 0 };
+ private workspaceOffset = { x: 0, y: 0, z: 0.18 };
  private heightStepIndex = 0;
 
  // Pip 3D Robot Rig State
@@ -280,11 +280,17 @@ export class PanelSystem extends createSystem({
  const storedOffset = window.localStorage.getItem('deskmate.workspace-offset.v1');
  if (storedOffset) {
  const parsed = JSON.parse(storedOffset);
- if (parsed && typeof parsed.x === 'number') {
+ if (parsed && typeof parsed.x === 'number' && parsed.z !== 0) {
  this.workspaceOffset = parsed;
+ } else {
+ this.workspaceOffset = { x: 0, y: 0, z: 0.18 };
  }
+ } else {
+ this.workspaceOffset = { x: 0, y: 0, z: 0.18 };
  }
- } catch {}
+ } catch {
+ this.workspaceOffset = { x: 0, y: 0, z: 0.18 };
+ }
  this.applyWorkspaceOffset();
     this.detectUserLocationAndWeather();
 
