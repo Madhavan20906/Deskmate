@@ -1,5 +1,10 @@
 # DeskMate — Mixed-Reality Spatial Productivity Workspace
 
+**Track: Productivity**  
+**Division: New Experience**
+
+[![Track: Productivity](https://img.shields.io/badge/Track-Productivity-blue.svg)](https://start-developer-competition-26.devpost.com/)
+[![Division: New Experience](https://img.shields.io/badge/Division-New%20Experience-green.svg)](https://start-developer-competition-26.devpost.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Platform: Meta Quest WebXR](https://img.shields.io/badge/Platform-Meta%20Quest%203%20%7C%20WebXR-brightgreen.svg)](https://www.meta.com/quest/)
 [![Framework: IWSDK + Three.js](https://img.shields.io/badge/Engine-IWSDK%20%7C%20Three.js%20%7C%20elics-blueviolet.svg)](https://iwsdk.dev/)
