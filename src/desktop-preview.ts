@@ -27,8 +27,8 @@ export type EnvironmentId =
 const DEFAULT_POSE = {
  x: 0,
  y: 1.45,
- z: 0.85,
- pitchRad: -0.06,
+ z: 0.62,
+ pitchRad: -0.04,
  fovyRad: (64 * Math.PI) / 180,
 };
 

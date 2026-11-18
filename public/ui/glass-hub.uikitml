@@ -524,9 +524,9 @@
  .timeline-track {
  flex-direction: row;
  width: 100%;
- height: 52px;
- border-radius: 10px;
- background-color: rgba(255, 255, 255, 0.04);
+ height: 58px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.04);
  border-width: 1px;
  border-color: rgba(255, 255, 255, 0.08);
  align-items: center;
@@ -536,8 +536,8 @@
  }
 
  .schedule-block {
- flex-direction: column;
- height: 44px;
+  flex-direction: column;
+  height: 50px;
  border-radius: 8px;
  padding-left: 6px;
  padding-right: 6px;
@@ -560,15 +560,15 @@
  }
 
  .block-title {
- font-size: 11px;
+  font-size: 13px;
  font-weight: 800;
  color: #FFFFFF;
  }
 
  .block-time {
- font-size: 10px;
- font-weight: 600;
- color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.90);
  }
 
  .bottom-cards-row {
@@ -703,8 +703,7 @@
  align-items: center;
  gap: 4px;
  flex-grow: 1;
- max-width: 82px;
- flex-shrink: 1;
+ flex-grow: 1;
  overflow: hidden;
  }
 
@@ -731,14 +730,14 @@
  }
 
  .hub-task-text {
- font-size: 11px;
+  font-size: 14px;
  font-weight: 600;
  color: #FFFFFF;
  overflow: hidden;
  }
 
  .hub-task-text-strike {
- font-size: 11px;
+  font-size: 14px;
  font-weight: 500;
  color: rgba(255, 255, 255, 0.40);
  overflow: hidden;
@@ -1377,7 +1376,8 @@
  }
 
  .interactive-card-text {
- font-size: 12px;
+  font-size: 15px;
+  font-weight: 700;
  font-weight: 600;
  color: #FFFFFF;
  }
@@ -2225,9 +2225,7 @@
         <Button id="all-task-chk-0" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
           <ButtonLabel id="all-task-chk-txt-0" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
         </Button>
-        <Button id="all-task-btn-0" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-          <ButtonLabel id="all-task-txt-0" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
-        </Button>
+        <div id="all-task-btn-0" style="flex-grow: 1; align-items: flex-start;"><span id="all-task-txt-0" class="interactive-card-text" style="font-size: 15px; font-weight: 700; color: #FFFFFF;"></span></div>
       </div>
       <div style="flex-direction: row; align-items: center; gap: 8px;">
         <span id="all-task-time-0" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
@@ -2242,9 +2240,7 @@
         <Button id="all-task-chk-1" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
           <ButtonLabel id="all-task-chk-txt-1" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
         </Button>
-        <Button id="all-task-btn-1" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-          <ButtonLabel id="all-task-txt-1" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
-        </Button>
+        <div id="all-task-btn-1" style="flex-grow: 1; align-items: flex-start;"><span id="all-task-txt-1" class="interactive-card-text" style="font-size: 15px; font-weight: 700; color: #FFFFFF;"></span></div>
       </div>
       <div style="flex-direction: row; align-items: center; gap: 8px;">
         <span id="all-task-time-1" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
@@ -2259,9 +2255,7 @@
         <Button id="all-task-chk-2" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
           <ButtonLabel id="all-task-chk-txt-2" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
         </Button>
-        <Button id="all-task-btn-2" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-          <ButtonLabel id="all-task-txt-2" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
-        </Button>
+        <div id="all-task-btn-2" style="flex-grow: 1; align-items: flex-start;"><span id="all-task-txt-2" class="interactive-card-text" style="font-size: 15px; font-weight: 700; color: #FFFFFF;"></span></div>
       </div>
       <div style="flex-direction: row; align-items: center; gap: 8px;">
         <span id="all-task-time-2" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
@@ -2276,9 +2270,7 @@
         <Button id="all-task-chk-3" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
           <ButtonLabel id="all-task-chk-txt-3" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
         </Button>
-        <Button id="all-task-btn-3" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-          <ButtonLabel id="all-task-txt-3" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
-        </Button>
+        <div id="all-task-btn-3" style="flex-grow: 1; align-items: flex-start;"><span id="all-task-txt-3" class="interactive-card-text" style="font-size: 15px; font-weight: 700; color: #FFFFFF;"></span></div>
       </div>
       <div style="flex-direction: row; align-items: center; gap: 8px;">
         <span id="all-task-time-3" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
@@ -2293,9 +2285,7 @@
         <Button id="all-task-chk-4" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
           <ButtonLabel id="all-task-chk-txt-4" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
         </Button>
-        <Button id="all-task-btn-4" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-          <ButtonLabel id="all-task-txt-4" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
-        </Button>
+        <div id="all-task-btn-4" style="flex-grow: 1; align-items: flex-start;"><span id="all-task-txt-4" class="interactive-card-text" style="font-size: 15px; font-weight: 700; color: #FFFFFF;"></span></div>
       </div>
       <div style="flex-direction: row; align-items: center; gap: 8px;">
         <span id="all-task-time-4" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
@@ -2310,9 +2300,7 @@
         <Button id="all-task-chk-5" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
           <ButtonLabel id="all-task-chk-txt-5" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
         </Button>
-        <Button id="all-task-btn-5" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-          <ButtonLabel id="all-task-txt-5" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
-        </Button>
+        <div id="all-task-btn-5" style="flex-grow: 1; align-items: flex-start;"><span id="all-task-txt-5" class="interactive-card-text" style="font-size: 15px; font-weight: 700; color: #FFFFFF;"></span></div>
       </div>
       <div style="flex-direction: row; align-items: center; gap: 8px;">
         <span id="all-task-time-5" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
@@ -2327,9 +2315,7 @@
         <Button id="all-task-chk-6" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
           <ButtonLabel id="all-task-chk-txt-6" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
         </Button>
-        <Button id="all-task-btn-6" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-          <ButtonLabel id="all-task-txt-6" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
-        </Button>
+        <div id="all-task-btn-6" style="flex-grow: 1; align-items: flex-start;"><span id="all-task-txt-6" class="interactive-card-text" style="font-size: 15px; font-weight: 700; color: #FFFFFF;"></span></div>
       </div>
       <div style="flex-direction: row; align-items: center; gap: 8px;">
         <span id="all-task-time-6" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
@@ -2344,9 +2330,7 @@
         <Button id="all-task-chk-7" class="agenda-checkbox" style="width: 22px; height: 22px; border-radius: 6px;">
           <ButtonLabel id="all-task-chk-txt-7" style="font-size: 11px; color: #FFFFFF; font-weight: 700;"></ButtonLabel>
         </Button>
-        <Button id="all-task-btn-7" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-          <ButtonLabel id="all-task-txt-7" class="interactive-card-text" style="font-size: 13px; font-weight: 600;"></ButtonLabel>
-        </Button>
+        <div id="all-task-btn-7" style="flex-grow: 1; align-items: flex-start;"><span id="all-task-txt-7" class="interactive-card-text" style="font-size: 15px; font-weight: 700; color: #FFFFFF;"></span></div>
       </div>
       <div style="flex-direction: row; align-items: center; gap: 8px;">
         <span id="all-task-time-7" style="font-size: 11px; color: rgba(255, 255, 255, 0.65);"></span>
@@ -2472,7 +2456,19 @@
  <Button id="focus-studio-plus5" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">+5m</ButtonLabel></Button>
  <Button id="focus-studio-minus10" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">-10m</ButtonLabel></Button>
  <Button id="focus-studio-plus10" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">+10m</ButtonLabel></Button>
- <Button id="focus-studio-reset" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">Reset</ButtonLabel></Button>
+ </div>
+  <div style="flex-direction: row; gap: 12px; margin-top: 8px; margin-bottom: 8px; justify-content: center; width: 100%;">
+    <Button id="focus-studio-btn-start" style="padding-left: 24px; padding-right: 24px; padding-top: 8px; padding-bottom: 8px; border-radius: 12px; background-color: #22C55E; border-width: 1px; border-color: #4ADE80;">
+      <ButtonLabel style="font-size: 15px; font-weight: 800; color: #FFFFFF;">Start</ButtonLabel>
+    </Button>
+    <Button id="focus-studio-btn-stop" style="padding-left: 24px; padding-right: 24px; padding-top: 8px; padding-bottom: 8px; border-radius: 12px; background-color: #EF4444; border-width: 1px; border-color: #F87171;">
+      <ButtonLabel style="font-size: 15px; font-weight: 800; color: #FFFFFF;">Stop</ButtonLabel>
+    </Button>
+    <Button id="focus-studio-btn-reset" style="padding-left: 24px; padding-right: 24px; padding-top: 8px; padding-bottom: 8px; border-radius: 12px; background-color: rgba(255, 255, 255, 0.15); border-width: 1px; border-color: rgba(255, 255, 255, 0.30);">
+      <ButtonLabel style="font-size: 15px; font-weight: 800; color: #FFFFFF;">Reset</ButtonLabel>
+    </Button>
+  </div>
+  <div class="focus-quick-chips-row" style="width: 480px; flex-wrap: wrap; justify-content: center; gap: 6px;">
  <Button id="focus-studio-break" class="focus-quick-chip"><ButtonLabel class="focus-quick-chip-text">Break</ButtonLabel></Button>
  </div>
  <div class="focus-quick-chips-row" style="width: 480px; justify-content: center; gap: 6px;">
@@ -2586,49 +2582,37 @@
  </div>
  <div class="subview-body" id="notes-list-container" style="gap: 8px;">
     <div id="note-row-0" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
-      <Button id="note-item-0" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-        <ButtonLabel id="note-txt-0" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
-      </Button>
+      <div id="note-item-0" style="flex-grow: 1; align-items: flex-start;"><span id="note-txt-0" class="interactive-card-text" style="font-size: 15px; font-weight: 600; color: #FFFFFF;"></span></div>
       <Button id="note-del-0" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
         <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
       </Button>
     </div>
     <div id="note-row-1" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
-      <Button id="note-item-1" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-        <ButtonLabel id="note-txt-1" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
-      </Button>
+      <div id="note-item-1" style="flex-grow: 1; align-items: flex-start;"><span id="note-txt-1" class="interactive-card-text" style="font-size: 15px; font-weight: 600; color: #FFFFFF;"></span></div>
       <Button id="note-del-1" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
         <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
       </Button>
     </div>
     <div id="note-row-2" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
-      <Button id="note-item-2" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-        <ButtonLabel id="note-txt-2" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
-      </Button>
+      <div id="note-item-2" style="flex-grow: 1; align-items: flex-start;"><span id="note-txt-2" class="interactive-card-text" style="font-size: 15px; font-weight: 600; color: #FFFFFF;"></span></div>
       <Button id="note-del-2" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
         <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
       </Button>
     </div>
     <div id="note-row-3" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
-      <Button id="note-item-3" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-        <ButtonLabel id="note-txt-3" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
-      </Button>
+      <div id="note-item-3" style="flex-grow: 1; align-items: flex-start;"><span id="note-txt-3" class="interactive-card-text" style="font-size: 15px; font-weight: 600; color: #FFFFFF;"></span></div>
       <Button id="note-del-3" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
         <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
       </Button>
     </div>
     <div id="note-row-4" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
-      <Button id="note-item-4" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-        <ButtonLabel id="note-txt-4" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
-      </Button>
+      <div id="note-item-4" style="flex-grow: 1; align-items: flex-start;"><span id="note-txt-4" class="interactive-card-text" style="font-size: 15px; font-weight: 600; color: #FFFFFF;"></span></div>
       <Button id="note-del-4" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
         <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
       </Button>
     </div>
     <div id="note-row-5" class="interactive-card-item" style="display: none; align-items: center; justify-content: space-between; padding-left: 14px; padding-right: 14px; padding-top: 10px; padding-bottom: 10px;">
-      <Button id="note-item-5" style="background-color: transparent; border-width: 0px; flex-grow: 1; align-items: flex-start;">
-        <ButtonLabel id="note-txt-5" class="interactive-card-text" style="font-size: 13px; font-weight: 500;"></ButtonLabel>
-      </Button>
+      <div id="note-item-5" style="flex-grow: 1; align-items: flex-start;"><span id="note-txt-5" class="interactive-card-text" style="font-size: 15px; font-weight: 600; color: #FFFFFF;"></span></div>
       <Button id="note-del-5" class="subview-back-btn" style="padding-left: 10px; padding-right: 10px; padding-top: 4px; padding-bottom: 4px; background-color: rgba(239, 68, 68, 0.20); border-color: rgba(239, 68, 68, 0.40);">
         <ButtonLabel class="subview-back-text" style="color: #FCA5A5; font-size: 11px;">Delete</ButtonLabel>
       </Button>
@@ -2774,9 +2758,7 @@
  <span class="interactive-card-text" style="font-weight: 700;">Gemini AI Voice Assistant</span>
  <span id="gemini-status-desc" class="legend-text" style="color: rgba(245, 242, 235, 0.60);">AI natural language voice control &amp; task actions</span>
  </div>
- <Button id="btn-setting-gemini-key" class="focus-quick-chip" style="background-color: #38BDF8; border-color: #7DD3FC;">
- <ButtonLabel id="btn-setting-gemini-label" class="focus-quick-chip-text" style="color: #0F172A; font-weight: 700;">Key: Active</ButtonLabel>
- </Button>
+ 
  </div>
  </div>
  </div>

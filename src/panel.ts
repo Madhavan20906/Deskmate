@@ -1122,15 +1122,28 @@ export class PanelSystem extends createSystem({
     }
   }
 
+  public deleteTask(taskId: string) {
+    const task = this.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+    const title = task.title;
+    this.tasks = this.tasks.filter((t) => t.id !== taskId);
+    this.saveTasks(true, `Deleted "${title}"`);
+    this.refreshAllUI();
+    this.setPipSpeech(`Removed task "${title}" from your schedule.`);
+    this.triggerPipEmote('celebrate');
+  }
+
   public refreshAllTasksListUI() {
     const hubAsset = this.getAsset('panel-hub');
     if (!hubAsset) return;
-    const sortedTasks = [...this.tasks].sort((a, b) => {
-      const dayA = a.dayNumber ?? this.selectedDayNumber;
-      const dayB = b.dayNumber ?? this.selectedDayNumber;
-      if (dayA !== dayB) return dayA - dayB;
-      return (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540);
-    });
+    const targetDay = this.selectedDayNumber;
+    const dayTasks = this.getTasksForDay(targetDay);
+    const sortedTasks = [...dayTasks].sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+
+    const emptyMsg = hubAsset.getElementById('all-tasks-empty-msg') as any;
+    if (emptyMsg && typeof emptyMsg.setProperties === 'function') {
+      emptyMsg.setProperties({ display: sortedTasks.length === 0 ? 'flex' : 'none' });
+    }
 
     for (let i = 0; i < 8; i++) {
       const row = hubAsset.getElementById(`all-task-row-${i}`) as any;
@@ -1149,7 +1162,7 @@ export class PanelSystem extends createSystem({
           const m = start % 60;
           const ampm = h >= 12 ? 'PM' : 'AM';
           const dh = h % 12 === 0 ? 12 : h % 12;
-          const timeStr = `${task.dayNumber ? 'Day ' + task.dayNumber + ' · ' : ''}${dh}:${m < 10 ? '0' : ''}${m} ${ampm}`;
+          const timeStr = `${dh}:${m < 10 ? '0' : ''}${m} ${ampm}`;
           setText(timeEl, timeStr);
         }
         if (badgeEl) {
@@ -1940,26 +1953,14 @@ export class PanelSystem extends createSystem({
  });
  }
 
- const focusGear = asset.getElementById('btn-focus-settings');
- if (focusGear) {
- this.addPress(focusGear, () => {
- if (this.focusMode === 'pomodoro') {
- this.focusMode = 'short_break';
- this.focusTotalSeconds = 5 * 60;
- this.focusRemainingSeconds = 5 * 60;
- } else if (this.focusMode === 'short_break') {
- this.focusMode = 'long_break';
- this.focusTotalSeconds = 15 * 60;
- this.focusRemainingSeconds = 15 * 60;
- } else {
- this.focusMode = 'pomodoro';
- this.focusTotalSeconds = 25 * 60;
- this.focusRemainingSeconds = 25 * 60;
- }
- this.setPipSpeech(`Focus mode switched to ${this.focusMode.replace('_', ' ').toUpperCase()}.`);
- this.refreshHubPanelUI();
- });
- }
+  const focusGear = asset.getElementById('btn-focus-settings');
+  if (focusGear) {
+    this.addPress(focusGear, () => {
+      this.setHubView('focus');
+      this.setPipSpeech('Opened Spatial Focus Studio.');
+      this.refreshHubPanelUI();
+    });
+  }
 
  // Card 3 (Workload): Zoom, Gauge toggle, Insight
  const zoomWorkloadBtn = asset.getElementById('btn-zoom-workload');
@@ -2100,20 +2101,21 @@ export class PanelSystem extends createSystem({
  const monthTabMonth = asset.getElementById('month-tab-month');
  if (monthTabMonth) this.addPress(monthTabMonth, () => this.setScheduleView('month'));
 
- for (let d = 1; d <= 31; d++) {
- const tile = asset.getElementById(`month-date-${d}`);
- if (tile) {
- this.addPress(tile, () => {
- this.selectedDayNumber = d;
- this.calendarDate = new Date(this.calendarDate.getFullYear(), this.calendarDate.getMonth(), d);
- this.updateCalendarDays();
- const dayTasks = this.getTasksForDay(d);
- const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
- this.setPipSpeech(`Selected ${monthName} ${d} (${dayTasks.length} tasks). Click "+ Add Task for this Day" or "Back to Day Schedule".`);
- this.refreshAllUI();
- });
- }
- }
+  for (let d = 1; d <= 31; d++) {
+    const tile = asset.getElementById(`month-date-${d}`);
+    if (tile) {
+      this.addPress(tile, () => {
+        this.selectedDayNumber = d;
+        this.calendarDate = new Date(this.calendarDate.getFullYear(), this.calendarDate.getMonth(), d);
+        this.updateCalendarDays();
+        this.scheduleView = 'day';
+        this.setHubView('overview');
+        const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
+        this.setPipSpeech(`Viewing ${monthName} ${d} schedule on main dashboard.`);
+        this.refreshAllUI();
+      });
+    }
+  }
 
  const monthAddBtn = asset.getElementById('btn-month-add-task');
  if (monthAddBtn) {
@@ -2199,17 +2201,40 @@ export class PanelSystem extends createSystem({
  this.refreshHubPanelUI();
  });
  }
- const studioReset = asset.getElementById('focus-studio-reset');
- if (studioReset) {
- this.addPress(studioReset, () => {
- this.focusRunning = false;
- this.focusRemainingSeconds = 25 * 60;
- this.focusTotalSeconds = 25 * 60;
- this.focusMode = 'pomodoro';
- this.setPipSpeech('Focus timer reset to 25m Pomodoro.');
- this.refreshHubPanelUI();
- });
- }
+  const studioBtnStart = asset.getElementById('focus-studio-btn-start');
+  if (studioBtnStart) {
+    this.addPress(studioBtnStart, () => {
+      this.focusRunning = true;
+      this.setPipSpeech('Focus session started.');
+      this.refreshHubPanelUI();
+    });
+  }
+  const studioBtnStop = asset.getElementById('focus-studio-btn-stop');
+  if (studioBtnStop) {
+    this.addPress(studioBtnStop, () => {
+      this.focusRunning = false;
+      this.setPipSpeech('Focus session paused.');
+      this.refreshHubPanelUI();
+    });
+  }
+  const studioBtnReset = asset.getElementById('focus-studio-btn-reset');
+  if (studioBtnReset) {
+    this.addPress(studioBtnReset, () => {
+      this.focusRunning = false;
+      this.focusRemainingSeconds = this.focusTotalSeconds;
+      this.setPipSpeech(`Focus timer reset to ${Math.round(this.focusTotalSeconds / 60)}m.`);
+      this.refreshHubPanelUI();
+    });
+  }
+  const studioReset = asset.getElementById('focus-studio-reset');
+  if (studioReset) {
+    this.addPress(studioReset, () => {
+      this.focusRunning = false;
+      this.focusRemainingSeconds = this.focusTotalSeconds;
+      this.setPipSpeech(`Focus timer reset to ${Math.round(this.focusTotalSeconds / 60)}m.`);
+      this.refreshHubPanelUI();
+    });
+  }
  const studioBreak = asset.getElementById('focus-studio-break');
  if (studioBreak) {
  this.addPress(studioBreak, () => {
@@ -2437,12 +2462,46 @@ export class PanelSystem extends createSystem({
  });
  }
  }
- const notesAdd = asset.getElementById('btn-notes-add');
- if (notesAdd) {
- this.addPress(notesAdd, () => {
- this.setPipSpeech('Quick Note added to spatial scratchpad.');
- });
- }
+  const notesAdd = asset.getElementById('btn-notes-add');
+  if (notesAdd) {
+    this.addPress(notesAdd, () => {
+      this.addQuickNote();
+    });
+  }
+
+  for (let i = 0; i < 6; i++) {
+    const noteDel = asset.getElementById(`note-del-${i}`);
+    if (noteDel) {
+      this.addPress(noteDel, () => {
+        const note = this.notes[i];
+        if (note) this.deleteNote(note.id);
+      });
+    }
+  }
+
+  for (let i = 0; i < 8; i++) {
+    const allTaskDel = asset.getElementById(`all-task-del-${i}`);
+    if (allTaskDel) {
+      this.addPress(allTaskDel, () => {
+        const dayTasks = this.getTasksForDay(this.selectedDayNumber).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+        const task = dayTasks[i];
+        if (task) this.deleteTask(task.id);
+      });
+    }
+    const allTaskChk = asset.getElementById(`all-task-chk-${i}`);
+    if (allTaskChk) {
+      this.addPress(allTaskChk, () => {
+        const dayTasks = this.getTasksForDay(this.selectedDayNumber).sort((a, b) => (a.scheduledStartMinute ?? 540) - (b.scheduledStartMinute ?? 540));
+        const task = dayTasks[i];
+        if (task) {
+          task.status = task.status === 'completed' ? 'todo' : 'completed';
+          if (task.status === 'completed') task.completedAt = Date.now();
+          this.saveTasks(true, `Toggled "${task.title}"`);
+          this.refreshAllUI();
+        }
+      });
+    }
+  }
 
  // Search Subview Controls
  const searchFilterAll = asset.getElementById('search-filter-all');
@@ -3282,7 +3341,11 @@ User command: "${transcript}"`;
   }
 
   private executeLocalVoiceFallback(transcript: string) {
- const lower = transcript.toLowerCase().trim();
+    const rawLower = transcript.toLowerCase().trim();
+    const lower = rawLower
+      .replace(/^(?:hey\s+|hi\s+|hello\s+)?(?:pip|deskmate)[,\s]*/i, '')
+      .replace(/^(?:can\s+you\s+|please\s+|could\s+you\s+|i\s+want\s+to\s+|i\s+need\s+to\s+)/i, '')
+      .trim();
 
  // 0. Workspace Controls (Reset, Open, Close DeskMate)
     if (lower.includes('reset panel') || lower.includes('reset workspace') || lower.includes('reset positions')) {
@@ -4281,33 +4344,56 @@ User command: "${transcript}"`;
       setText(nowMarkerText, `${dispH}:${m < 10 ? '0' : ''}${m} ${ampm}`);
     }
 
- const filtered = this.getFilteredTasks();
- const tasksCount = asset.getElementById('hub-tasks-count') as any;
- if (tasksCount) setText(tasksCount, `Tasks (${filtered.length})`);
+    const schedTitleEl = asset.getElementById('hub-schedule-title') as any;
+    if (schedTitleEl) {
+      const isToday = this.selectedDayNumber === new Date().getDate();
+      const monthName = this.monthNames[this.calendarDate.getMonth()]?.slice(0, 3) || 'Nov';
+      const titleStr = isToday
+        ? "Today's Schedule (8:00 AM - 6:00 PM)"
+        : `${monthName} ${this.selectedDayNumber}'s Schedule (8:00 AM - 6:00 PM)`;
+      setText(schedTitleEl, titleStr);
+    }
 
- for (let i = 0; i < 4; i++) {
- const task = filtered[i];
- const titleEl = asset.getElementById(`hub-task-title-${i}`) as any;
- const chkMark = asset.getElementById(`hub-chk-mark-${i}`) as any;
- const chkBox = asset.getElementById(`hub-chk-box-${i}`) as any;
+    const filtered = this.getFilteredTasks();
+    const tasksCount = asset.getElementById('hub-tasks-count') as any;
+    if (tasksCount) setText(tasksCount, `Tasks (${filtered.length})`);
 
- if (task) {
- if (titleEl) setText(titleEl, task.title);
- const isDone = task.status === 'completed';
- if (chkMark) setText(chkMark, isDone ? '[x]' : '');
- if (chkBox && typeof chkBox.setProperties === 'function') {
- chkBox.setProperties({
- backgroundColor: isDone ? '#22C55E' : 'transparent',
- borderColor: isDone ? '#22C55E' : 'rgba(255, 255, 255, 0.35)',
- });
- }
+    const emptyMsg = asset.getElementById('hub-tasks-empty-msg') as any;
+    if (emptyMsg && typeof emptyMsg.setProperties === 'function') {
+      emptyMsg.setProperties({ display: filtered.length === 0 ? 'flex' : 'none' });
+    }
+
+    for (let i = 0; i < 4; i++) {
+      const task = filtered[i];
+      const rowEl = asset.getElementById(`hub-task-row-${i}`) as any;
+      const titleEl = asset.getElementById(`hub-task-title-${i}`) as any;
+      const chkMark = asset.getElementById(`hub-chk-mark-${i}`) as any;
+      const chkBox = asset.getElementById(`hub-chk-box-${i}`) as any;
       const badgeEl = asset.getElementById(`hub-task-badge-${i}`) as any;
-      if (badgeEl) {
-        const pri = task.priority === 'high' ? 'High' : task.priority === 'low' ? 'Low' : 'Med';
-        setText(badgeEl, pri);
+
+      if (task) {
+        if (rowEl && typeof rowEl.setProperties === 'function') {
+          rowEl.setProperties({ display: 'flex' });
+        }
+        if (titleEl) setText(titleEl, task.title);
+        const isDone = task.status === 'completed';
+        if (chkMark) setText(chkMark, isDone ? '[x]' : '');
+        if (chkBox && typeof chkBox.setProperties === 'function') {
+          chkBox.setProperties({
+            backgroundColor: isDone ? '#22C55E' : 'transparent',
+            borderColor: isDone ? '#22C55E' : 'rgba(255, 255, 255, 0.35)',
+          });
+        }
+        if (badgeEl) {
+          const pri = task.priority === 'high' ? 'High' : task.priority === 'low' ? 'Low' : 'Med';
+          setText(badgeEl, pri);
+        }
+      } else {
+        if (rowEl && typeof rowEl.setProperties === 'function') {
+          rowEl.setProperties({ display: 'none' });
+        }
       }
- }
- }
+    }
 
   // Dynamic Week View updates
     const currentWeek = this.computeCurrentWeek();

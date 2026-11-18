@@ -5,9 +5,24 @@
 [![Framework: IWSDK + Three.js](https://img.shields.io/badge/Engine-IWSDK%20%7C%20Three.js%20%7C%20elics-blueviolet.svg)](https://iwsdk.dev/)
 [![Tests: 76 Passing Suite](https://img.shields.io/badge/Tests-76%20Passing%20(100%25)-success.svg)](./tests)
 [![Golden Benchmarks: 275 Tests](https://img.shields.io/badge/Golden%20Tests-275%20Passing-success.svg)](./tests/brain-golden.test.ts)
+[![Meta VR Start: Competition 2026](https://img.shields.io/badge/Meta%20VR%20Start-Developer%20Competition%202026-orange.svg)](https://start-developer-competition-26.devpost.com/)
 
 > **The Premier Spatial Productivity Workstation in Mixed Reality**  
-> Built for Meta Quest 3 and WebXR platforms. Engineered with a **Dual-Mode Interaction Model**: **100% Hands-First Direct Physical Manipulation** coupled with a frictionless **Hands-Off Ambient Voice & Autonomous Companion System**.
+> Built for **Meta Quest 3**, **Meta Quest Pro**, and **Meta VR Glasses** via WebXR.  
+> Engineered from the ground up for the **Meta VR Start Developer Competition 2026 (Productivity Track — New Experience Division)** with a **Dual-Mode Interaction Model**: **100% Hands-First Direct Physical Manipulation** paired with an ambient **Hands-Off Voice AI & Autonomous Companion System**.
+
+---
+
+## 🏆 Meta VR Start Developer Competition 2026 Alignment
+
+| Category | Specification |
+|---|---|
+| **Track** | **Productivity** (Spatial multi-panel workspace, task management, focus sprint studio, workload capacity analyzer) |
+| **Division** | **New Experience** (Conceived and built cleanly from a blank slate during the competition window) |
+| **Primary Interaction** | **Hands-First** (Zero controller dependency; hands tracking engaged automatically on session launch) |
+| **Ergonomic Design** | **Seated Desk Ergonomics** (Seated reach envelope $\le 0.65$m; real tabletop plane alignment; passthrough-native) |
+| **AI Tooling & Platform** | **Multimodal Gemini 3.5 AI + Meta VR CLI + IWSDK (Immersive Web SDK)** |
+| **Verification & Quality** | **76 Automated Tests (100% Passing)** + **275 Golden Brain Utterance Benchmarks** + **18-Step Walkthrough Harness** |
 
 ---
 
@@ -29,11 +44,12 @@
    - [5. Workload Capacity Donut & Cognitive Load Analyzer](#5-workload-capacity-donut--cognitive-load-analyzer)
    - [6. Pip 3D Robot Companion & Productivity Garden](#6-pip-3d-robot-companion--productivity-garden)
    - [7. In-Place Task Editor & Priority Matrix](#7-in-place-task-editor--priority-matrix)
-   - [8. Spatial Desk Ruler & Tabletop Physics](#8-spatial-desk-ruler--tabletop-physics)
-   - [9. Dual Active Ray Pointers & Reticle Indicators](#9-dual-active-ray-pointers--reticle-indicators)
-   - [10. Multi-Day Task Distribution & Cross-Day Scheduling](#10-multi-day-task-distribution--cross-day-scheduling)
-   - [11. Multi-Step Undo Engine & Transaction Reversibility](#11-multi-step-undo-engine--transaction-reversibility)
-   - [12. Ambient Procedural Co-Working Audio (Ghost Deskmate)](#12-ambient-procedural-co-working-audio-ghost-deskmate)
+   - [8. Spatial Notes Scratchpad & Quick Capture](#8-spatial-notes-scratchpad--quick-capture)
+   - [9. Spatial Desk Ruler & Tabletop Physics](#9-spatial-desk-ruler--tabletop-physics)
+   - [10. Dual Active Ray Pointers & Reticle Indicators](#10-dual-active-ray-pointers--reticle-indicators)
+   - [11. Multi-Day Task Distribution & Cross-Day Scheduling](#11-multi-day-task-distribution--cross-day-scheduling)
+   - [12. Multi-Step Undo Engine & Transaction Reversibility](#12-multi-step-undo-engine--transaction-reversibility)
+   - [13. Ambient Procedural Co-Working Audio (Ghost Deskmate)](#13-ambient-procedural-co-working-audio-ghost-deskmate)
 5. [Resilience & Tab-Switching Architecture](#-resilience--tab-switching-architecture)
 6. [Technical Stack & Design Decisions](#-technical-stack--design-decisions)
 7. [Automated Testing & Golden Verification Suites](#-automated-testing--golden-verification-suites)
@@ -45,13 +61,13 @@
 
 ## 🌟 Executive Summary & Product Vision
 
-**DeskMate** transforms any real-world desk or tabletop into a calm, focused, and aesthetically cohesive spatial productivity operating system in Mixed Reality.
+**DeskMate** transforms any physical desk or tabletop into an ergonomic, distraction-free spatial productivity operating system in Mixed Reality.
 
-Traditional VR interfaces frequently suffer from two core failure modes:
-1. **Controller Dependence:** Requiring physical controllers that clutter the desk and force users to put down physical pens, notebooks, or coffee cups.
-2. **Virtual Keyboard Fatigue:** Attempting to replicate desktop keyboards in 3D air, leading to slow typing, high error rates, modal dialog freezes, and broken mental flow.
+Traditional VR productivity applications consistently suffer from two major friction points:
+1. **Controller Clutter & Fatigue:** Requiring bulky handheld controllers forces users to put down physical pens, notebooks, coffee mugs, and keyboards every time they need to interact with a virtual panel.
+2. **Virtual Keyboard Frustration:** Floating air-typing keyboards in 3D space are notoriously sluggish, prone to phantom clicks, physically tiring, and break mental concentration.
 
-DeskMate solves both challenges through a **Dual-Mode Ergonomic Philosophy**:
+DeskMate solves both bottlenecks through an integrated **Dual-Mode Ergonomic Philosophy**:
 
 ```
 +-----------------------------------------------------------------------------+
@@ -59,15 +75,16 @@ DeskMate solves both challenges through a **Dual-Mode Ergonomic Philosophy**:
 |                                                                             |
 |      [HANDS-FIRST]                             [HANDS-OFF]                  |
 |   Direct Physical Spatial Touch            Ambient Voice & Autonomy         |
-|   - Tabletop physical ruler                - Natural Gemini 3.5 voice AI    |
-|   - 15-minute magnetic snapping            - Multi-action execution         |
-|   - Spatial panel dragging                 - Autonomous Pip companion       |
-|   - Zero virtual keyboard typing           - Proactive schedule packing     |
-|   - Visual dual-pointer rays               - Ambient co-working audio       |
+|   - Zero controller dependency             - Multimodal Gemini 3.5 voice AI |
+|   - Automatic hands mode on launch         - Multi-day task scheduling      |
+|   - Tabletop physical ruler snap           - Autonomous Pip 3D companion    |
+|   - 15-minute magnetic timeline grid       - Proactive "Plan My Day" engine |
+|   - Zero virtual keyboard typing           - Hands-free task edits & deletes|
+|   - High-contrast, scalable glass UI       - Ambient co-working audio       |
 +-----------------------------------------------------------------------------+
 ```
 
-When users wish to touch and arrange their workspace, **Hands-First** provides instant, haptic-feeling direct spatial interactions. When users are deep in physical deep work or note-taking, **Hands-Off** allows complete voice-driven agenda planning, task completion, schedule adjustments, and timer manipulation without lifting a finger.
+When users want to touch, browse, and organize their desk, **Hands-First** delivers immediate, haptic-feeling direct spatial interactions. When users are engrossed in physical deep work, sketching, or typing, **Hands-Off** provides seamless voice-driven agenda planning, task completion, schedule adjustments, and timer manipulation without moving their hands from their keyboard or desk.
 
 ---
 
@@ -75,20 +92,22 @@ When users wish to touch and arrange their workspace, **Hands-First** provides i
 
 ### 1. Hands-First Architecture: Direct Spatial Manipulation
 
-DeskMate’s Hands-First system is built upon **zero-controller direct manipulation**. The platform runs entirely via WebXR Hand Tracking:
+DeskMate’s Hands-First architecture is engineered around **zero-controller direct spatial touch**:
 
-- **Seated Reach Envelope ($\le 0.65$m Radius):** Every interactive button, panel handle, task row, and slider is positioned within comfortable seated reach without requiring torso leaning or standing.
-- **Physical Desk Alignment (WebXR Plane Detection):** Scans the room for horizontal tabletop planes (`table`, `desk`). When entering XR passthrough, the virtual wooden table mesh automatically hides, making the user's real physical desk their actual work surface.
+- **Automatic Hands-First Launch:** When opened on Meta Quest or desktop emulation, DeskMate defaults straight into hand tracking mode with visible hand models, cleanly tucking away virtual controllers so your real hands are ready immediately.
+- **Seated Reach Envelope ($\le 0.65$m Radius):** Every interactive button, stepper, panel handle, task row, and slider is mathematically constrained within comfortable seated reach without requiring torso leaning or standing up.
+- **Physical Desk Alignment (WebXR Passthrough & Plane Detection):** Detects real-world horizontal tabletop planes (`table`, `desk`). When entering XR passthrough, the virtual wooden table mesh automatically hides, making your actual physical desk the natural anchor for the workspace.
 - **Magnetic Snapping (15-Minute Grid):** Task tiles and schedule blocks snap magnetically to 15-minute intervals ($09:00, 09:15, 09:30, \dots$) with subtle audio tick feedback and translucent preview landing ghosts.
 - **Dual Visual Pointer Beams & Reticles:** Both left and right hands project soft laser guide beams (Cylinder geometry with 8-segment tessellation) terminating in clean circular reticle rings on glass panels, enabling simultaneous dual-hand interaction.
 - **Spatial Panel Dragging & Billboard Yaw:** Users can grab any glass panel by its top handle bar to freely reposition it in 3D space. As panels move, they smoothly billboard their yaw angle toward the user’s eyes for optimal legibility.
+- **High-Contrast Typography & Sizing:** Clean, high-legibility font sizes (14px–22px) ensure crisp, effortless reading both inside Quest VR optics and on desktop preview screens.
 
 ### 2. Hands-Off Architecture: Ambient Voice & Autonomous Action
 
-The Hands-Off architecture eliminates the need to look up or touch screens during deep focus sprints:
+The Hands-Off architecture eliminates the need to reach out or touch screens during deep focus sessions:
 
-- **Multimodal Gemini 3.5 Flash Lite Assistant:** Integrated with the Gemini API to interpret conversational voice commands into structured JSON action mutations (`add_task`, `delete_task`, `edit_task`, `complete_task`, `start_focus_timer`, `plan_day`, `navigate_view`).
-- **Autonomous Pip 3D Robot Avatar:** Positioned directly beside the Command Center with a 60fps physical bobbing animation, counter-rotating metallic rings, and emotive state transitions (*thinking*, *celebrating*, *encouraging*).
+- **Multimodal Gemini 3.5 Flash Lite Assistant:** Integrated with the Gemini API to interpret natural conversational voice commands into structured JSON workspace mutations (`add_task`, `delete_task`, `edit_task`, `complete_task`, `start_focus_timer`, `plan_day`, `navigate_view`).
+- **Autonomous Pip 3D Robot Avatar:** Floats smoothly beside the Command Center with a 60fps physical bobbing animation, counter-rotating metallic rings, and emotive state transitions (*idle*, *thinking*, *celebrating*).
 - **Proactive Day Planning ("Plan My Day"):** Automatically sorts unscheduled tasks by priority and duration, packing them contiguously into working hours ($08:00\text{--}18:00$) with mandatory 10-minute restorative buffers.
 - **Conflict & Overlap Healing ("Fix Overlaps"):** Analyzes the timeline in real time; when overlapping tasks are detected, conflicting items are automatically pushed to the nearest free time slot.
 - **Natural Spoken Feedback (TTS):** Responses are delivered through the browser Speech Synthesis API using natural, high-clarity human-like voices, confirming actions aloud without requiring visual verification.
@@ -163,7 +182,7 @@ sequenceDiagram
     participant Store as Task State Store
     participant Audio as Web Audio Synthesizer
 
-    User->>Ray: Poke or Pinch Target
+    User->>Ray: Direct Touch or Pinch Target
     Ray->>UI: Intersect Element Boundary
     UI->>Panel: Trigger Action Callback
     Panel->>Audio: Play Hover Hum / Pinch Tick
@@ -185,7 +204,7 @@ sequenceDiagram
     participant Store as State Store
     participant TTS as SpeechSynthesis Utterance
 
-    User->>Mic: "Schedule Team Sync tomorrow at 2 PM for 45 minutes"
+    User->>Mic: "Pip, schedule Team Sync on Thursday at 2 PM for 45 minutes"
     Mic->>Panel: Stream Transcript
     alt Gemini API Available
         Panel->>Cloud: System Prompt + Workspace State + Transcript
@@ -211,12 +230,14 @@ sequenceDiagram
 - **Unified Section Zoom:** Any widget card can be zoomed in-place to occupy the primary viewing area, with an instant "Back to Overview" pill button.
 
 ### 2. Interactive Tasks & Multi-Week Calendar Navigation
-- **Multi-Week Date Strip:** 7-day responsive calendar picker ($16\text{th}\text{--}22\text{nd}$ dates) with dedicated navigation buttons ($\ll, \gg$) and active date highlighting.
+- **Multi-Week Date Strip & Full 31-Day Month Picker:** 7-day responsive calendar picker with dedicated navigation buttons ($\ll, \gg$) and active date highlighting, plus an interactive 31-day Monthly Calendar subview.
+- **Instant Day Synchronization:** Clicking any date in the calendar immediately updates the Main Dashboard schedule, timeline blocks, workload donut, and tasks to that specific date.
 - **Task Filtering:** Instant 1-tap categorization by priority (*All*, *High*, *Med*, *Low*).
-- **Task Row Metrics:** Each task displays a priority accent bar, completion checkbox with checkmark animations, task title with automatic text truncation, and quick inline Edit (`Ed`) and Delete (`Del`) buttons.
-- **Strict Boundary Containment:** Container overflow protection (`overflow: hidden`) ensures task buttons never bleed into neighboring widgets.
+- **Clean Task Rows & Empty States:** Clean text rows with priority badges, checkmarks, and instant Delete buttons. When a day has no tasks, a clean "No tasks scheduled for this day" state is displayed with zero placeholder clutter.
 
 ### 3. Focus Sprint Studio & Pomodoro Timer
+- **Dedicated Sprint Controls:** Features dedicated **Start**, **Stop** (pause), and **Reset** buttons. Clicking Reset cleanly restores the timer to its set duration.
+- **Instant Access:** One-tap launch directly from the **Settings** gear on the Focus Session card, or via the `> Focus` button under Quick Add.
 - **Ring Visualization:** Mathematical progress ring displaying remaining sprint time with dynamic color shifts.
 - **Quick Preset Chips:** Instant sprint duration chips ($5\text{m}, 15\text{m}, 25\text{m}, 45\text{m}, 60\text{m}$).
 - **Fine-Grained Adjustments:** Incremental $\pm 1\text{m}$ and $\pm 5\text{m}$ steppers for precise session tuning.
@@ -225,9 +246,8 @@ sequenceDiagram
 
 ### 4. Today's Schedule & 15-Minute Snapping Timeline Track
 - **10-Hour Timeline Axis:** Accurately graduated axis spanning $08:00\text{ to }18:00$ with 11 clear hourly ticks ($8\text{ AM}, 9\text{ AM}, 10\text{ AM}, 11\text{ AM}, 12\text{ PM}, 1\text{ PM}, 2\text{ PM}, 3\text{ PM}, 4\text{ PM}, 5\text{ PM}, 6\text{ PM}$).
-- **Dynamic Proportional Positioning:** Each scheduled task block is calculated relative to the total workday duration ($600\text{ minutes}$):
-  $$\text{relativeLeftPercent} = \frac{\text{startMinute} - 480}{600} \times 100$$
-  $$\text{widthPercent} = \max\left(4.5, \frac{\text{duration}}{600} \times 100\right)$$
+- **True Time-Slot Placement:** Schedule blocks are positioned along the track corresponding strictly to their scheduled start time on the active day, preventing artificial overlapping or stacked trains.
+- **Enlarged High-Contrast Block Typography:** Generous 50px-high blocks with 13px bold titles and 11px time indicators, ensuring easy legibility inside headsets.
 - **Real-Time Sun "Now" Marker:** An animated purple badge indicating the exact current time of day, positioned dynamically along the timeline track.
 - **Direct Block Interaction:** Touching any schedule block triggers the in-place editor, allowing start time and duration adjustments on the fly.
 
@@ -255,28 +275,33 @@ sequenceDiagram
 - **Scheduled Time Picker:** Fine-tuning of scheduled start minutes snapped to the 15-minute grid.
 - **Two-Tap Deletion:** Built-in safety confirmation requiring a second tap within $3.5\text{ seconds}$ to prevent accidental task loss.
 
-### 8. Spatial Desk Ruler & Tabletop Physics
+### 8. Spatial Notes Scratchpad & Quick Capture
+- **Rapid Spatial Capture:** Instant "+ Quick Note" addition for fleeting thoughts, architecture reminders, and deep work ideas.
+- **Clean Note Rows:** Solid, readable typography with dedicated Delete buttons per note.
+- **Persistent Scratchpad:** Full localStorage persistence keeping notes synced across app reloads and headset sessions.
+
+### 9. Spatial Desk Ruler & Tabletop Physics
 - **Physical 3D Ruler Model:** Modeled in Three.js and rendered directly on the detected tabletop surface.
 - **Translucent Placement Ghosts:** Grabbing a task tile displays a semi-transparent ghost at the nearest valid 15-minute slot before release.
 - **Push-to-Make-Room Algorithm:** Dropping a task into an occupied slot shifts subsequent tasks forward cleanly, preserving scheduled durations without collisions.
 
-### 9. Dual Active Ray Pointers & Reticle Indicators
+### 10. Dual Active Ray Pointers & Reticle Indicators
 - **Left & Right Ray Parity:** Simultaneous raycasting enabled for both hands.
 - **Pointer Beam Visuals:** Laser cylinder meshes scaled along the pointer axis to terminate precisely at panel collision points.
 - **Specular Reticles:** Flat circular ring cursors aligned parallel to the panel surface, expanding slightly upon hover.
 - **Desktop Emulation Switcher:** Complete pointer parity in desktop browsers via Tab key, on-screen HUD toggle, or automatic screen-half pointer routing.
 
-### 10. Multi-Day Task Distribution & Cross-Day Scheduling
+### 11. Multi-Day Task Distribution & Cross-Day Scheduling
 - **Month-Wide Task Management:** Tasks can be assigned to any date in the calendar month ($1\text{st}\text{--}31\text{st}$).
-- **Voice Multi-Day Routing:** Commands such as *"Add Code Review on Friday"* or *"Schedule Team Sync tomorrow"* are parsed and scheduled to their respective day numbers automatically.
+- **Conversational Voice Multi-Day Routing:** Commands such as *"Pip, add team sync on Thursday at 2 PM"* or *"Schedule gym tomorrow for 45 minutes"* are intelligently parsed and routed to their respective calendar days.
 - **Week-At-A-Glance Aggregation:** The Week view summarizes daily task counts and total scheduled hours across all 7 days of the active week.
 
-### 11. Multi-Step Undo Engine & Transaction Reversibility
+### 12. Multi-Step Undo Engine & Transaction Reversibility
 - **Snapshot-Based Undo Stack:** Stores full serialized workspace state snapshots up to 5 levels deep.
 - **8-Second Grace Window:** An ambient undo banner appears at the bottom of the Command Center with an animated countdown after every destructive action.
 - **Complete Reversibility:** Tapping "Undo" instantly restores the previous state, re-synchronizes the UI, and persists the reversal to `localStorage`.
 
-### 12. Ambient Procedural Co-Working Audio (Ghost Deskmate)
+### 13. Ambient Procedural Co-Working Audio (Ghost Deskmate)
 - **Spatial Audio Panning:** Positioned at $+0.7\text{m}$ right and $-0.6\text{m}$ forward using Web Audio API HRTF spatial panners.
 - **Procedural Sound Generation:** Periodic randomized mechanical keyboard clicks (clusters of $3\text{--}7$ keypresses) and gentle paper page turns.
 - **Dynamic Volume Ducking:** Ambient volume automatically reduces by 75% during active focus sprints to preserve concentration.
@@ -398,10 +423,10 @@ npm run dev
 
 ### Type Checking & Testing
 ```bash
-# Verify TypeScript compilation
+# Verify TypeScript compilation (0 errors)
 npm run typecheck
 
-# Run complete automated test suite
+# Run complete automated test suite (76 tests pass)
 npm test
 ```
 
@@ -417,10 +442,10 @@ npm run build
 ```
 
 ### Meta Quest Browser Launch Instructions
-1. Open the Meta Quest Browser on Meta Quest 3 or Quest Pro.
+1. Open the **Meta Quest Browser** on your Meta Quest 3, Quest Pro, or Meta VR Glasses.
 2. Navigate to your deployed production URL (e.g. `https://deskmate.vercel.app`).
 3. Tap the **🥽 Enter Quest XR** button at the bottom of the screen.
-4. Set down your physical controllers.
+4. Set down your physical controllers on your desk.
 5. Hand tracking engages automatically — interact directly using natural hand touch, pinch, and voice!
 
 ---

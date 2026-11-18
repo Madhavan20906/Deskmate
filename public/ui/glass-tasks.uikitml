@@ -86,7 +86,7 @@
  }
 
  .calendar-title {
- font-size: 16px;
+  font-size: 18px;
  font-weight: 800;
  color: #FFFFFF;
  letter-spacing: 0.3px;
@@ -99,8 +99,8 @@
  }
 
  .cal-day-header {
- font-size: 13px;
- font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
  color: rgba(255, 255, 255, 0.75);
  width: 95px;
  text-align: center;
@@ -139,8 +139,8 @@
  }
 
  .cal-date-text {
- font-size: 20px;
- font-weight: 800;
+  font-size: 22px;
+  font-weight: 900;
  color: rgba(255, 255, 255, 0.90);
  }
 
@@ -159,7 +159,8 @@
  }
 
  .section-title {
- font-size: 17px;
+  font-size: 19px;
+  font-weight: 800;
  font-weight: 700;
  color: #FFFFFF;
  }
@@ -208,20 +209,20 @@
  }
 
  .agenda-time {
- font-size: 13px;
- font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
  color: #F3B27A;
  min-width: 58px;
  }
 
  .agenda-name {
- font-size: 15px;
- font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
  color: #FFFFFF;
  }
 
  .agenda-name-completed {
- font-size: 15px;
+  font-size: 16px;
  font-weight: 500;
  color: rgba(255, 255, 255, 0.45);
  }
